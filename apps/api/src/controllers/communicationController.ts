@@ -14,7 +14,7 @@ const scenarioBodySchema = z.object({
 
 const coachBodySchema = z.object({
   meetingType: z.enum(MEETING_TYPES),
-  scenario: z.unknown(),
+  scenario: z.any(),
   userResponse: z.string().min(20).max(4000),
 });
 
@@ -34,7 +34,11 @@ export const communicationController = {
 
   async coach(req: AuthRequest, res: Response): Promise<void> {
     const body = coachBodySchema.parse(req.body);
-    const result = await coachMeetingResponse(body);
+    const result = await coachMeetingResponse({
+      meetingType: body.meetingType,
+      scenario: body.scenario,
+      userResponse: body.userResponse,
+    });
     res.json(result);
   },
 };
