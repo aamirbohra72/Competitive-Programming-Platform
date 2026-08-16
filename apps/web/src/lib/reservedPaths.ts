@@ -21,6 +21,9 @@ const RESERVED = new Set([
   'ta-help',
   'dsa-sheet',
   'challenges',
+  'roadmaps',
+  'visualizer',
+  'communication',
 ]);
 
 export function isReservedUsername(username: string): boolean {

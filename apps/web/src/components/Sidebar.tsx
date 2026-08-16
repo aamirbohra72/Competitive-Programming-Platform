@@ -33,6 +33,7 @@ const sidebarItems: SidebarItem[] = [
   { label: 'DSA Sheet', href: '/dsa-sheet', icon: '📋' },
   { label: 'Visualizer', href: '/visualizer', icon: '▶️' },
   { label: 'Roadmaps', href: '/roadmaps', icon: '🗺️' },
+  { label: 'Meeting Comms', href: '/communication', icon: '💬' },
   { label: 'Project Ideas', href: '/projects', icon: '💡' },
 ];
 

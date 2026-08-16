@@ -14,6 +14,7 @@ import { executionRoutes } from './routes/execution';
 import { interviewRoutes } from './routes/interview';
 import { courseRoutes } from './routes/courses';
 import { careersRoutes } from './routes/careers';
+import { communicationRoutes } from './routes/communication';
 import { progressRoutes } from './routes/progress';
 import { paymentRoutes } from './routes/payments';
 import { projectsRoutes } from './routes/projects';
@@ -71,6 +72,7 @@ app.use('/api/blog', blogRoutes);
 app.use('/api/companion', companionRoutes);
 app.use('/api/ta-help', taHelpRoutes);
 app.use('/api/careers', careersRoutes);
+app.use('/api/communication', communicationRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
