@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { DashboardShell } from '@/components/DashboardShell';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
-import { isLocallyEnrolled, markLocalEnrollment } from '@/lib/enrollment';
+import { isLocallyEnrolled, markLocalEnrollment, clearLocalEnrollment } from '@/lib/enrollment';
 import { startRazorpayCheckout } from '@/lib/razorpayCheckout';
 import {
   completeLearningItem,
@@ -141,7 +141,13 @@ export default function CourseDetailPage() {
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !course) return;
+    if (!course.isPremium) {
+      setEnrolled(true);
+      return;
+    }
+
+    // Optimistic cache only — API enrollment is source of truth.
     setEnrolled(isLocallyEnrolled(courseId));
 
     if (!getToken()) return;
@@ -154,6 +160,9 @@ export default function CourseDetailPage() {
         if (data.enrolled) {
           markLocalEnrollment(courseId);
           setEnrolled(true);
+        } else {
+          clearLocalEnrollment(courseId);
+          setEnrolled(false);
         }
       })
       .catch(() => undefined);

@@ -61,6 +61,10 @@ export interface ContestMeResponse {
   canRegister: boolean;
   canUnregister: boolean;
   canSubmit: boolean;
+  /** Whether a successful AC will update the live contest leaderboard */
+  countsForLeaderboard: boolean;
+  /** practice | contest | post_contest | blocked */
+  submitMode: 'practice' | 'contest' | 'post_contest' | 'blocked';
 }
 
 export interface Challenge {
@@ -95,6 +99,15 @@ export interface Challenge {
     sampleCount: number;
     hiddenCount: number;
     totalCount: number;
+  };
+  contest?: {
+    id: string;
+    name: string;
+    kind?: ContestKind;
+    status?: ContestStatus;
+    startTime?: Date | string;
+    endTime?: Date | string;
+    isPublished?: boolean;
   };
   createdAt: Date;
   updatedAt: Date;

@@ -32,7 +32,7 @@ async function upsertPracticeContest() {
     name: 'Interview Practice — JavaScript & React',
     description: 'Curated frontend interview prompts with company tags for /practice',
     startTime: new Date(now.getTime() - 3 * 60 * 60 * 1000),
-    endTime: new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000),
+    endTime: new Date(now.getTime() + 10 * 365 * 24 * 60 * 60 * 1000),
     status: ContestStatus.LIVE,
     kind: ContestKind.PRACTICE,
     isPublished: true,

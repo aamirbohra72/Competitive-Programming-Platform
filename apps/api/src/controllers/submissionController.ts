@@ -4,7 +4,13 @@ import { prisma, SubmissionStatus } from '@codeforces/db';
 import { AuthRequest } from '../middleware/auth';
 import { evaluateCode } from '../services/aiService';
 import { addToLeaderboard } from '../services/redisService';
-import { DockerUnavailableError } from '../services/dockerJudgeService';
+import { DockerUnavailableError, judgeHasCapacity } from '../services/dockerJudgeService';
+import { AppError, requireUserId } from '../lib/errors';
+import {
+  getAcceptedSolutionForUser,
+  saveAcceptedSolution,
+} from '../services/acceptedSolutionService';
+import { evaluateContestSubmit } from '../utils/contestRules';
 
 const createSubmissionSchema = z.object({
   challengeId: z.string().min(1),
@@ -239,33 +245,43 @@ export const submissionController = {
 
       const contest = challenge.contest;
       const now = new Date();
-      const isPractice = contest.kind === 'PRACTICE';
-      const isWithinWindow = now >= contest.startTime && now <= contest.endTime;
 
-      // Non-practice contests: must be registered and within the live window.
-      if (!isPractice) {
-        if (!isWithinWindow) {
-          res.status(400).json({ error: 'Contest is not currently active' });
-          return;
-        }
+      const registration =
+        contest.kind === 'PRACTICE'
+          ? null
+          : await prisma.contestRegistration.findUnique({
+              where: {
+                userId_contestId: {
+                  userId: req.user.userId,
+                  contestId: contest.id,
+                },
+              },
+            });
 
-        const registration = await prisma.contestRegistration.findUnique({
-          where: {
-            userId_contestId: {
-              userId: req.user.userId,
-              contestId: contest.id,
-            },
-          },
+      const decision = evaluateContestSubmit({
+        kind: contest.kind,
+        startTime: contest.startTime,
+        endTime: contest.endTime,
+        isRegistered: Boolean(registration),
+        isPublished: contest.isPublished,
+        now,
+      });
+
+      if (!decision.allowed) {
+        const status = decision.code === 'NOT_REGISTERED' ? 403 : 400;
+        res.status(status).json({
+          error: decision.message || 'Submission not allowed for this contest',
+          code: decision.code,
+          submitMode: decision.mode,
         });
-        if (!registration) {
-          res.status(403).json({
-            error: 'Register for this contest before submitting',
-          });
-          return;
-        }
+        return;
       }
 
-      const isContestSubmission = !isPractice && isWithinWindow;
+      const countsForLeaderboard = decision.countsForLeaderboard;
+
+      if (!judgeHasCapacity()) {
+        throw new AppError('JUDGE_BUSY', 429, 'Judge is busy, try again shortly');
+      }
 
       const submission = await prisma.submission.create({
         data: {
@@ -307,8 +323,23 @@ export const submissionController = {
             },
           });
 
-          if (result.status === 'ACCEPTED' && isContestSubmission) {
-            await addToLeaderboard(challenge.contest.id, userId, result.score);
+          if (result.status === 'ACCEPTED') {
+            try {
+              await saveAcceptedSolution({
+                userId,
+                challengeId: data.challengeId,
+                submissionId: submission.id,
+                language: data.language,
+                sourceCode: data.sourceCode,
+                score: result.score,
+              });
+            } catch (err) {
+              console.error('[accepted-solution] Failed to persist accepted solution:', err);
+            }
+
+            if (countsForLeaderboard) {
+              await addToLeaderboard(challenge.contest.id, userId, result.score);
+            }
           }
         })
         .catch(async (error) => {
@@ -338,5 +369,39 @@ export const submissionController = {
       }
       throw error;
     }
+  },
+
+  /** GET /submissions/accepted/:challengeId — unlock Solution tab after AC */
+  async getAccepted(req: AuthRequest, res: Response): Promise<void> {
+    const userId = requireUserId(req.user?.userId);
+    const challengeId = String(req.params.challengeId || '');
+    if (!challengeId) {
+      res.status(400).json({ error: 'challengeId is required' });
+      return;
+    }
+
+    const solution = await getAcceptedSolutionForUser(userId, challengeId);
+    if (!solution) {
+      res.status(404).json({
+        error: 'No accepted solution yet',
+        code: 'NOT_SOLVED',
+        solved: false,
+      });
+      return;
+    }
+
+    res.json({
+      solved: true,
+      solution: {
+        id: solution.id,
+        challengeId: solution.challengeId,
+        submissionId: solution.submissionId,
+        language: solution.language,
+        sourceCode: solution.sourceCode,
+        score: solution.score,
+        firstAcceptedAt: solution.firstAcceptedAt,
+        updatedAt: solution.updatedAt,
+      },
+    });
   },
 };

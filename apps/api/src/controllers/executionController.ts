@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { prisma } from '@codeforces/db';
 import { AuthRequest } from '../middleware/auth';
 import { evaluateCode } from '../services/aiService';
-import { DockerUnavailableError, isDockerJudgeAvailable } from '../services/dockerJudgeService';
+import { DockerUnavailableError, isDockerJudgeAvailable, judgeHasCapacity } from '../services/dockerJudgeService';
+import { AppError } from '../lib/errors';
 
 const executeCodeSchema = z.object({
   code: z.string().min(1, 'Code is required').max(100_000),
@@ -21,6 +22,9 @@ export const executionController = {
       }
 
       const data = executeCodeSchema.parse(req.body);
+      if (!judgeHasCapacity()) {
+        throw new AppError('JUDGE_BUSY', 429, 'Judge is busy, try again shortly');
+      }
       const available = await isDockerJudgeAvailable();
       if (!available) {
         res.status(503).json({

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth';
 import { prisma } from '@codeforces/db';
+import { AppError, requireUserId } from '../lib/errors';
 import {
   claimTaHelpRequest,
   countWaitingVideoCalls,
@@ -14,16 +15,6 @@ import {
   submitTaHelpFeedback,
   updateTaHelpStatus,
 } from '../services/taHelpService';
-
-function mapError(err: unknown): { status: number; message: string } {
-  const msg = err instanceof Error ? err.message : 'Unknown error';
-  if (msg === 'REQUEST_NOT_FOUND') return { status: 404, message: 'Help request not found' };
-  if (msg === 'NOT_CLAIMABLE') return { status: 409, message: 'Request is not available to claim' };
-  if (msg === 'FORBIDDEN') return { status: 403, message: 'Not allowed' };
-  if (msg === 'EMPTY_REPLY') return { status: 400, message: 'Reply cannot be empty' };
-  if (msg === 'USER_NOT_FOUND') return { status: 404, message: 'User not found' };
-  return { status: 500, message: msg };
-}
 
 const createSchema = z.object({
   title: z.string().min(4).max(200),
@@ -51,183 +42,102 @@ const feedbackSchema = z.object({
 
 export const taHelpController = {
   async create(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId) {
-        res.status(401).json({ error: 'Authentication required' });
-        return;
-      }
-      const body = createSchema.parse(req.body);
-      const request = await createTaHelpRequest({
-        userId: req.user.userId,
-        ...body,
-      });
-      res.status(201).json({ request });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        res.status(400).json({ error: err.errors[0]?.message ?? 'Invalid body' });
-        return;
-      }
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
-    }
+    const userId = requireUserId(req.user?.userId);
+    const body = createSchema.parse(req.body);
+    const request = await createTaHelpRequest({
+      userId,
+      ...body,
+    });
+    res.status(201).json({ request });
   },
 
   async mine(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId) {
-        res.status(401).json({ error: 'Authentication required' });
-        return;
-      }
-      const requests = await listMyTaHelpRequests(req.user.userId);
-      const waitingVideo = await countWaitingVideoCalls(req.user.userId);
-      res.json({ requests, waitingVideo });
-    } catch (err) {
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
-    }
+    const userId = requireUserId(req.user?.userId);
+    const requests = await listMyTaHelpRequests(userId);
+    const waitingVideo = await countWaitingVideoCalls(userId);
+    res.json({ requests, waitingVideo });
   },
 
   async queue(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId || !isStaffRole(req.user.role)) {
-        res.status(403).json({ error: 'TA or admin access required' });
-        return;
-      }
-      const requests = await listTaQueue();
-      res.json({ requests });
-    } catch (err) {
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
+    const userId = requireUserId(req.user?.userId);
+    if (!isStaffRole(req.user?.role)) {
+      throw new AppError('FORBIDDEN', 403, 'TA or admin access required');
     }
+    const requests = await listTaQueue();
+    res.json({ requests });
   },
 
   async getOne(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId) {
-        res.status(401).json({ error: 'Authentication required' });
-        return;
-      }
-      const detail = await getTaHelpRequest(String(req.params.id));
-      if (!detail) {
-        res.status(404).json({ error: 'Help request not found' });
-        return;
-      }
-      const staff = isStaffRole(req.user.role);
-      if (!staff && detail.userId !== req.user.userId) {
-        res.status(403).json({ error: 'Not allowed' });
-        return;
-      }
-      res.json({ request: detail });
-    } catch (err) {
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
+    const userId = requireUserId(req.user?.userId);
+    const detail = await getTaHelpRequest(String(req.params.id));
+    if (!detail) {
+      throw new AppError('REQUEST_NOT_FOUND', 404, 'Help request not found');
     }
+    const staff = isStaffRole(req.user?.role);
+    if (!staff && detail.userId !== userId) {
+      throw new AppError('FORBIDDEN', 403, 'Not allowed');
+    }
+    res.json({ request: detail });
   },
 
   async claim(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId || !isStaffRole(req.user.role)) {
-        res.status(403).json({ error: 'TA or admin access required' });
-        return;
-      }
-      const request = await claimTaHelpRequest(String(req.params.id), req.user.userId);
-      res.json({ request });
-    } catch (err) {
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
+    const userId = requireUserId(req.user?.userId);
+    if (!isStaffRole(req.user?.role)) {
+      throw new AppError('FORBIDDEN', 403, 'TA or admin access required');
     }
+    const request = await claimTaHelpRequest(String(req.params.id), userId);
+    res.json({ request });
   },
 
   async reply(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId) {
-        res.status(401).json({ error: 'Authentication required' });
-        return;
-      }
-      const body = replySchema.parse(req.body);
-      const staff = isStaffRole(req.user.role);
-      const request = await replyToTaHelpRequest({
-        requestId: String(req.params.id),
-        authorId: req.user.userId,
-        authorRole: staff ? 'ta' : 'learner',
-        body: body.body,
-      });
-      res.json({ request });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        res.status(400).json({ error: err.errors[0]?.message ?? 'Invalid body' });
-        return;
-      }
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
-    }
+    const userId = requireUserId(req.user?.userId);
+    const body = replySchema.parse(req.body);
+    const staff = isStaffRole(req.user?.role);
+    const request = await replyToTaHelpRequest({
+      requestId: String(req.params.id),
+      authorId: userId,
+      authorRole: staff ? 'ta' : 'learner',
+      body: body.body,
+    });
+    res.json({ request });
   },
 
   async status(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId) {
-        res.status(401).json({ error: 'Authentication required' });
-        return;
-      }
-      const body = statusSchema.parse(req.body);
-      const request = await updateTaHelpStatus({
-        requestId: String(req.params.id),
-        status: body.status,
-        actorId: req.user.userId,
-        asStaff: isStaffRole(req.user.role),
-      });
-      res.json({ request });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        res.status(400).json({ error: err.errors[0]?.message ?? 'Invalid body' });
-        return;
-      }
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
-    }
+    const userId = requireUserId(req.user?.userId);
+    const body = statusSchema.parse(req.body);
+    const request = await updateTaHelpStatus({
+      requestId: String(req.params.id),
+      status: body.status,
+      actorId: userId,
+      asStaff: isStaffRole(req.user?.role),
+    });
+    res.json({ request });
   },
 
   async feedback(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId) {
-        res.status(401).json({ error: 'Authentication required' });
-        return;
-      }
-      const body = feedbackSchema.parse(req.body);
-      const request = await submitTaHelpFeedback({
-        requestId: String(req.params.id),
-        userId: req.user.userId,
-        satisfied: body.satisfied,
-        rating: body.rating,
-      });
-      res.json({ request });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        res.status(400).json({ error: err.errors[0]?.message ?? 'Invalid body' });
-        return;
-      }
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
-    }
+    const userId = requireUserId(req.user?.userId);
+    const body = feedbackSchema.parse(req.body);
+    const request = await submitTaHelpFeedback({
+      requestId: String(req.params.id),
+      userId,
+      satisfied: body.satisfied,
+      rating: body.rating,
+    });
+    res.json({ request });
   },
 
   /** Promote current user to TA (dev/admin helper — ADMIN only). */
   async promoteSelf(req: AuthRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user?.userId || req.user.role !== 'ADMIN') {
-        res.status(403).json({ error: 'Admin only' });
-        return;
-      }
-      const userId = String(req.body?.userId || req.user.userId);
-      const user = await prisma.user.update({
-        where: { id: userId },
-        data: { role: 'TA' },
-        select: { id: true, email: true, username: true, role: true },
-      });
-      res.json({ user });
-    } catch (err) {
-      const mapped = mapError(err);
-      res.status(mapped.status).json({ error: mapped.message });
+    const userId = requireUserId(req.user?.userId);
+    if (req.user?.role !== 'ADMIN') {
+      throw new AppError('FORBIDDEN', 403, 'Admin only');
     }
+    const targetId = String(req.body?.userId || userId);
+    const user = await prisma.user.update({
+      where: { id: targetId },
+      data: { role: 'TA' },
+      select: { id: true, email: true, username: true, role: true },
+    });
+    res.json({ user });
   },
 };

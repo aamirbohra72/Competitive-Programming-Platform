@@ -65,6 +65,8 @@ export default function ContestDetailPage() {
       const data = await api.get<Challenge[]>(`/contests/${contestId}/challenges`);
       setChallenges(data);
     } catch (error) {
+      // Upcoming contests intentionally hide statements until start.
+      setChallenges([]);
       console.error('Failed to fetch challenges:', error);
     }
   }, [contestId]);
@@ -141,6 +143,7 @@ export default function ContestDetailPage() {
   const canUnregister = me?.canUnregister ?? (registered && status === 'UPCOMING');
   const problemsLocked = needsRegistration && status === 'UPCOMING';
   const submitBlocked = needsRegistration && status === 'LIVE' && !registered;
+  const postContestPractice = needsRegistration && status === 'ENDED';
 
   return (
     <>
@@ -250,7 +253,21 @@ export default function ContestDetailPage() {
               borderRadius: 6,
             }}
           >
-            Register to submit solutions during this live contest.
+            Register to submit solutions during this live contest. Submissions count toward the leaderboard.
+          </p>
+        )}
+
+        {postContestPractice && (
+          <p
+            style={{
+              marginBottom: '1rem',
+              padding: '0.75rem 1rem',
+              background: '#ecfdf5',
+              color: '#065f46',
+              borderRadius: 6,
+            }}
+          >
+            Contest ended — you can still practice these problems. New submits will not change the leaderboard.
           </p>
         )}
 
@@ -265,13 +282,20 @@ export default function ContestDetailPage() {
           <div>
             {challenges.map((challenge) => (
               <div key={challenge.id} className="card">
-                <Link href={`/challenges/${challenge.id}`}>
+                <Link href={`/practice/${challenge.id}`}>
                   <h3 style={{ marginBottom: '0.5rem' }}>{challenge.title}</h3>
                 </Link>
                 <p style={{ marginBottom: '0.5rem' }}>Difficulty: {challenge.difficulty}</p>
                 <p style={{ fontSize: '0.9rem', color: '#666' }}>
                   {challenge.description.substring(0, 200)}...
                 </p>
+                <Link
+                  href={`/practice/${challenge.id}`}
+                  className="btn btn-primary"
+                  style={{ marginTop: '0.75rem', display: 'inline-block' }}
+                >
+                  {postContestPractice ? 'Practice' : status === 'LIVE' ? 'Solve' : 'Open'}
+                </Link>
               </div>
             ))}
           </div>

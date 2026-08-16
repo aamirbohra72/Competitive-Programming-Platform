@@ -31,6 +31,11 @@ export function markLocalEnrollments(productIds: string[]): void {
   );
 }
 
+export function clearLocalEnrollment(productId: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(enrolledKey(productId));
+}
+
 export function learnPathForProduct(productId: string): string | null {
   if (!COURSE_PRODUCT_IDS.has(productId)) return null;
   return `/learn/${productId}`;

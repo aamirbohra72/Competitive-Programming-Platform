@@ -282,8 +282,8 @@
   margin: 0;
   width: 100%;
   min-height: 0;
-  padding: 1.35rem 1.5rem;
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  padding: 1.5rem 1.65rem 1.4rem;
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', Times, serif;
   box-sizing: border-box;
 }
 
@@ -292,61 +292,130 @@
   font-size: 0.92rem;
 }
 
+.paperModern {
+  padding: 1.55rem 1.7rem 1.45rem;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  border-top: 4px solid #0f766e;
+}
+
 .paperModern .name {
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 750;
+  font-size: 1.7rem;
+  color: #0f172a;
 }
 
-.name {
-  margin: 0;
-  font-size: 1.55rem;
-  font-weight: 700;
-  text-align: center;
-  color: #111;
-}
-
-.headline {
-  margin: 0.2rem 0 0.45rem;
-  text-align: center;
-  font-size: 0.95rem;
-  color: #333;
-  font-family: system-ui, sans-serif;
-}
-
-.contact {
-  text-align: center;
-  font-size: 0.78rem;
-  color: #444;
-  font-family: system-ui, sans-serif;
-  line-height: 1.45;
-  margin-bottom: 0.85rem;
-}
-
-.section {
-  margin-top: 0.85rem;
-}
-
-.sectionH {
-  margin: 0 0 0.35rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border-bottom: 1px solid #222;
-  padding-bottom: 0.2rem;
-  font-family: system-ui, sans-serif;
-  font-weight: 700;
+.paperModern .headline {
+  color: #0f766e;
+  font-weight: 600;
 }
 
 .paperModern .sectionH {
   border-bottom-width: 2px;
-  border-bottom-color: #166534;
+  border-bottom-color: #0f766e;
+  color: #0f766e;
+  letter-spacing: 0.08em;
+}
+
+.resumeHeader {
+  text-align: center;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.15rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.paperModern .resumeHeader {
+  border-bottom-color: #ccfbf1;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+  text-align: center;
+  color: #111;
+  line-height: 1.2;
+}
+
+.headline {
+  margin: 0.3rem 0 0.4rem;
+  text-align: center;
+  font-size: 0.92rem;
+  color: #374151;
+  font-family: system-ui, sans-serif;
+  line-height: 1.4;
+}
+
+.contactMeta {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #4b5563;
+  font-family: system-ui, sans-serif;
+  line-height: 1.45;
+  margin: 0 0 0.45rem;
+}
+
+.socialRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.15rem;
+}
+
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  color: #0f766e;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.socialLink:hover {
+  background: #0f766e;
+  color: #fff;
+  border-color: #0f766e;
+  transform: translateY(-1px);
+}
+
+.paperCompact .socialLink {
+  width: 24px;
+  height: 24px;
+}
+
+.section {
+  margin-top: 0.9rem;
+}
+
+.sectionH {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom: 1.5px solid #1f2937;
+  padding-bottom: 0.22rem;
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+  color: #111827;
 }
 
 .bodyText {
   margin: 0;
   font-size: 0.88rem;
-  line-height: 1.45;
-  color: #222;
+  line-height: 1.5;
+  color: #1f2937;
   font-family: system-ui, sans-serif;
+}
+
+.entryBlock + .entryBlock {
+  margin-top: 0.35rem;
 }
 
 .jobHead,
@@ -367,27 +436,62 @@
 }
 
 .muted {
-  color: #555;
+  color: #6b7280;
   white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.inlineLink {
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-family: system-ui, sans-serif;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.inlineLink:hover {
+  text-decoration: underline;
 }
 
 .bullets {
-  margin: 0.2rem 0 0.35rem 1.1rem;
+  margin: 0.25rem 0 0.35rem 1.1rem;
   padding: 0;
   font-family: system-ui, sans-serif;
   font-size: 0.86rem;
-  color: #222;
+  color: #1f2937;
+  line-height: 1.45;
 }
 
 .bullets li {
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.18rem;
 }
 
 .skillsLine {
   margin: 0;
   font-family: system-ui, sans-serif;
   font-size: 0.86rem;
-  color: #222;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.skillChips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.skillChips li {
+  font-family: system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #115e59;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
 }
 
 .feedbackBar {

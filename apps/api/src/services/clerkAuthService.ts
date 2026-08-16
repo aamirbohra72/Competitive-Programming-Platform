@@ -23,10 +23,12 @@ function usernameFromEmail(email: string, clerkUserId: string): string {
 export async function exchangeClerkSession(clerkJwt: string) {
   const secretKey = getClerkSecret();
 
-  // Small skew covers mint→verify latency and minor clock drift
+  // Windows clocks often drift 20–60s; Clerk session JWTs are ~60s TTL.
+  // Without generous skew, clerk-exchange fails and the API JWT is never minted.
+  const skewMs = Number(process.env.CLERK_CLOCK_SKEW_MS || 120_000);
   const payload = await verifyToken(clerkJwt, {
     secretKey,
-    clockSkewInMs: 15_000,
+    clockSkewInMs: Number.isFinite(skewMs) && skewMs > 0 ? skewMs : 120_000,
   });
   const clerkUserId = payload.sub;
   if (!clerkUserId) {

@@ -6,8 +6,9 @@ import {
   determineStatus,
   canRegisterForContest,
   canUnregisterFromContest,
-  canSubmitToContest,
+  canViewContestProblems,
   contestRequiresRegistration,
+  evaluateContestSubmit,
 } from '../utils/contestRules';
 
 const createContestSchema = z.object({
@@ -183,6 +184,29 @@ export const contestController = {
 
   async getChallenges(req: AuthRequest, res: Response): Promise<void> {
     const { id } = req.params;
+    const contest = await prisma.contest.findUnique({ where: { id } });
+    if (!contest) {
+      res.status(404).json({ error: 'Contest not found' });
+      return;
+    }
+
+    const now = new Date();
+    if (
+      !canViewContestProblems({
+        kind: contest.kind,
+        startTime: contest.startTime,
+        endTime: contest.endTime,
+        now,
+      })
+    ) {
+      res.status(403).json({
+        error: 'Problem statements unlock when the contest starts',
+        code: 'NOT_STARTED',
+        effectiveStatus: determineStatus(contest.startTime, contest.endTime, now),
+      });
+      return;
+    }
+
     const challenges = await prisma.challenge.findMany({
       where: { contestId: id },
       orderBy: { createdAt: 'asc' },
@@ -213,6 +237,15 @@ export const contestController = {
     });
 
     const registered = Boolean(reg);
+    const decision = evaluateContestSubmit({
+      kind: contest.kind,
+      startTime: contest.startTime,
+      endTime: contest.endTime,
+      isRegistered: registered || !contestRequiresRegistration(contest.kind),
+      isPublished: contest.isPublished,
+      now,
+    });
+
     res.json({
       contestId: contest.id,
       registered,
@@ -221,13 +254,9 @@ export const contestController = {
       kind: contest.kind,
       canRegister: !registered && canRegisterForContest({ ...contest, now }),
       canUnregister: registered && canUnregisterFromContest({ ...contest, now }),
-      canSubmit: canSubmitToContest({
-        kind: contest.kind,
-        startTime: contest.startTime,
-        endTime: contest.endTime,
-        isRegistered: registered || !contestRequiresRegistration(contest.kind),
-        now,
-      }),
+      canSubmit: decision.allowed,
+      countsForLeaderboard: decision.countsForLeaderboard,
+      submitMode: decision.mode,
     });
   },
 

@@ -19,7 +19,8 @@ export function generateToken(payload: JWTPayload): string {
 
 export function verifyToken(token: string): JWTPayload {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    // Tolerate small OS clock drift when verifying our own API JWTs
+    return jwt.verify(token, JWT_SECRET, { clockTolerance: 60 }) as JWTPayload;
   } catch {
     throw new Error('Invalid or expired token');
   }

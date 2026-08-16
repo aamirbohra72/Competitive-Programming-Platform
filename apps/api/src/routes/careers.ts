@@ -3,6 +3,12 @@ import { careersController } from '../controllers/careersController';
 
 export const careersRoutes = Router();
 
-careersRoutes.get('/hub', careersController.getHub);
-careersRoutes.post('/hub/refresh', careersController.refreshHub);
-careersRoutes.post('/resume/suggest', careersController.suggestResume);
+careersRoutes.get('/hub', (req, res, next) => {
+  void careersController.getHub(req, res).catch(next);
+});
+careersRoutes.post('/hub/refresh', (req, res, next) => {
+  void careersController.refreshHub(req, res).catch(next);
+});
+careersRoutes.post('/resume/suggest', (req, res, next) => {
+  void careersController.suggestResume(req, res).catch(next);
+});

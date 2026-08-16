@@ -1,7 +1,9 @@
 import path from 'node:path';
+import http from 'node:http';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { prisma } from '@codeforces/db';
 import { errorHandler } from './middleware/errorHandler';
 import { authRoutes } from './routes/auth';
 import { contestRoutes } from './routes/contests';
@@ -28,18 +30,29 @@ import {
   startContestLifecycleJob,
   stopContestLifecycleJob,
 } from './jobs/contestLifecycle';
+import { paymentController } from './controllers/paymentController';
+import { drainJudgeSlots } from './services/dockerJudgeService';
+import { getReadyStatus } from './services/healthService';
+import { assertRuntimeEnv } from './lib/assertRuntimeEnv';
 
 // Load env from known locations (Turbo/cwd may not be apps/api).
 const apiDir = path.resolve(__dirname, '..');
 dotenv.config({ path: path.resolve(apiDir, '../../.env') });
 dotenv.config({ path: path.join(apiDir, '.env'), override: true });
 
+assertRuntimeEnv();
 assertEmailConfigForRuntime();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
+
+// Razorpay signs the raw JSON body — must run before express.json().
+app.post('/api/payments/webhook', express.raw({ type: '*/*' }), (req, res, next) => {
+  void paymentController.webhook(req, res).catch(next);
+});
+
 app.use(express.json({ limit: '2mb' }));
 
 // Routes
@@ -59,28 +72,51 @@ app.use('/api/companion', companionRoutes);
 app.use('/api/ta-help', taHelpRoutes);
 app.use('/api/careers', careersRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Error handling middleware (must be last)
-app.use(errorHandler);
-
-// Connect to Redis
-connectRedis().catch(console.error);
-
-// Auto-transition contest statuses and finalize leaderboards
-startContestLifecycleJob();
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  stopContestLifecycleJob();
-  await disconnectRedis();
-  process.exit(0);
+app.get('/api/ready', async (_req, res) => {
+  const { ready, checks } = await getReadyStatus();
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'ready' : 'not_ready',
+    checks,
+    timestamp: new Date().toISOString(),
+  });
 });
 
-const server = app.listen(PORT, () => {
+app.use(errorHandler);
+
+connectRedis().catch(console.error);
+startContestLifecycleJob();
+
+let shuttingDown = false;
+
+async function shutdown(signal: string): Promise<void> {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`[api] ${signal} received, shutting down`);
+  stopContestLifecycleJob();
+
+  await new Promise<void>((resolve) => {
+    server.close(() => resolve());
+    setTimeout(resolve, 10_000);
+  });
+
+  await drainJudgeSlots(8_000);
+  await disconnectRedis();
+  await prisma.$disconnect().catch(() => undefined);
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => {
+  void shutdown('SIGTERM');
+});
+process.on('SIGINT', () => {
+  void shutdown('SIGINT');
+});
+
+const server: http.Server = app.listen(PORT, () => {
   console.log(`🚀 API server running on http://localhost:${PORT}`);
   const mode = getEmailDeliveryMode();
   console.log(`📬 Email delivery mode: ${mode}`);
@@ -89,10 +125,11 @@ const server = app.listen(PORT, () => {
       '⚠️  Email not configured — OTP is NOT emailed. Set BREVO_API_KEY + BREVO_SENDER_EMAIL (or SMTP_*) in apps/api/.env, or use devOtp from /auth/request-otp in dev.',
     );
   }
-  verifySmtpIfConfigured().catch((err: Error) => {
-    console.error('[MAIL] Email verify failed — outgoing mail may not work:', err.message);
-  });
+  if (process.env.NODE_ENV === 'production') {
+    verifySmtpIfConfigured().catch((err: Error) => {
+      console.error('[MAIL] Email verify failed — outgoing mail may not work:', err.message);
+    });
+  }
 });
 
 server.setTimeout(10 * 60 * 1000);
-

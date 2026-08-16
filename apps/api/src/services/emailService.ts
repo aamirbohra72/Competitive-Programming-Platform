@@ -1,4 +1,5 @@
 import nodemailer, { type Transporter } from 'nodemailer';
+import { withRetry } from '../lib/retry';
 import {
   PLATFORM_BRAND_NAME,
   buildOtpEmailHtml,
@@ -31,6 +32,10 @@ type BrevoConfig = BrevoApiConfig | BrevoSmtpConfig;
 
 export type EmailDeliveryMode = 'brevo' | 'smtp' | 'console';
 
+function normalizeSecret(value?: string): string {
+  return (value ?? '').trim().replace(/^['"]|['"]$/g, '').trim();
+}
+
 function extractEmail(from?: string): string | undefined {
   if (!from) return undefined;
   const match = from.match(/<([^>]+)>/);
@@ -51,7 +56,7 @@ function getSenderEmail(): string | undefined {
  * - xsmtpsib-… → SMTP relay (smtp-relay.brevo.com)
  */
 function getBrevoConfig(): BrevoConfig | null {
-  const key = process.env.BREVO_API_KEY?.trim();
+  const key = normalizeSecret(process.env.BREVO_API_KEY);
   if (!key) return null;
 
   const senderEmail = getSenderEmail();
@@ -165,17 +170,33 @@ async function sendWithBrevo(to: string, subject: string, html: string): Promise
   if (!brevo) throw new Error('Brevo is not configured');
 
   if (brevo.kind === 'api') {
-    await sendViaBrevoApi(brevo, to, subject, html);
+    await withRetry(() => sendViaBrevoApi(brevo, to, subject, html));
     return;
   }
 
   const mailer = getTransporter(brevo.smtp);
-  await mailer.sendMail({
-    from: brevo.smtp.from,
-    to,
-    subject,
-    html,
+  await withRetry(() =>
+    mailer.sendMail({
+      from: brevo.smtp.from,
+      to,
+      subject,
+      html,
+    }),
+  );
+}
+
+async function brevoGet(
+  apiKey: string,
+  pathname: string,
+): Promise<{ ok: boolean; status: number; body: string }> {
+  const res = await fetch(`https://api.brevo.com/v3${pathname}`, {
+    headers: {
+      accept: 'application/json',
+      'api-key': apiKey,
+    },
   });
+  const body = await res.text().catch(() => '');
+  return { ok: res.ok, status: res.status, body };
 }
 
 /** Optional: verifies outbound email config on startup (logs only, does not throw). */
@@ -183,17 +204,23 @@ export async function verifySmtpIfConfigured(): Promise<void> {
   const brevo = getBrevoConfig();
   if (brevo) {
     if (brevo.kind === 'api') {
-      const res = await fetch('https://api.brevo.com/v3/account', {
-        headers: {
-          accept: 'application/json',
-          'api-key': brevo.apiKey,
-        },
-      });
-      if (!res.ok) {
-        throw new Error(`Brevo account check failed (${res.status})`);
+      // Send-only keys often 401 on /account; /senders is what mail actually needs.
+      const senders = await brevoGet(brevo.apiKey, '/senders');
+      if (senders.ok) {
+        console.log(`[MAIL] Brevo API OK — sender ${brevo.senderEmail}`);
+        return;
       }
-      console.log(`[MAIL] Brevo API OK — sender ${brevo.senderEmail}`);
-      return;
+      const account = await brevoGet(brevo.apiKey, '/account');
+      if (account.ok) {
+        console.log(`[MAIL] Brevo API OK — sender ${brevo.senderEmail}`);
+        return;
+      }
+      const status = senders.status || account.status;
+      const hint =
+        status === 401 || status === 403
+          ? 'Create a new key at https://app.brevo.com/settings/keys/api with Transactional email permission, then set BREVO_API_KEY in apps/api/.env (no spaces).'
+          : (senders.body || account.body).slice(0, 200);
+      throw new Error(`Brevo API check failed (${status}). ${hint}`);
     }
 
     const mailer = getTransporter(brevo.smtp);
@@ -244,12 +271,14 @@ export async function sendOTPEmail(email: string, otp: string): Promise<void> {
 
     const config = getSmtpConfig()!;
     const mailer = getTransporter(config);
-    const result = await mailer.sendMail({
-      from: config.from,
-      to: email,
-      subject,
-      html,
-    });
+    const result = await withRetry(() =>
+      mailer.sendMail({
+        from: config.from,
+        to: email,
+        subject,
+        html,
+      }),
+    );
     console.log(`[MAIL] OTP sent to ${email}; messageId=${result.messageId}`);
   } catch (error) {
     console.error('[MAIL] Failed to send OTP email:', error);
@@ -299,10 +328,12 @@ export async function sendTransactionalEmail(input: {
 
   const config = getSmtpConfig()!;
   const mailer = getTransporter(config);
-  await mailer.sendMail({
-    from: config.from,
-    to: input.to,
-    subject: input.subject,
-    html,
-  });
+  await withRetry(() =>
+    mailer.sendMail({
+      from: config.from,
+      to: input.to,
+      subject: input.subject,
+      html,
+    }),
+  );
 }

@@ -265,9 +265,9 @@ export function BlogIndexView() {
                 ) : null}
 
                 {liveRest.length > 0 ? (
-                  <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {liveRest.map((post) => (
-                      <div key={post.id} className="relative">
+                      <div key={post.id} className="relative h-full">
                         <span className="absolute right-3 top-3 z-10 rounded-full border border-white/10 bg-[#121212]/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/55">
                           {CATEGORY_LABEL[post.category || ''] || 'Live'}
                         </span>
@@ -289,9 +289,11 @@ export function BlogIndexView() {
                   <BlogSectionTitle id="editorial-heading" className="mb-6">
                     Editorial picks
                   </BlogSectionTitle>
-                  <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredFeaturedRest.map((post) => (
-                      <BlogPostCompactCard key={post.id} post={post} />
+                      <div key={post.id} className="h-full">
+                        <BlogPostCompactCard post={post} />
+                      </div>
                     ))}
                   </div>
                 </section>
@@ -302,13 +304,14 @@ export function BlogIndexView() {
                   <BlogSectionTitle id="recent-heading" className="mb-6">
                     Recent
                   </BlogSectionTitle>
-                  <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredRecent.map((post) => (
-                      <BlogPostCompactCard
-                        key={post.id}
-                        post={post}
-                        highlight={post.featured === true}
-                      />
+                      <div key={post.id} className="h-full">
+                        <BlogPostCompactCard
+                          post={post}
+                          highlight={post.featured === true}
+                        />
+                      </div>
                     ))}
                   </div>
                 </section>

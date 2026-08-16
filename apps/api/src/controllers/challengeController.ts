@@ -1,7 +1,8 @@
 import { Response } from 'express';
 import { z } from 'zod';
-import { prisma } from '@codeforces/db';
+import { ContestKind, prisma } from '@codeforces/db';
 import { AuthRequest } from '../middleware/auth';
+import { canViewContestProblems, determineStatus } from '../utils/contestRules';
 
 const createChallengeSchema = z.object({
   contestId: z.string(),
@@ -29,9 +30,10 @@ function parseCompaniesQuery(raw: unknown): string[] {
     .filter(Boolean);
 }
 
-/** Distinct company names from all challenges (for /practice sidebar). */
+/** Distinct company names from practice-catalog challenges (for /practice sidebar). */
 async function getDistinctCompanyNames(): Promise<string[]> {
   const rows = await prisma.challenge.findMany({
+    where: { contest: { kind: ContestKind.PRACTICE, isPublished: true } },
     select: { companies: true },
   });
   const set = new Set<string>();
@@ -79,17 +81,11 @@ export const challengeController = {
         ];
       }
 
-      // For practice, show challenges from contests that have started or ended
-      // This allows users to practice even if contest is upcoming (for learning purposes)
-      const now = new Date();
+      // Practice catalog: only challenges hosted on the PRACTICE contest.
+      // Rated/unrated contest problems are served via /contests/:id.
       where.contest = {
-        OR: [
-          { status: 'LIVE' },
-          { status: 'ENDED' },
-          { startTime: { lte: now } },
-          // Allow practice on upcoming contests too (for learning)
-          { status: 'UPCOMING' },
-        ],
+        kind: ContestKind.PRACTICE,
+        isPublished: true,
       };
 
       const challenges = await prisma.challenge.findMany({
@@ -99,6 +95,7 @@ export const challengeController = {
             select: {
               id: true,
               name: true,
+              kind: true,
             },
           },
         },
@@ -123,9 +120,11 @@ export const challengeController = {
             select: {
               id: true,
               name: true,
+              kind: true,
               status: true,
               startTime: true,
               endTime: true,
+              isPublished: true,
             },
           },
           testCases: {
@@ -149,12 +148,27 @@ export const challengeController = {
       }
 
       const now = new Date();
-      if (challenge.contest.status === 'UPCOMING' && now < challenge.contest.startTime) {
-        // Allow practice catalog challenges even if contest metadata says upcoming
-        if (!challenge.slug) {
-          res.status(403).json({ error: 'Challenge is not available yet. Contest has not started.' });
-          return;
-        }
+      const effectiveStatus = determineStatus(
+        challenge.contest.startTime,
+        challenge.contest.endTime,
+        now,
+      );
+
+      if (
+        !canViewContestProblems({
+          kind: challenge.contest.kind,
+          startTime: challenge.contest.startTime,
+          endTime: challenge.contest.endTime,
+          now,
+        })
+      ) {
+        res.status(403).json({
+          error: 'Challenge is not available yet. Contest has not started.',
+          code: 'NOT_STARTED',
+          contestId: challenge.contest.id,
+          effectiveStatus,
+        });
+        return;
       }
 
       const sampleCount = challenge.testCases.length;

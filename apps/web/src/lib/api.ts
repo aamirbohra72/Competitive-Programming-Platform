@@ -1,3 +1,5 @@
+import { getToken, setToken, removeToken } from '@/lib/auth';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
 
 export interface ApiError {
@@ -8,6 +10,8 @@ export interface ApiError {
 type RequestOptions = RequestInit & {
   /** Abort after this many ms (useful for long Mistral calls). */
   timeoutMs?: number;
+  /** Internal: already retried after a re-exchange */
+  _retriedAuth?: boolean;
 };
 
 function networkHint(endpoint: string): string {
@@ -18,8 +22,22 @@ function networkHint(endpoint: string): string {
   return 'Network error talking to the API. Ensure the API is running on http://127.0.0.1:3001 and that you are signed in.';
 }
 
+async function waitForFreshToken(timeoutMs = 3500): Promise<string | null> {
+  if (typeof window === 'undefined') return null;
+  window.dispatchEvent(new Event('auth-reexchange'));
+  const start = Date.now();
+  const previous = getToken();
+  while (Date.now() - start < timeoutMs) {
+    await new Promise((r) => setTimeout(r, 200));
+    const next = getToken();
+    if (next && next !== previous) return next;
+    if (!previous && next) return next;
+  }
+  return getToken();
+}
+
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token = typeof window !== 'undefined' ? getToken() : null;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -30,7 +48,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const { timeoutMs, ...fetchInit } = options;
+  const { timeoutMs, _retriedAuth, ...fetchInit } = options;
   const controller = typeof timeoutMs === 'number' ? new AbortController() : null;
   const timer =
     controller && timeoutMs
@@ -66,10 +84,29 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     } catch {
       message = `${response.status} ${response.statusText}`;
     }
+
+    // Stale API JWT or failed clerk-exchange — refresh once and retry
+    if (
+      response.status === 401 &&
+      !_retriedAuth &&
+      typeof window !== 'undefined' &&
+      !endpoint.includes('/auth/clerk-exchange')
+    ) {
+      removeToken();
+      const fresh = await waitForFreshToken();
+      if (fresh) {
+        setToken(fresh);
+        return request<T>(endpoint, { ...options, _retriedAuth: true });
+      }
+      throw new Error(
+        'Session expired. Sync your Windows clock (Settings → Time → Sync now), then sign out and sign in again.',
+      );
+    }
+
     if (response.status === 401) {
       message =
-        message === 'An error occurred'
-          ? 'Session expired. Sign out and sign in again (check system clock if Clerk shows clock skew).'
+        message === 'An error occurred' || message === 'Invalid or expired token'
+          ? 'Session expired. Sync your Windows clock (Settings → Time → Sync now), then sign out and sign in again.'
           : message;
     }
     throw new Error(message);

@@ -10,11 +10,19 @@ import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 const WORK = '/workspace';
-const RESULT_PATH = path.join(WORK, 'result.json');
+const RESULT_PATHS = ['/tmp/result.json', path.join(WORK, 'result.json')];
 
 function writeResult(result) {
-  fs.writeFileSync(RESULT_PATH, JSON.stringify(result));
-  process.stdout.write(JSON.stringify(result));
+  const json = JSON.stringify(result);
+  for (const resultPath of RESULT_PATHS) {
+    try {
+      fs.writeFileSync(resultPath, json);
+      break;
+    } catch {
+      /* read-only root — stdout is the source of truth */
+    }
+  }
+  process.stdout.write(json);
 }
 
 function normalizeOutput(output) {
@@ -25,9 +33,10 @@ function normalizeOutput(output) {
 }
 
 function readRequest() {
-  const fromFile = path.join(WORK, 'request.json');
-  if (fs.existsSync(fromFile)) {
-    return JSON.parse(fs.readFileSync(fromFile, 'utf8'));
+  for (const fromFile of [path.join(WORK, 'request.json'), '/tmp/request.json']) {
+    if (fs.existsSync(fromFile)) {
+      return JSON.parse(fs.readFileSync(fromFile, 'utf8'));
+    }
   }
   if (process.env.JUDGE_REQUEST_B64) {
     return JSON.parse(Buffer.from(process.env.JUDGE_REQUEST_B64, 'base64').toString('utf8'));

@@ -51,6 +51,21 @@ function loadRazorpayScript(): Promise<boolean> {
   });
 }
 
+async function pollEnrollment(productId: string, attempts = 10): Promise<boolean> {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const data = await api.get<{ enrolled: boolean }>(
+        `/payments/enrollments/${encodeURIComponent(productId)}`,
+      );
+      if (data.enrolled) return true;
+    } catch {
+      /* webhook may still be in flight */
+    }
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  return false;
+}
+
 export async function startRazorpayCheckout(productId: string): Promise<CheckoutResult> {
   if (!getToken()) {
     throw new Error('Please sign in before paying');
@@ -75,22 +90,33 @@ export async function startRazorpayCheckout(productId: string): Promise<Checkout
         razorpay_payment_id: string;
         razorpay_signature: string;
       }) => {
+        let productIds = [order.productId, ...(order.grantsProductIds ?? [])];
         try {
           const verified = await api.post<VerifyPaymentResponse>('/payments/verify', {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
           });
-          const productIds =
-            verified.productIds?.length
-              ? verified.productIds
-              : [order.productId, ...(order.grantsProductIds ?? [])];
-          const unique = Array.from(new Set(productIds));
-          markLocalEnrollments(unique);
-          resolve({ productId: order.productId, productIds: unique });
-        } catch (err) {
-          reject(err instanceof Error ? err : new Error('Payment verification failed'));
+          if (verified.productIds?.length) {
+            productIds = verified.productIds;
+          }
+        } catch {
+          /* Browser verify can fail; webhook fulfillment is the source of truth. */
         }
+
+        const enrolled = await pollEnrollment(order.productId);
+        if (!enrolled) {
+          reject(
+            new Error(
+              'Payment received but enrollment is still pending. Refresh this page in a moment.',
+            ),
+          );
+          return;
+        }
+
+        const unique = Array.from(new Set(productIds));
+        markLocalEnrollments(unique);
+        resolve({ productId: order.productId, productIds: unique });
       },
       modal: {
         ondismiss: () => reject(new Error('Payment cancelled')),

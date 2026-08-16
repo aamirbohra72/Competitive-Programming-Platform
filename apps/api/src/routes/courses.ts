@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { courseController } from '../controllers/courseController';
 import { authenticate, optionalAuthenticate } from '../middleware/auth';
+import { requireCourseEnrollment } from '../middleware/requireEnrollment';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -28,6 +29,27 @@ courseRoutes.post('/extract-pdf', authenticate, upload.single('file'), (req, res
 courseRoutes.get('/:id', optionalAuthenticate, (req, res, next) => {
   void courseController.getById(req, res).catch(next);
 });
-courseRoutes.get('/:courseId/pack', courseController.getPack);
-courseRoutes.post('/:courseId/pack/refresh', courseController.refreshPack);
-courseRoutes.get('/:courseId/tutorials/:tutorialId', courseController.getTutorial);
+courseRoutes.get(
+  '/:courseId/pack',
+  optionalAuthenticate,
+  requireCourseEnrollment('courseId'),
+  (req, res, next) => {
+    void courseController.getPack(req, res).catch(next);
+  },
+);
+courseRoutes.post(
+  '/:courseId/pack/refresh',
+  optionalAuthenticate,
+  requireCourseEnrollment('courseId'),
+  (req, res, next) => {
+    void courseController.refreshPack(req, res).catch(next);
+  },
+);
+courseRoutes.get(
+  '/:courseId/tutorials/:tutorialId',
+  optionalAuthenticate,
+  requireCourseEnrollment('courseId'),
+  (req, res, next) => {
+    void courseController.getTutorial(req, res).catch(next);
+  },
+);

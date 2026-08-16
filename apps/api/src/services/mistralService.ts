@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { mistralChat } from './mistralInterviewService';
+import { withRetry } from '../lib/retry';
 
 const LARGE_MODEL = 'mistral-large-latest';
 const SMALL_MODEL = 'mistral-small-latest';
@@ -65,23 +66,6 @@ function isRetryableError(err: unknown): boolean {
   return false;
 }
 
-async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      lastError = err;
-      if (attempt >= maxRetries || !isRetryableError(err)) {
-        throw err;
-      }
-      const delayMs = 1000 * 2 ** attempt;
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-  }
-  throw lastError;
-}
-
 function parseJson<T>(raw: string, schema: z.ZodType<T>): T {
   const text = extractJsonObject(raw);
   const parsed: unknown = JSON.parse(text);
@@ -94,11 +78,13 @@ async function chatComplete(
   user: string,
   jsonMode: boolean,
 ): Promise<string> {
-  return withRetry(() =>
-    mistralChat(system, user, {
-      model,
-      jsonMode,
-    }),
+  return withRetry(
+    () =>
+      mistralChat(system, user, {
+        model,
+        jsonMode,
+      }),
+    { attempts: 2, isRetryable: isRetryableError },
   );
 }
 

@@ -208,10 +208,13 @@ export function ResumeBuilder({ seedName, seedRole }: Props) {
             </div>
             <Field label="Location" value={data.location ?? ''} onChange={(v) => update('location', v)} />
             <div className={styles.row2}>
-              <Field label="LinkedIn" value={data.linkedin ?? ''} onChange={(v) => update('linkedin', v)} />
-              <Field label="GitHub" value={data.github ?? ''} onChange={(v) => update('github', v)} />
+              <Field label="LinkedIn URL" value={data.linkedin ?? ''} onChange={(v) => update('linkedin', v)} />
+              <Field label="GitHub URL" value={data.github ?? ''} onChange={(v) => update('github', v)} />
             </div>
-            <Field label="Portfolio" value={data.portfolio ?? ''} onChange={(v) => update('portfolio', v)} />
+            <div className={styles.row2}>
+              <Field label="LeetCode URL" value={data.leetcode ?? ''} onChange={(v) => update('leetcode', v)} />
+              <Field label="Portfolio URL" value={data.portfolio ?? ''} onChange={(v) => update('portfolio', v)} />
+            </div>
             <Field
               label="Professional summary"
               value={data.summary}
@@ -691,7 +694,7 @@ function ResumePreview({ data, templateId }: { data: ResumeData; templateId: Res
       {/* Continuous source used for PDF capture + height measurement */}
       <div className={styles.measureLayer} aria-hidden>
         <article ref={measureRef} className={paperClass} data-resume-paper>
-          <ResumeBody data={data} />
+          <ResumeBody data={data} templateId={templateId} />
         </article>
       </div>
 
@@ -728,7 +731,7 @@ function ResumePreview({ data, templateId }: { data: ResumeData; templateId: Res
             <div className={styles.pageClip} style={{ height: contentHeight }}>
               <div style={{ transform: `translateY(-${win.start}px)` }}>
                 <article className={paperClass}>
-                  <ResumeBody data={data} />
+                  <ResumeBody data={data} templateId={templateId} />
                 </article>
               </div>
             </div>
@@ -742,21 +745,113 @@ function ResumePreview({ data, templateId }: { data: ResumeData; templateId: Res
   );
 }
 
-function ResumeBody({ data }: { data: ResumeData }) {
-  const contactParts = [
-    data.email,
-    data.phone,
-    data.location,
-    data.linkedin,
-    data.github,
-    data.portfolio,
-  ].filter(Boolean);
+function ensureHref(raw: string): string {
+  const t = raw.trim();
+  if (!t) return '';
+  if (/^(https?:|mailto:)/i.test(t)) return t;
+  return `https://${t}`;
+}
+
+function IconLinkedIn({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.23 0z"
+      />
+    </svg>
+  );
+}
+
+function IconGitHub({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.9 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3z"
+      />
+    </svg>
+  );
+}
+
+function IconLeetCode({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M13.48 4.23a1.4 1.4 0 0 1 2 0l6.02 6.07a1.4 1.4 0 0 1 0 2l-6.02 6.07a1.4 1.4 0 0 1-2 0l-.7-.7 5.72-5.77a.6.6 0 0 0 0-.85l-5.72-5.77.7-.7zm-2.96 0 .7.7-5.72 5.77a.6.6 0 0 0 0 .85l5.72 5.77-.7.7a1.4 1.4 0 0 1-2 0L2.5 12.3a1.4 1.4 0 0 1 0-2l6.02-6.07a1.4 1.4 0 0 1 2 0z"
+      />
+      <path
+        fill="currentColor"
+        d="M9.2 15.35a.9.9 0 0 1 0-1.27l4.3-4.35a.9.9 0 1 1 1.28 1.27l-4.3 4.35a.9.9 0 0 1-1.28 0z"
+      />
+    </svg>
+  );
+}
+
+function IconGlobe({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width="16" height="16" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7.9 9h-3.2a15.4 15.4 0 0 0-1.3-5 8.05 8.05 0 0 1 4.5 5zM12 4c.9 0 2.2 1.9 2.9 5H9.1C9.8 5.9 11.1 4 12 4zM4.1 11h3.2a15.4 15.4 0 0 1 1.3-5 8.05 8.05 0 0 0-4.5 5zM7.3 13H4.1a8.05 8.05 0 0 0 4.5 5 15.4 15.4 0 0 1-1.3-5zm1.8 0h5.8c-.7 3.1-2 5-2.9 5s-2.2-1.9-2.9-5zm7.6 0a15.4 15.4 0 0 1-1.3 5 8.05 8.05 0 0 0 4.5-5h-3.2z"
+      />
+    </svg>
+  );
+}
+
+function SocialLink({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: ReactNode;
+}) {
+  const url = ensureHref(href);
+  if (!url) return null;
+  return (
+    <a
+      className={styles.socialLink}
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      title={label}
+    >
+      {children}
+    </a>
+  );
+}
+
+function ResumeBody({ data, templateId }: { data: ResumeData; templateId: ResumeTemplateId }) {
+  const metaParts = [data.email, data.phone, data.location].filter(Boolean);
+  const hasSocial = Boolean(data.linkedin || data.github || data.leetcode || data.portfolio);
 
   return (
     <>
-      <h1 className={styles.name}>{data.fullName || 'Your Name'}</h1>
-      <p className={styles.headline}>{data.headline}</p>
-      <p className={styles.contact}>{contactParts.join(' · ')}</p>
+      <header className={styles.resumeHeader}>
+        <h1 className={styles.name}>{data.fullName || 'Your Name'}</h1>
+        <p className={styles.headline}>{data.headline}</p>
+        {metaParts.length > 0 ? <p className={styles.contactMeta}>{metaParts.join(' · ')}</p> : null}
+        {hasSocial ? (
+          <div className={styles.socialRow}>
+            <SocialLink href={data.linkedin ?? ''} label="LinkedIn">
+              <IconLinkedIn />
+            </SocialLink>
+            <SocialLink href={data.github ?? ''} label="GitHub">
+              <IconGitHub />
+            </SocialLink>
+            <SocialLink href={data.leetcode ?? ''} label="LeetCode">
+              <IconLeetCode />
+            </SocialLink>
+            <SocialLink href={data.portfolio ?? ''} label="Portfolio">
+              <IconGlobe />
+            </SocialLink>
+          </div>
+        ) : null}
+      </header>
 
       {data.summary.trim() && (
         <section className={styles.section}>
@@ -768,21 +863,37 @@ function ResumeBody({ data }: { data: ResumeData }) {
       {data.skills.length > 0 && (
         <section className={styles.section}>
           <h2 className={styles.sectionH}>Skills</h2>
-          <p className={styles.skillsLine}>{data.skills.join(' · ')}</p>
+          {templateId === 'modern' ? (
+            <ul className={styles.skillChips}>
+              {data.skills.map((skill) => (
+                <li key={skill}>{skill}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className={styles.skillsLine}>{data.skills.join(' · ')}</p>
+          )}
         </section>
       )}
 
       {data.tools.length > 0 && (
         <section className={styles.section}>
           <h2 className={styles.sectionH}>Tools</h2>
-          <p className={styles.skillsLine}>{data.tools.join(' · ')}</p>
+          {templateId === 'modern' ? (
+            <ul className={styles.skillChips}>
+              {data.tools.map((tool) => (
+                <li key={tool}>{tool}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className={styles.skillsLine}>{data.tools.join(' · ')}</p>
+          )}
         </section>
       )}
 
       <section className={styles.section}>
         <h2 className={styles.sectionH}>Experience</h2>
         {data.experience.map((exp) => (
-          <div key={exp.id}>
+          <div key={exp.id} className={styles.entryBlock}>
             <div className={styles.jobHead}>
               <strong>
                 {exp.title}
@@ -810,13 +921,17 @@ function ResumeBody({ data }: { data: ResumeData }) {
       <section className={styles.section}>
         <h2 className={styles.sectionH}>Projects</h2>
         {data.projects.map((p) => (
-          <div key={p.id}>
+          <div key={p.id} className={styles.entryBlock}>
             <div className={styles.projHead}>
               <strong>
                 {p.name}
                 {p.tech ? ` (${p.tech})` : ''}
               </strong>
-              {p.link ? <span className={styles.muted}>{p.link}</span> : null}
+              {p.link ? (
+                <a className={styles.inlineLink} href={ensureHref(p.link)} target="_blank" rel="noopener noreferrer">
+                  Link
+                </a>
+              ) : null}
             </div>
             <ul className={styles.bullets}>
               {p.bullets.filter(Boolean).map((b) => (
@@ -833,7 +948,7 @@ function ResumeBody({ data }: { data: ResumeData }) {
           {(data.achievements ?? [])
             .filter((a) => a.title.trim())
             .map((a) => (
-              <div key={a.id}>
+              <div key={a.id} className={styles.entryBlock}>
                 <div className={styles.eduHead}>
                   <strong>{a.title}</strong>
                   {a.year ? <span className={styles.muted}>{a.year}</span> : null}
@@ -851,15 +966,18 @@ function ResumeBody({ data }: { data: ResumeData }) {
       <section className={styles.section}>
         <h2 className={styles.sectionH}>Education</h2>
         {data.education.map((e) => (
-          <div key={e.id} className={styles.eduHead}>
-            <strong>
-              {e.degree} — {e.school}
-              {e.details ? ` · ${e.details}` : ''}
-            </strong>
-            <span className={styles.muted}>{e.year}</span>
+          <div key={e.id} className={styles.entryBlock}>
+            <div className={styles.eduHead}>
+              <strong>
+                {e.degree} — {e.school}
+                {e.details ? ` · ${e.details}` : ''}
+              </strong>
+              <span className={styles.muted}>{e.year}</span>
+            </div>
           </div>
         ))}
       </section>
     </>
   );
 }
+

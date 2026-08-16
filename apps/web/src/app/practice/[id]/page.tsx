@@ -1,11 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { isAuthenticated } from '@/lib/auth';
 import { DashboardShell } from '@/components/DashboardShell';
 import { CodeEditor } from '@/components/CodeEditor';
+import { ReactComponentPreview } from '@/components/ReactComponentPreview';
+import { ensureApiSession } from '@/components/ClerkApiBridge';
+import {
+  clearPracticeDraft,
+  loadPracticeDraft,
+  savePracticeDraft,
+} from '@/lib/practiceDraft';
 import type { Challenge, Submission, SubmissionResultCase } from '@codeforces/types';
 
 type JudgeResult = {
@@ -42,6 +50,23 @@ export default function PracticeProblemPage() {
   const [verdictSource, setVerdictSource] = useState<'run' | 'submit' | null>(null);
   const [hintText, setHintText] = useState<string | null>(null);
   const [panelMessage, setPanelMessage] = useState<string | null>(null);
+  const [bottomTab, setBottomTab] = useState<'results' | 'preview'>('results');
+  const [mySubmissions, setMySubmissions] = useState<Submission[]>([]);
+  const [subsLoading, setSubsLoading] = useState(false);
+  const [subsError, setSubsError] = useState('');
+  const [expandedSubId, setExpandedSubId] = useState<string | null>(null);
+  const [acceptedSolution, setAcceptedSolution] = useState<{
+    language: string;
+    sourceCode: string;
+    score: number;
+    firstAcceptedAt: string;
+    updatedAt: string;
+    submissionId: string;
+  } | null>(null);
+  const [acceptedLoading, setAcceptedLoading] = useState(false);
+  const [acceptedError, setAcceptedError] = useState('');
+
+  const isReactComponent = challenge?.judgeMode === 'REACT_COMPONENT';
 
   const allowedLanguages = useMemo(
     () => (challenge?.allowedLanguages?.length ? challenge.allowedLanguages : ['javascript']),
@@ -53,8 +78,74 @@ export default function PracticeProblemPage() {
       const data = await api.get<Challenge>(`/challenges/${problemId}`);
       setChallenge(data);
       const langs = data.allowedLanguages?.length ? data.allowedLanguages : ['javascript'];
-      setLanguage(langs[0]);
-      setSourceCode(data.starterCode || '');
+      const starter = data.starterCode || '';
+      setBottomTab(data.judgeMode === 'REACT_COMPONENT' ? 'preview' : 'results');
+
+      // Restore editor after refresh: accepted → latest submit → local draft → starter
+      let restoredLang = langs[0];
+      let restoredCode = starter;
+
+      await ensureApiSession(2500);
+      if (isAuthenticated()) {
+        try {
+          const accepted = await api.get<{
+            solved: boolean;
+            solution: {
+              language: string;
+              sourceCode: string;
+              submissionId: string;
+              score: number;
+              firstAcceptedAt: string;
+              updatedAt: string;
+            };
+          }>(`/submissions/accepted/${encodeURIComponent(problemId)}`);
+          if (accepted?.solution?.sourceCode) {
+            restoredLang = accepted.solution.language || restoredLang;
+            restoredCode = accepted.solution.sourceCode;
+            setAcceptedSolution(accepted.solution);
+            setLanguage(restoredLang);
+            setSourceCode(restoredCode);
+            savePracticeDraft(problemId, {
+              language: restoredLang,
+              sourceCode: restoredCode,
+              submissionId: accepted.solution.submissionId,
+            });
+            return;
+          }
+        } catch {
+          /* not solved yet — try last submission */
+        }
+
+        try {
+          const response = await api.get<{ data: Submission[] }>(
+            `/submissions?challengeId=${encodeURIComponent(problemId)}&pageSize=1`,
+          );
+          const latest = response.data?.[0];
+          if (latest?.sourceCode) {
+            restoredLang = latest.language || restoredLang;
+            restoredCode = latest.sourceCode;
+            setLanguage(restoredLang);
+            setSourceCode(restoredCode);
+            savePracticeDraft(problemId, {
+              language: restoredLang,
+              sourceCode: restoredCode,
+              submissionId: latest.id,
+            });
+            return;
+          }
+        } catch {
+          /* fall through to draft */
+        }
+      }
+
+      const draft = loadPracticeDraft(problemId);
+      if (draft?.sourceCode) {
+        restoredLang = draft.language || restoredLang;
+        restoredCode = draft.sourceCode;
+      }
+
+      setLanguage(restoredLang);
+      setSourceCode(restoredCode);
     } catch (err) {
       console.error('Failed to fetch challenge:', err);
       setError('Failed to load challenge');
@@ -66,6 +157,87 @@ export default function PracticeProblemPage() {
   useEffect(() => {
     if (problemId) void fetchChallenge();
   }, [problemId, fetchChallenge]);
+
+  // Autosave editor so a refresh never loses in-progress or submitted code
+  useEffect(() => {
+    if (!problemId || !sourceCode.trim() || loading) return;
+    const timer = window.setTimeout(() => {
+      savePracticeDraft(problemId, { language, sourceCode });
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [problemId, language, sourceCode, loading]);
+
+  const fetchMySubmissions = useCallback(async () => {
+    if (!problemId) return;
+    setSubsLoading(true);
+    setSubsError('');
+    try {
+      await ensureApiSession(2500);
+      if (!isAuthenticated()) {
+        setSubsError('Sign in to see your submissions for this problem.');
+        setMySubmissions([]);
+        return;
+      }
+      const response = await api.get<{ data: Submission[] }>(
+        `/submissions?challengeId=${encodeURIComponent(problemId)}&pageSize=50`,
+      );
+      setMySubmissions(response.data || []);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to load submissions';
+      setSubsError(msg);
+      setMySubmissions([]);
+    } finally {
+      setSubsLoading(false);
+    }
+  }, [problemId]);
+
+  useEffect(() => {
+    if (activeTab === 'submissions') {
+      void fetchMySubmissions();
+    }
+  }, [activeTab, fetchMySubmissions]);
+
+  const fetchAcceptedSolution = useCallback(async () => {
+    if (!problemId) return;
+    setAcceptedLoading(true);
+    setAcceptedError('');
+    try {
+      await ensureApiSession(2500);
+      if (!isAuthenticated()) {
+        setAcceptedSolution(null);
+        setAcceptedError('Sign in and get an Accepted verdict to unlock your saved solution.');
+        return;
+      }
+      const data = await api.get<{
+        solved: boolean;
+        solution: {
+          language: string;
+          sourceCode: string;
+          score: number;
+          firstAcceptedAt: string;
+          updatedAt: string;
+          submissionId: string;
+        };
+      }>(`/submissions/accepted/${encodeURIComponent(problemId)}`);
+      setAcceptedSolution(data.solution);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Not solved yet';
+      setAcceptedSolution(null);
+      if (/not solved|404|No accepted/i.test(msg)) {
+        setAcceptedError('');
+      } else {
+        setAcceptedError(msg);
+      }
+    } finally {
+      setAcceptedLoading(false);
+    }
+  }, [problemId]);
+
+  useEffect(() => {
+    if (activeTab === 'solution') {
+      void fetchAcceptedSolution();
+    }
+  }, [activeTab, fetchAcceptedSolution]);
 
   const pollSubmission = async (submissionId: string) => {
     for (let i = 0; i < 60; i += 1) {
@@ -84,8 +256,13 @@ export default function PracticeProblemPage() {
       return;
     }
     if (!isAuthenticated()) {
-      router.push('/sign-in');
-      return;
+      const ok = await ensureApiSession();
+      if (!ok) {
+        router.push('/sign-in');
+        return;
+      }
+    } else {
+      await ensureApiSession(2500);
     }
     if (!challenge?.judgeReady) {
       setError('Judging is not ready for this challenge yet.');
@@ -138,8 +315,13 @@ export default function PracticeProblemPage() {
     setHintText(null);
 
     if (!isAuthenticated()) {
-      router.push('/sign-in');
-      return;
+      const ok = await ensureApiSession();
+      if (!ok) {
+        router.push('/sign-in');
+        return;
+      }
+    } else {
+      await ensureApiSession(2500);
     }
     if (!sourceCode.trim()) {
       setError('Source code is required');
@@ -174,6 +356,17 @@ export default function PracticeProblemPage() {
       setVerdictSource('submit');
       setHintText(finalSubmission.hintText ?? null);
       setPanelMessage(finalSubmission.aiResponse || finalSubmission.status);
+      setBottomTab('results');
+      setActiveTab('submissions');
+      savePracticeDraft(problemId, {
+        language,
+        sourceCode,
+        submissionId: finalSubmission.id,
+      });
+      void fetchMySubmissions();
+      if (finalSubmission.status === 'ACCEPTED') {
+        void fetchAcceptedSolution();
+      }
     } catch (err: any) {
       const errorMessage = err?.response?.data?.error || err?.message || 'Submission failed';
       setError(errorMessage);
@@ -252,6 +445,54 @@ export default function PracticeProblemPage() {
                 </span>
               )}
             </div>
+            {challenge.contest?.kind && challenge.contest.kind !== 'PRACTICE' ? (
+              <div
+                style={{
+                  marginTop: '0.75rem',
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 8,
+                  background:
+                    challenge.contest.status === 'ENDED'
+                      ? '#ecfdf5'
+                      : challenge.contest.status === 'LIVE'
+                        ? '#eff6ff'
+                        : '#fffbeb',
+                  color:
+                    challenge.contest.status === 'ENDED'
+                      ? '#065f46'
+                      : challenge.contest.status === 'LIVE'
+                        ? '#1e40af'
+                        : '#92400e',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {challenge.contest.status === 'ENDED' ? (
+                  <>
+                    Practice mode for ended contest{' '}
+                    <Link href={`/contests/${challenge.contest.id}`} style={{ fontWeight: 600 }}>
+                      {challenge.contest.name}
+                    </Link>
+                    . Submits no longer affect the leaderboard.
+                  </>
+                ) : challenge.contest.status === 'LIVE' ? (
+                  <>
+                    Live contest:{' '}
+                    <Link href={`/contests/${challenge.contest.id}`} style={{ fontWeight: 600 }}>
+                      {challenge.contest.name}
+                    </Link>
+                    . Register on the contest page before submitting if you have not already.
+                  </>
+                ) : (
+                  <>
+                    This problem belongs to an upcoming contest. Statements unlock at start —{' '}
+                    <Link href={`/contests/${challenge.contest.id}`} style={{ fontWeight: 600 }}>
+                      view contest
+                    </Link>
+                    .
+                  </>
+                )}
+              </div>
+            ) : null}
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid #e5e7eb' }}>
@@ -380,21 +621,238 @@ export default function PracticeProblemPage() {
           )}
 
           {activeTab === 'solution' && (
-            <div style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
-              Official solutions unlock after you get an Accepted verdict.
+            <div>
+              {acceptedLoading && (
+                <div style={{ color: '#6b7280', padding: '1rem 0' }}>Loading your accepted solution…</div>
+              )}
+              {acceptedError && (
+                <div style={{ color: '#b91c1c', marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                  {acceptedError}
+                </div>
+              )}
+              {!acceptedLoading && !acceptedSolution && !acceptedError && (
+                <div style={{ color: '#6b7280', textAlign: 'center', padding: '2rem 0.5rem' }}>
+                  <p style={{ marginBottom: 8 }}>Your accepted solution unlocks here.</p>
+                  <p style={{ fontSize: '0.85rem' }}>
+                    Click <strong>Submit</strong> and get an <strong>Accepted</strong> verdict. The
+                    winning code is saved automatically so you can reopen it anytime.
+                  </p>
+                </div>
+              )}
+              {acceptedSolution && (
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: '0.75rem',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.85rem', color: '#374151' }}>
+                      <div style={{ fontWeight: 700, color: '#16a34a', marginBottom: 4 }}>
+                        Accepted · score {acceptedSolution.score}
+                      </div>
+                      <div>
+                        {acceptedSolution.language} · first AC{' '}
+                        {new Date(acceptedSolution.firstAcceptedAt).toLocaleString()}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLanguage(acceptedSolution.language);
+                        setSourceCode(acceptedSolution.sourceCode);
+                      }}
+                      style={{
+                        padding: '0.45rem 0.9rem',
+                        border: 'none',
+                        borderRadius: 6,
+                        background: '#0070f3',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Load into editor
+                    </button>
+                  </div>
+                  <pre
+                    style={{
+                      background: '#0b1020',
+                      color: '#e5e7eb',
+                      padding: '1rem',
+                      borderRadius: 8,
+                      fontSize: '0.8rem',
+                      overflow: 'auto',
+                      maxHeight: '55vh',
+                      border: '1px solid #1f2937',
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {acceptedSolution.sourceCode}
+                  </pre>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'submissions' && (
-            <div style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
-              <p>View your submission history</p>
-              <button
-                onClick={() => router.push(`/submissions?challengeId=${problemId}`)}
-                className="btn btn-primary"
-                style={{ marginTop: '1rem' }}
+            <div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '1rem',
+                  gap: '0.75rem',
+                  flexWrap: 'wrap',
+                }}
               >
-                Go to Submissions
-              </button>
+                <h3 style={{ margin: 0, fontSize: '1rem', color: '#111827' }}>Your submissions</h3>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => void fetchMySubmissions()}
+                    style={{
+                      padding: '0.35rem 0.75rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: 6,
+                      background: '#fff',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    Refresh
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/submissions?challengeId=${problemId}`)}
+                    style={{
+                      padding: '0.35rem 0.75rem',
+                      border: 'none',
+                      borderRadius: 6,
+                      background: '#0070f3',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                    }}
+                  >
+                    Full history
+                  </button>
+                </div>
+              </div>
+
+              {subsLoading && <div style={{ color: '#6b7280' }}>Loading submissions…</div>}
+              {subsError && (
+                <div style={{ color: '#b91c1c', marginBottom: '0.75rem', fontSize: '0.875rem' }}>
+                  {subsError}
+                </div>
+              )}
+              {!subsLoading && !subsError && mySubmissions.length === 0 && (
+                <div style={{ color: '#6b7280', textAlign: 'center', padding: '1.5rem 0.5rem' }}>
+                  No submissions yet for this problem.
+                  <div style={{ marginTop: 8, fontSize: '0.85rem' }}>
+                    Click <strong>Submit</strong> (not only Run samples) to create one.
+                  </div>
+                </div>
+              )}
+              {!subsLoading &&
+                mySubmissions.map((s) => {
+                  const expanded = expandedSubId === s.id;
+                  const result = parseResult(s.resultJson);
+                  const statusColor =
+                    s.status === 'ACCEPTED'
+                      ? '#16a34a'
+                      : s.status === 'PENDING'
+                        ? '#d97706'
+                        : '#dc2626';
+                  return (
+                    <div
+                      key={s.id}
+                      style={{
+                        border: '1px solid #e5e7eb',
+                        borderRadius: 8,
+                        padding: '0.75rem',
+                        marginBottom: '0.75rem',
+                        background: '#f9fafb',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: '0.75rem',
+                          alignItems: 'flex-start',
+                        }}
+                      >
+                        <div style={{ fontSize: '0.85rem', color: '#374151' }}>
+                          <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                            {new Date(s.submittedAt).toLocaleString()}
+                          </div>
+                          <div>
+                            {s.language} · score {s.score ?? 0}
+                            {result && typeof result.passed === 'number' && typeof result.total === 'number'
+                              ? ` · ${result.passed}/${result.total} cases`
+                              : ''}
+                          </div>
+                        </div>
+                        <span
+                          style={{
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: 999,
+                            background: statusColor,
+                            color: '#fff',
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {s.status}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedSubId(expanded ? null : s.id)}
+                        style={{
+                          marginTop: 8,
+                          border: 'none',
+                          background: 'none',
+                          color: '#0070f3',
+                          cursor: 'pointer',
+                          padding: 0,
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        {expanded ? 'Hide details' : 'Show details'}
+                      </button>
+                      {expanded && (
+                        <div style={{ marginTop: 8, fontSize: '0.8rem', color: '#4b5563' }}>
+                          <pre
+                            style={{
+                              whiteSpace: 'pre-wrap',
+                              background: '#fff',
+                              border: '1px solid #e5e7eb',
+                              borderRadius: 6,
+                              padding: '0.6rem',
+                              margin: 0,
+                            }}
+                          >
+                            {s.aiResponse || result?.feedback || 'No feedback yet'}
+                          </pre>
+                          {s.hintText && (
+                            <p style={{ marginTop: 8, color: '#b45309' }}>
+                              <strong>Hint:</strong> {s.hintText}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           )}
         </div>
@@ -431,7 +889,14 @@ export default function PracticeProblemPage() {
             </select>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
-                onClick={() => setSourceCode(challenge.starterCode || '')}
+                onClick={() => {
+                  clearPracticeDraft(problemId);
+                  setSourceCode(challenge.starterCode || '');
+                  const langs = challenge.allowedLanguages?.length
+                    ? challenge.allowedLanguages
+                    : ['javascript'];
+                  setLanguage(langs[0]);
+                }}
                 style={{
                   padding: '0.5rem 1rem',
                   background: '#3c3c3c',
@@ -483,85 +948,155 @@ export default function PracticeProblemPage() {
 
           <div
             style={{
-              minHeight: 220,
-              maxHeight: 320,
+              minHeight: 240,
+              maxHeight: 360,
               background: '#1e1e1e',
               borderTop: '1px solid #3e3e42',
-              padding: '1rem',
-              overflow: 'auto',
-              color: '#cccccc',
-              fontSize: '0.875rem',
-              fontFamily: 'monospace',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
             }}
           >
-            {error && <div style={{ color: '#f48771', marginBottom: 8 }}>Error: {error}</div>}
-            {panelMessage && <div style={{ marginBottom: 8 }}>{panelMessage}</div>}
-            {verdict && (
-              <div style={{ marginBottom: 8 }}>
-                <div
-                  style={{
-                    color: verdict.status === 'ACCEPTED' ? '#4ec9b0' : '#f48771',
-                    fontWeight: 700,
-                    marginBottom: 4,
-                  }}
-                >
-                  {verdictSource === 'run' ? 'SAMPLE RUN: ' : ''}
-                  {verdict.status} — score {verdict.score}/100 ({verdict.passed}/{verdict.total} passed)
-                </div>
-                {verdictSource === 'run' && (
-                  <div style={{ color: '#d7ba7d', marginBottom: 6 }}>
-                    Sample run only — this is not recorded in your submissions. Click Submit to run all
-                    test cases and save the result.
-                  </div>
-                )}
-                {verdictSource === 'submit' && (
-                  <div style={{ marginBottom: 6 }}>
-                    <a
-                      href={`/submissions?challengeId=${problemId}`}
-                      style={{ color: '#3794ff', textDecoration: 'underline' }}
-                    >
-                      View this submission in your history →
-                    </a>
-                  </div>
-                )}
-                <div style={{ whiteSpace: 'pre-wrap' }}>{verdict.feedback}</div>
-                {verdict.cases && verdict.cases.length > 0 && (
-                  <ul style={{ marginTop: 8, paddingLeft: 18 }}>
-                    {verdict.cases.map((c) => (
-                      <li key={`${c.order}-${c.name}`} style={{ marginBottom: 4 }}>
-                        <span style={{ color: c.passed ? '#4ec9b0' : '#f48771' }}>
-                          {c.passed ? 'PASS' : 'FAIL'}
-                        </span>{' '}
-                        {c.name}
-                        {!c.passed && c.message ? ` — ${c.message}` : ''}
-                        {!c.passed && !c.isHidden && c.expected != null ? (
-                          <div style={{ opacity: 0.85 }}>
-                            expected: {c.expected}
-                            {c.actual != null ? `\nactual: ${c.actual}` : ''}
-                          </div>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-            {hintText && (
-              <div
+            <div
+              style={{
+                display: 'flex',
+                gap: 0,
+                borderBottom: '1px solid #3e3e42',
+                background: '#252526',
+                flexShrink: 0,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setBottomTab('results')}
                 style={{
-                  marginTop: 8,
-                  borderLeft: '3px solid #f59e0b',
-                  paddingLeft: 10,
-                  color: '#fbbf24',
-                  whiteSpace: 'pre-wrap',
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  borderBottom: bottomTab === 'results' ? '2px solid #3794ff' : '2px solid transparent',
+                  background: 'transparent',
+                  color: bottomTab === 'results' ? '#fff' : '#9ca3af',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                  fontWeight: bottomTab === 'results' ? 600 : 400,
                 }}
               >
-                Hint: {hintText}
-              </div>
-            )}
-            {!panelMessage && !verdict && !error && (
-              <div style={{ color: '#6b7280' }}>Run sample tests or submit to see results here.</div>
-            )}
+                Results
+              </button>
+              {isReactComponent && (
+                <button
+                  type="button"
+                  onClick={() => setBottomTab('preview')}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    borderBottom: bottomTab === 'preview' ? '2px solid #3794ff' : '2px solid transparent',
+                    background: 'transparent',
+                    color: bottomTab === 'preview' ? '#fff' : '#9ca3af',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: bottomTab === 'preview' ? 600 : 400,
+                  }}
+                >
+                  UI Preview
+                </button>
+              )}
+            </div>
+
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                padding: '0.75rem 1rem',
+                overflow: 'auto',
+                color: '#cccccc',
+                fontSize: '0.875rem',
+                fontFamily: bottomTab === 'results' ? 'monospace' : 'inherit',
+              }}
+            >
+              {bottomTab === 'preview' && isReactComponent ? (
+                <ReactComponentPreview
+                  sourceCode={sourceCode}
+                  sampleInput={challenge.sampleInput}
+                  sampleTestCases={challenge.sampleTestCases}
+                />
+              ) : (
+                <>
+                  {error && <div style={{ color: '#f48771', marginBottom: 8 }}>Error: {error}</div>}
+                  {panelMessage && <div style={{ marginBottom: 8 }}>{panelMessage}</div>}
+                  {verdict && (
+                    <div style={{ marginBottom: 8 }}>
+                      <div
+                        style={{
+                          color: verdict.status === 'ACCEPTED' ? '#4ec9b0' : '#f48771',
+                          fontWeight: 700,
+                          marginBottom: 4,
+                        }}
+                      >
+                        {verdictSource === 'run' ? 'SAMPLE RUN: ' : ''}
+                        {verdict.status} — score {verdict.score}/100 ({verdict.passed}/{verdict.total}{' '}
+                        passed)
+                      </div>
+                      {verdictSource === 'run' && (
+                        <div style={{ color: '#d7ba7d', marginBottom: 6 }}>
+                          Sample run only — this is not recorded in your submissions. Click Submit to run
+                          all test cases and save the result.
+                        </div>
+                      )}
+                      {verdictSource === 'submit' && (
+                        <div style={{ marginBottom: 6 }}>
+                          <a
+                            href={`/submissions?challengeId=${problemId}`}
+                            style={{ color: '#3794ff', textDecoration: 'underline' }}
+                          >
+                            View this submission in your history →
+                          </a>
+                        </div>
+                      )}
+                      <div style={{ whiteSpace: 'pre-wrap' }}>{verdict.feedback}</div>
+                      {verdict.cases && verdict.cases.length > 0 && (
+                        <ul style={{ marginTop: 8, paddingLeft: 18 }}>
+                          {verdict.cases.map((c) => (
+                            <li key={`${c.order}-${c.name}`} style={{ marginBottom: 4 }}>
+                              <span style={{ color: c.passed ? '#4ec9b0' : '#f48771' }}>
+                                {c.passed ? 'PASS' : 'FAIL'}
+                              </span>{' '}
+                              {c.name}
+                              {!c.passed && c.message ? ` — ${c.message}` : ''}
+                              {!c.passed && !c.isHidden && c.expected != null ? (
+                                <div style={{ opacity: 0.85 }}>
+                                  expected: {c.expected}
+                                  {c.actual != null ? `\nactual: ${c.actual}` : ''}
+                                </div>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                  {hintText && (
+                    <div
+                      style={{
+                        marginTop: 8,
+                        borderLeft: '3px solid #f59e0b',
+                        paddingLeft: 10,
+                        color: '#fbbf24',
+                        whiteSpace: 'pre-wrap',
+                      }}
+                    >
+                      Hint: {hintText}
+                    </div>
+                  )}
+                  {!panelMessage && !verdict && !error && (
+                    <div style={{ color: '#6b7280' }}>
+                      {isReactComponent
+                        ? 'Open the UI Preview tab to see your component, or Run samples / Submit for judge results.'
+                        : 'Run sample tests or submit to see results here.'}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>

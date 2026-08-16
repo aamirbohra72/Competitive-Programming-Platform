@@ -1,5 +1,6 @@
 import { prisma } from '@codeforces/db';
 import type { TaHelpStatus, TaHelpType } from '@codeforces/db';
+import { AppError } from '../lib/errors';
 
 export type CreateTaHelpInput = {
   userId: string;
@@ -172,12 +173,12 @@ export function isStaffRole(role: string | undefined): boolean {
 
 export async function claimTaHelpRequest(requestId: string, taUserId: string) {
   const ta = await prisma.user.findUnique({ where: { id: taUserId } });
-  if (!ta) throw new Error('USER_NOT_FOUND');
+  if (!ta) throw new AppError('USER_NOT_FOUND', 404, 'User not found');
 
   const existing = await prisma.taHelpRequest.findUnique({ where: { id: requestId } });
-  if (!existing) throw new Error('REQUEST_NOT_FOUND');
+  if (!existing) throw new AppError('REQUEST_NOT_FOUND', 404, 'Help request not found');
   if (existing.status !== 'WAITING' && existing.status !== 'OPEN_POOL') {
-    throw new Error('NOT_CLAIMABLE');
+    throw new AppError('NOT_CLAIMABLE', 409, 'Request is not available to claim');
   }
 
   const row = await prisma.taHelpRequest.update({
@@ -200,14 +201,14 @@ export async function replyToTaHelpRequest(input: {
   body: string;
 }) {
   const existing = await prisma.taHelpRequest.findUnique({ where: { id: input.requestId } });
-  if (!existing) throw new Error('REQUEST_NOT_FOUND');
+  if (!existing) throw new AppError('REQUEST_NOT_FOUND', 404, 'Help request not found');
 
   if (input.authorRole === 'learner' && existing.userId !== input.authorId) {
-    throw new Error('FORBIDDEN');
+    throw new AppError('FORBIDDEN', 403, 'Not allowed');
   }
 
   const body = input.body.trim();
-  if (body.length < 2) throw new Error('EMPTY_REPLY');
+  if (body.length < 2) throw new AppError('EMPTY_REPLY', 400, 'Reply cannot be empty');
 
   await prisma.taHelpReply.create({
     data: {
@@ -244,9 +245,9 @@ export async function updateTaHelpStatus(input: {
   asStaff: boolean;
 }) {
   const existing = await prisma.taHelpRequest.findUnique({ where: { id: input.requestId } });
-  if (!existing) throw new Error('REQUEST_NOT_FOUND');
+  if (!existing) throw new AppError('REQUEST_NOT_FOUND', 404, 'Help request not found');
   if (!input.asStaff && existing.userId !== input.actorId) {
-    throw new Error('FORBIDDEN');
+    throw new AppError('FORBIDDEN', 403, 'Not allowed');
   }
 
   const row = await prisma.taHelpRequest.update({
@@ -269,8 +270,8 @@ export async function submitTaHelpFeedback(input: {
   rating?: number;
 }) {
   const existing = await prisma.taHelpRequest.findUnique({ where: { id: input.requestId } });
-  if (!existing) throw new Error('REQUEST_NOT_FOUND');
-  if (existing.userId !== input.userId) throw new Error('FORBIDDEN');
+  if (!existing) throw new AppError('REQUEST_NOT_FOUND', 404, 'Help request not found');
+  if (existing.userId !== input.userId) throw new AppError('FORBIDDEN', 403, 'Not allowed');
 
   const row = await prisma.taHelpRequest.update({
     where: { id: input.requestId },

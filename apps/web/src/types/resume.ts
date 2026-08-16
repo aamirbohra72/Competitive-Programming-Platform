@@ -41,6 +41,7 @@ export interface ResumeData {
   location?: string;
   linkedin?: string;
   github?: string;
+  leetcode?: string;
   portfolio?: string;
   summary: string;
   skills: string[];
@@ -70,7 +71,7 @@ export const RESUME_TEMPLATES: {
 }[] = [
   { id: 'classic', name: 'Classic ATS', blurb: 'Single-column, clear headings, recruiter favorite.' },
   { id: 'compact', name: 'Compact ATS', blurb: 'Tighter spacing for more content on one page.' },
-  { id: 'modern', name: 'Modern ATS', blurb: 'Clean rules and emphasis without fancy columns.' },
+  { id: 'modern', name: 'Modern ATS', blurb: 'Teal accent, skill chips, polished social icons.' },
 ];
 
 export function createEmptyResume(seed?: { name?: string; role?: string }): ResumeData {
@@ -84,6 +85,7 @@ export function createEmptyResume(seed?: { name?: string; role?: string }): Resu
     location: 'Bangalore, India',
     linkedin: '',
     github: '',
+    leetcode: '',
     portfolio: '',
     summary: '',
     skills: ['JavaScript', 'TypeScript', 'React', 'Node.js'],

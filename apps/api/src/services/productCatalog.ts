@@ -104,6 +104,11 @@ export function enrollmentIdsForProduct(product: ProductCatalogItem): string[] {
   return [product.productId];
 }
 
+/** Catalog course IDs that require a paid enrollment (not free tracks 4/6). */
+export function isPremiumCourseProduct(courseId: string): boolean {
+  return getProduct(courseId)?.kind === 'course';
+}
+
 export async function userHasEnrollment(userId: string, productId: string): Promise<boolean> {
   const row = await prisma.enrollment.findUnique({
     where: { userId_productId: { userId, productId } },

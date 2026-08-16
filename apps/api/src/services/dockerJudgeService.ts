@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
+import { AppError } from '../lib/errors';
 
 export type JudgeCaseInput = {
   name?: string;
@@ -46,6 +47,15 @@ export type DockerJudgeRequest = {
 
 const IMAGE = process.env.JUDGE_DOCKER_IMAGE?.trim() || 'codeforces-judge:1';
 const DOCKER_BIN = process.env.DOCKER_BIN?.trim() || 'docker';
+const DOCKER_CACHE_MS = 30_000;
+
+function envInt(name: string, fallback: number): number {
+  const n = Number(process.env[name]);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+const JUDGE_CONCURRENCY = envInt('JUDGE_CONCURRENCY', 2);
+const JUDGE_QUEUE_MAX = envInt('JUDGE_QUEUE_MAX', 8);
 
 export class DockerUnavailableError extends Error {
   constructor(message: string) {
@@ -54,7 +64,77 @@ export class DockerUnavailableError extends Error {
   }
 }
 
-async function ensureDocker(): Promise<void> {
+let dockerOkUntil = 0;
+let running = 0;
+let waiting: Array<{
+  resolve: () => void;
+  reject: (err: Error) => void;
+}> = [];
+
+export function isJudgeEnabled(): boolean {
+  return process.env.JUDGE_ENABLED !== 'false';
+}
+
+/** Docker is required for /api/ready only when explicitly enabled, or in production. */
+export function isJudgeRequiredForReady(): boolean {
+  if (process.env.JUDGE_ENABLED === 'false') return false;
+  if (process.env.JUDGE_ENABLED === 'true') return true;
+  return process.env.NODE_ENV === 'production';
+}
+
+export function judgeHasCapacity(): boolean {
+  return running < JUDGE_CONCURRENCY || waiting.length < JUDGE_QUEUE_MAX;
+}
+
+export function getJudgeLoad(): { running: number; waiting: number; concurrency: number; queueMax: number } {
+  return {
+    running,
+    waiting: waiting.length,
+    concurrency: JUDGE_CONCURRENCY,
+    queueMax: JUDGE_QUEUE_MAX,
+  };
+}
+
+function acquireJudgeSlot(): Promise<void> {
+  if (running < JUDGE_CONCURRENCY) {
+    running += 1;
+    return Promise.resolve();
+  }
+  if (waiting.length >= JUDGE_QUEUE_MAX) {
+    return Promise.reject(
+      new AppError('JUDGE_BUSY', 429, 'Judge is busy, try again shortly'),
+    );
+  }
+  return new Promise((resolve, reject) => {
+    waiting.push({
+      resolve: () => {
+        running += 1;
+        resolve();
+      },
+      reject,
+    });
+  });
+}
+
+function releaseJudgeSlot(): void {
+  running = Math.max(0, running - 1);
+  const next = waiting.shift();
+  if (next) {
+    next.resolve();
+  }
+}
+
+export async function drainJudgeSlots(timeoutMs = 8_000): Promise<void> {
+  const start = Date.now();
+  while (running > 0 && Date.now() - start < timeoutMs) {
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  for (const waiter of waiting.splice(0)) {
+    waiter.reject(new AppError('JUDGE_BUSY', 503, 'Judge shutting down'));
+  }
+}
+
+async function ensureDockerUncached(): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const child = spawn(DOCKER_BIN, ['info'], { stdio: ['ignore', 'ignore', 'pipe'] });
     let err = '';
@@ -67,6 +147,12 @@ async function ensureDocker(): Promise<void> {
       else reject(new DockerUnavailableError(err.trim() || 'Docker daemon is not running'));
     });
   });
+}
+
+async function ensureDocker(): Promise<void> {
+  if (Date.now() < dockerOkUntil) return;
+  await ensureDockerUncached();
+  dockerOkUntil = Date.now() + DOCKER_CACHE_MS;
 }
 
 function runDocker(args: string[], timeoutMs: number): Promise<{ stdout: string; stderr: string; code: number }> {
@@ -96,12 +182,46 @@ function runDocker(args: string[], timeoutMs: number): Promise<{ stdout: string;
   });
 }
 
-export async function runDockerJudge(request: DockerJudgeRequest): Promise<DockerJudgeResult> {
+function parseJudgeStdout(stdout: string): DockerJudgeResult | null {
+  const trimmed = stdout.trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed) as DockerJudgeResult;
+  } catch {
+    const start = trimmed.lastIndexOf('{');
+    const end = trimmed.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(trimmed.slice(start, end + 1)) as DockerJudgeResult;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+function isDockerFlake(err: unknown, stderr = '', code?: number): boolean {
+  if (err instanceof DockerUnavailableError) return true;
+  const msg = [
+    err instanceof Error ? err.message : '',
+    stderr,
+    code != null ? `exit ${code}` : '',
+  ]
+    .join(' ')
+    .toLowerCase();
+  if (msg.includes('timed out') || msg.includes('timeout')) return true;
+  if (msg.includes('cannot connect') || msg.includes('daemon')) return true;
+  if (msg.includes('econnreset') || msg.includes('econnrefused')) return true;
+  if (code === 125 || code === 126 || code === 127) return true;
+  return false;
+}
+
+async function runDockerJudgeOnce(request: DockerJudgeRequest): Promise<DockerJudgeResult> {
   await ensureDocker();
 
   const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cf-judge-'));
   const requestPath = path.join(workDir, 'request.json');
-  const resultPath = path.join(workDir, 'result.json');
 
   try {
     await fs.writeFile(requestPath, JSON.stringify(request), 'utf8');
@@ -139,46 +259,14 @@ export async function runDockerJudge(request: DockerJudgeRequest): Promise<Docke
       IMAGE,
     ];
 
-    // Mount request then copy into writable tmpfs via a tiny wrapper is hard with --read-only + tmpfs.
-    // Simpler: pass request via env base64 (size-limited) OR use writable bind mount for workDir.
-    // Prefer bind-mount workDir as /workspace (not read-only root for that path).
-    const bindArgs = [
-      'run',
-      '--rm',
-      '--network',
-      'none',
-      '--memory',
-      memory,
-      '--cpus',
-      cpus,
-      '--pids-limit',
-      pids,
-      '--user',
-      '10001:10001',
-      '--security-opt',
-      'no-new-privileges',
-      '--cap-drop',
-      'ALL',
-      '-v',
-      `${workDir}:/workspace`,
-      IMAGE,
-    ];
-
-    const { stdout, stderr, code } = await runDocker(bindArgs, outerTimeout);
-
-    let parsed: DockerJudgeResult | null = null;
-    try {
-      const raw = await fs.readFile(resultPath, 'utf8');
-      parsed = JSON.parse(raw) as DockerJudgeResult;
-    } catch {
-      try {
-        parsed = JSON.parse(stdout) as DockerJudgeResult;
-      } catch {
-        parsed = null;
-      }
-    }
+    const { stdout, stderr, code } = await runDocker(args, outerTimeout);
+    const parsed = parseJudgeStdout(stdout);
 
     if (!parsed) {
+      if (isDockerFlake(null, stderr, code)) {
+        dockerOkUntil = 0;
+        throw new Error(stderr || `Judge container failed (exit ${code})`);
+      }
       return {
         status: 'RUNTIME_ERROR',
         score: 0,
@@ -195,16 +283,33 @@ export async function runDockerJudge(request: DockerJudgeRequest): Promise<Docke
   }
 }
 
+export async function runDockerJudge(request: DockerJudgeRequest): Promise<DockerJudgeResult> {
+  await acquireJudgeSlot();
+  try {
+    try {
+      return await runDockerJudgeOnce(request);
+    } catch (err) {
+      if (isDockerFlake(err)) {
+        dockerOkUntil = 0;
+        return await runDockerJudgeOnce(request);
+      }
+      throw err;
+    }
+  } finally {
+    releaseJudgeSlot();
+  }
+}
+
 export async function isDockerJudgeAvailable(): Promise<boolean> {
   try {
     await ensureDocker();
     return true;
   } catch {
+    dockerOkUntil = 0;
     return false;
   }
 }
 
-// Keep a unique id helper for future job tracking
 export function newJudgeJobId(): string {
   return randomUUID();
 }

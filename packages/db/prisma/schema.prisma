@@ -78,6 +78,7 @@ model User {
   taHelpRequests       TaHelpRequest[] @relation("TaHelpLearner")
   taHelpAssigned       TaHelpRequest[] @relation("TaHelpAssignee")
   taHelpReplies        TaHelpReply[]
+  acceptedSolutions    AcceptedSolution[]
 
   @@index([email])
   @@index([username])
@@ -182,6 +183,7 @@ model Challenge {
   contest     Contest             @relation(fields: [contestId], references: [id], onDelete: Cascade)
   submissions Submission[]
   testCases   ChallengeTestCase[]
+  acceptedSolutions AcceptedSolution[]
 
   @@index([contestId])
   @@index([difficulty])
@@ -229,12 +231,38 @@ model Submission {
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  acceptedSolution AcceptedSolution?
 
   @@index([userId])
   @@index([challengeId])
   @@index([status])
   @@index([submittedAt])
+  @@index([status, submittedAt])
   @@index([score])
+}
+
+/// Canonical accepted solution per user+challenge (unlocked Solution tab / resume later).
+model AcceptedSolution {
+  id           String   @id @default(cuid())
+  userId       String
+  challengeId  String
+  submissionId String   @unique
+  language     String
+  sourceCode   String
+  score        Int      @default(100)
+  /// First time this user solved the challenge
+  firstAcceptedAt DateTime @default(now())
+  /// Last time an equal-or-better accepted submission replaced the stored code
+  updatedAt    DateTime @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   Challenge  @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  submission  Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId])
+  @@index([userId])
+  @@index([challengeId])
+  @@index([firstAcceptedAt])
 }
 
 model InterviewSession {
@@ -362,7 +390,7 @@ model PaymentOrder {
   currency          String        @default("INR")
   status            PaymentStatus @default(CREATED)
   razorpayOrderId   String        @unique
-  razorpayPaymentId String?
+  razorpayPaymentId String?       @unique
   razorpaySignature String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
@@ -372,6 +400,13 @@ model PaymentOrder {
   @@index([userId])
   @@index([productId])
   @@index([status])
+}
+
+model RazorpayWebhookEvent {
+  id        String   @id @default(cuid())
+  eventId   String   @unique
+  event     String
+  createdAt DateTime @default(now())
 }
 
 model Enrollment {

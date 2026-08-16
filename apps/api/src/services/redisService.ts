@@ -61,6 +61,20 @@ export async function connectRedis(): Promise<void> {
   }
 }
 
+export function isRedisUrlConfigured(): boolean {
+  return Boolean(process.env.REDIS_URL?.trim());
+}
+
+export async function pingRedis(): Promise<boolean> {
+  if (!isConnected || !redisClient) return false;
+  try {
+    await redisClient.ping();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function disconnectRedis(): Promise<void> {
   if (!redisClient || !isConnected) return;
   try {
