@@ -13,7 +13,9 @@
     "db:migrate:dev": "npm run db:migrate:dev -w @codeforces/db",
     "db:push": "turbo run db:push",
     "db:seed": "turbo run db:seed",
-    "db:studio": "turbo run db:studio"
+    "db:studio": "turbo run db:studio",
+    "test:smoke": "node scripts/functional-smoke.mjs",
+    "test:prod": "node scripts/functional-smoke.mjs && node scripts/production-validate.mjs"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

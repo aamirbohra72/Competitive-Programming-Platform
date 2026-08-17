@@ -47,7 +47,31 @@ assertEmailConfigForRuntime();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+function corsOriginOption(): cors.CorsOptions['origin'] {
+  const raw = process.env.CORS_ORIGIN?.trim();
+  if (!raw) {
+    // Dev: allow local web. Production: assertRuntimeEnv requires CORS_ORIGIN.
+    return true;
+  }
+  const allowed = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  return (origin, callback) => {
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error(`Origin ${origin} not allowed by CORS`));
+  };
+}
+
+app.use(
+  cors({
+    origin: corsOriginOption(),
+    credentials: true,
+  }),
+);
+
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
 
 // Razorpay signs the raw JSON body — must run before express.json().
 app.post('/api/payments/webhook', express.raw({ type: '*/*' }), (req, res, next) => {
@@ -81,6 +105,7 @@ app.get('/api/health', (_req, res) => {
 app.get('/api/ready', async (_req, res) => {
   const { ready, checks } = await getReadyStatus();
   res.status(ready ? 200 : 503).json({
+    ready,
     status: ready ? 'ready' : 'not_ready',
     checks,
     timestamp: new Date().toISOString(),

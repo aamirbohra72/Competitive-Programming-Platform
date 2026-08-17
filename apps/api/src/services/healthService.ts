@@ -32,12 +32,11 @@ export async function getReadyStatus(): Promise<{
     checks.redis = await pingRedis();
   }
 
-  if (isJudgeRequiredForReady()) {
-    checks.docker = await isDockerJudgeAvailable();
-  }
+  // Always probe Docker for operators; only fail readiness when judge is required.
+  checks.docker = await isDockerJudgeAvailable();
 
-  const ready =
-    checks.postgres && checks.redis !== false && checks.docker !== false;
+  const dockerOk = !isJudgeRequiredForReady() || checks.docker === true;
+  const ready = checks.postgres && checks.redis !== false && dockerOk;
 
   return { ready, checks };
 }

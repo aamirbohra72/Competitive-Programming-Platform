@@ -12,7 +12,6 @@ const COURSE_TITLES: Record<string, string> = {
   '2': 'Salaam Node.js',
   '3': 'Salaam React',
   '4': 'JavaScript Fundamentals',
-  '3': 'Salaam React',
   '5': 'System Design',
   '6': 'Python for Beginners',
 };

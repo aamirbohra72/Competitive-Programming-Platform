@@ -9,6 +9,56 @@ import {
 } from '../services/leaderboardOverviewService';
 
 export const leaderboardController = {
+  /** Public practice profile by username (streak, contributions, difficulty stats). */
+  async getProfileByUsername(req: AuthRequest, res: Response): Promise<void> {
+    const username = String(req.params.username || '').trim();
+    if (!username) {
+      res.status(400).json({ error: 'Username is required' });
+      return;
+    }
+
+    const yearRaw = req.query.year;
+    const year =
+      typeof yearRaw === 'string' && /^\d{4}$/.test(yearRaw)
+        ? parseInt(yearRaw, 10)
+        : new Date().getFullYear();
+
+    const user = await prisma.user.findFirst({
+      where: { username: { equals: username, mode: 'insensitive' } },
+      select: { id: true, username: true },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const globalLeaderboard = await getGlobalLeaderboard(100);
+    const myRow = globalLeaderboard.find((r) => r.userId === user.id);
+    const personal = await getUserOverview(user.id, year);
+    const agg = myRow
+      ? {
+          uniqueSolved: myRow.uniqueSolved,
+          acceptedSubmissions: myRow.acceptedSubmissions,
+          scoreSum: myRow.scoreSum,
+        }
+      : await getUserAggregateStats(user.id);
+
+    res.json({
+      year,
+      user: {
+        userId: user.id,
+        username: user.username,
+        rank: myRow?.rank ?? null,
+        uniqueSolved: agg.uniqueSolved,
+        acceptedSubmissions: agg.acceptedSubmissions,
+        scoreSum: agg.scoreSum,
+        ...personal,
+      },
+      courseWatchTime: [] as { course: string; hours: number }[],
+    });
+  },
+
   async getOverview(req: AuthRequest, res: Response): Promise<void> {
     const yearRaw = req.query.year;
     const year =

@@ -30,6 +30,12 @@ export function assertRuntimeEnv(): void {
     );
   }
 
+  if (!process.env.CORS_ORIGIN?.trim()) {
+    throw new Error(
+      'CORS_ORIGIN is required in production (comma-separated allowed web origins, e.g. https://app.example.com).',
+    );
+  }
+
   if (paymentsEnabled()) {
     if (!process.env.RAZORPAY_KEY_ID?.trim() || !process.env.RAZORPAY_KEY_SECRET?.trim()) {
       throw new Error(
@@ -41,5 +47,12 @@ export function assertRuntimeEnv(): void {
         'RAZORPAY_WEBHOOK_SECRET is required in production so paid enrollments survive a closed checkout tab.',
       );
     }
+  }
+
+  // Soft skills / blog / interview / communication depend on Mistral in production.
+  if (!process.env.MISTRAL_API_KEY?.trim() && process.env.MISTRAL_REQUIRED !== 'false') {
+    throw new Error(
+      'MISTRAL_API_KEY is required in production for interview, blog, communication, and AI features. Set MISTRAL_REQUIRED=false to boot without it.',
+    );
   }
 }

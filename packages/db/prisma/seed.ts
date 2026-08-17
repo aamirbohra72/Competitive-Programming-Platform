@@ -207,8 +207,9 @@ async function seedDemoContests() {
     description:
       'Live 3-hour coding sprint. Solve as many problems as you can — standings update as you submit.',
     kind: ContestKind.RATED,
+    // Long window so local demos stay LIVE between seed runs (lifecycle job updates status from times).
     startTime: new Date(now.getTime() - 1 * hour),
-    endTime: new Date(now.getTime() + 2 * hour),
+    endTime: new Date(now.getTime() + 14 * day),
     challenges: [
       {
         slug: 'demo-live-sum-a-b',
