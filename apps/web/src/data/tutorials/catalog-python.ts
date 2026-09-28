@@ -30,10 +30,10 @@ const questions = [
 export const pythonBank: CatalogBank = {
   questions,
   tutorials: [
-    tutorial({ id: 'py-t1', courseId: '6', title: 'Module 1 — Python Core Data', dateLabel: 'Self-paced', duration: '1h 45m', videoTitle: 'Lists, tuples, dicts, comprehensions', questionIds: ['py-q1', 'py-q2', 'py-q3', 'py-q4', 'py-q5', 'py-q6'] }),
-    tutorial({ id: 'py-t2', courseId: '6', title: 'Module 2 — Functions & Structure', dateLabel: 'Self-paced', duration: '1h 45m', videoTitle: 'Args, decorators, context managers, venv', questionIds: ['py-q7', 'py-q8', 'py-q9', 'py-q10', 'py-q11', 'py-q12'] }),
-    tutorial({ id: 'py-t3', courseId: '6', title: 'Module 3 — Modern Python Ergonomics', dateLabel: 'Self-paced', duration: '1h 30m', videoTitle: 'f-strings, dataclasses, typing, pytest', questionIds: ['py-q13', 'py-q14', 'py-q15', 'py-q16', 'py-q23', 'py-q24'] }),
-    tutorial({ id: 'py-t4', courseId: '6', title: 'Module 4 — Applied Python', dateLabel: 'Self-paced', duration: '1h 45m', videoTitle: 'GIL, asyncio, pandas, web APIs, style', questionIds: ['py-q17', 'py-q18', 'py-q19', 'py-q20', 'py-q21', 'py-q22'] }),
+    tutorial({ id: 'py-t1', courseId: '6', title: 'Module 1 — Python Core Data', dateLabel: 'Self-paced', duration: '1h 45m', videoTitle: 'Lists, tuples, dicts, comprehensions', questionIds: ['py-q1', 'py-q2', 'py-q3', 'py-q4', 'py-q5', 'py-q6'], videoTopic: { track: 'python', keywords: ['list & tuple', 'dictionary & set', 'data types', 'loops', 'strings'] } }),
+    tutorial({ id: 'py-t2', courseId: '6', title: 'Module 2 — Functions & Structure', dateLabel: 'Self-paced', duration: '1h 45m', videoTitle: 'Args, decorators, context managers, venv', questionIds: ['py-q7', 'py-q8', 'py-q9', 'py-q10', 'py-q11', 'py-q12'], videoTopic: { track: 'python', keywords: ['functions', 'recursion', 'file input/output', 'data types'] } }),
+    tutorial({ id: 'py-t3', courseId: '6', title: 'Module 3 — Modern Python Ergonomics', dateLabel: 'Self-paced', duration: '1h 30m', videoTitle: 'f-strings, dataclasses, typing, pytest', questionIds: ['py-q13', 'py-q14', 'py-q15', 'py-q16', 'py-q23', 'py-q24'], videoTopic: { track: 'python', keywords: ['strings', 'oops in python', 'loops', 'data types'] } }),
+    tutorial({ id: 'py-t4', courseId: '6', title: 'Module 4 — Applied Python', dateLabel: 'Self-paced', duration: '1h 45m', videoTitle: 'GIL, asyncio, pandas, web APIs, style', questionIds: ['py-q17', 'py-q18', 'py-q19', 'py-q20', 'py-q21', 'py-q22'], videoTopic: { track: 'python', keywords: ['file input/output', 'oops part 2', 'oops in python', 'functions'] } }),
   ],
   learning: {
     'py-t1': learning('py-t1', 'Revision: Python Data', 'Choose the right collection — it shapes clarity and performance.', [

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { DashboardShell } from '@/components/DashboardShell';
@@ -27,7 +27,7 @@ import {
   type TutorialLearningContent,
 } from '@/data/tutorials/learning-content';
 import { isLlmDrivenCourse, type LlmCoursePack, type LlmTutorial } from '@/types/llm-course';
-import { TopicVideoPanel, useTopicVideos, type VideoTopic } from '@/components/videos/TopicVideoPanel';
+import { SessionVideoPlayer, useTopicVideos, type VideoTopic } from '@/components/videos/SessionVideoPlayer';
 import styles from '../tutorial.module.css';
 
 type Tab = 'session' | 'assignment';
@@ -109,8 +109,6 @@ export default function TutorialSessionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const topicVideos = useTopicVideos(tutorial?.videoTopic);
-  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
-  const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -199,27 +197,11 @@ export default function TutorialSessionPage() {
   const currentFlash = flashcards[flashIndex];
   const coinTotal = totalCoins(coins, tutorial.learning);
 
-  const openRecording = () => {
-    if (topicVideos.firstUnwatched) {
-      setActiveVideoId((id) => id ?? topicVideos.firstUnwatched!.videoId);
-      playerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
-    window.open(
-      tutorial.recordingUrl ||
-        `https://www.youtube.com/results?search_query=${encodeURIComponent(tutorial.videoTitle)}`,
-      '_blank',
-      'noopener',
-    );
-  };
-
   const claimWatch = () => {
-    if (!coins.watchClaimed) {
-      const next = { ...coins, watchClaimed: true };
-      saveCoinState(courseId, tutorialId, next);
-      setCoins(next);
-    }
-    openRecording();
+    if (coins.watchClaimed) return;
+    const next = { ...coins, watchClaimed: true };
+    saveCoinState(courseId, tutorialId, next);
+    setCoins(next);
   };
 
   const markTutorialComplete = async () => {
@@ -323,33 +305,19 @@ export default function TutorialSessionPage() {
         <div className={styles.body}>
           {tab === 'session' ? (
             <>
-              <div className={styles.sessionCard}>
-                <div className={styles.thumb}>
-                  <p className={styles.thumbTitle}>{tutorial.videoTitle}</p>
-                  <button type="button" className={styles.playBtn} aria-label="Play recording" onClick={claimWatch}>
-                    ▶
-                  </button>
-                  <p className={styles.thumbTitle}>{tutorial.dateLabel}</p>
-                </div>
-                <div className={styles.sessionInfo}>
-                  <span className={styles.recordingTag}>Session Recording</span>
-                  <h2 className={styles.sessionTitle}>{tutorial.videoTitle}</h2>
-                  <p className={styles.sessionMeta}>{tutorial.videoMeta}</p>
-                  <button type="button" className={styles.watchBtn} onClick={claimWatch}>
-                    Watch Recording
-                  </button>
-                </div>
-              </div>
-
-              {tutorial.videoTopic ? (
-                <div ref={playerRef} style={{ scrollMarginTop: '5rem' }}>
-                  <TopicVideoPanel
-                    {...topicVideos}
-                    activeId={activeVideoId}
-                    onSelect={setActiveVideoId}
-                  />
-                </div>
-              ) : null}
+              <SessionVideoPlayer
+                session={{
+                  title: tutorial.videoTitle,
+                  meta: tutorial.videoMeta,
+                  dateLabel: tutorial.videoMeta.includes(tutorial.dateLabel) ? undefined : tutorial.dateLabel,
+                }}
+                topicVideos={topicVideos}
+                fallbackUrl={
+                  tutorial.recordingUrl ||
+                  `https://www.youtube.com/results?search_query=${encodeURIComponent(tutorial.videoTitle)}`
+                }
+                onStart={claimWatch}
+              />
 
               <div className={styles.coinRow}>
                 <div className={`${styles.coinCard} ${coins.watchClaimed ? '' : styles.coinMuted}`}>

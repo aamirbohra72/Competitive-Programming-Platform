@@ -45,6 +45,10 @@ export const systemDesignTutorials: CourseTutorial[] = [
     estimatedTimeLeft: '3 hours left',
     videoTitle: 'Case Study Kickoff: Requirements, DAU, Storage & Throughput',
     videoMeta: '7:00 PM · Recording available',
+    videoTopic: {
+      track: 'system-design',
+      keywords: ['estimate', 'scaling from 1 user', '1m to 10m', 'api fails', 'tcp vs udp', 'cap theorem', 'software architect', 'system design trap', 'l5 engineers', 'microservices'],
+    },
     questionIds: ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8'],
   },
   {
@@ -56,6 +60,10 @@ export const systemDesignTutorials: CourseTutorial[] = [
     estimatedTimeLeft: '4 hours left',
     videoTitle: 'BFF, CDN, Polyglot Persistence & Cache Strategies',
     videoMeta: '7:00 PM · Recording available',
+    videoTopic: {
+      track: 'system-design',
+      keywords: ['caching', 'redis', 'right database', 'sql vs nosql', 'sharding', 'api gateway', 'load balancer', 'cache stampede', 'lru', 'instagram'],
+    },
     questionIds: ['Q9', 'Q10', 'Q11', 'Q12', 'Q13', 'Q14', 'Q15', 'Q16'],
   },
   {
@@ -67,6 +75,10 @@ export const systemDesignTutorials: CourseTutorial[] = [
     estimatedTimeLeft: '5 hours left',
     videoTitle: 'Kafka, Hot Keys, SAGA, Circuit Breaker & Live Class Design',
     videoMeta: '7:00 PM · Recording available',
+    videoTopic: {
+      track: 'system-design',
+      keywords: ['kafka', 'saga', 'websocket', 'hotstar', 'upi', 'order confirmed', 'checkout', 'bookmyshow', 'irctc', 'typing', 'http 429', 'blinkit'],
+    },
     questionIds: ['Q17', 'Q18', 'Q19', 'Q20', 'Q21', 'Q22', 'Q23', 'Q24'],
   },
 ];

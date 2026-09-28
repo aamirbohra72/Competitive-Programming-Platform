@@ -23,6 +23,20 @@ export const VIDEO_TRACKS: VideoTrack[] = [
     playlistIds: ['PLlasXeu85E9dg5N37gDfclwzTqtoW7h5j', 'PLlasXeu85E9cciv04MYWscodnbRFqACsH'],
   },
   {
+    slug: 'chai-react',
+    title: 'Chai aur React with Hitesh Choudhary',
+    instructor: 'Hitesh Choudhary',
+    description: 'React from JSX and hooks to router, context, Redux Toolkit and a production mega project.',
+    playlistIds: ['PLu71SKxNbfoDqgPchmvIsL4hTnJIrtige'],
+  },
+  {
+    slug: 'node',
+    title: 'Chai aur JavaScript Backend with Hitesh Choudhary',
+    instructor: 'Hitesh Choudhary',
+    description: 'Node.js backend: project setup, Express routing, MongoDB modelling, JWT auth and deployment.',
+    playlistIds: ['PLu71SKxNbfoBGh_8p_NS-ZAh6v7HhYqHW'],
+  },
+  {
     slug: 'dsa',
     title: 'DSA with Shradha Khapra',
     instructor: 'Shradha Khapra',
@@ -33,6 +47,34 @@ export const VIDEO_TRACKS: VideoTrack[] = [
       'PLGjplNEQ1it-kmrbYmzQfLWjVOFj6JpEV',
       'PLGjplNEQ1it-W0hmxxAB1P2XP2fZiYuUu',
       'PLGjplNEQ1it-0w_PkFtKzH0ZExo6Lvm6R',
+    ],
+  },
+  {
+    slug: 'javascript',
+    title: 'Namaste JavaScript with Akshay Saini',
+    instructor: 'Akshay Saini',
+    description: 'Execution context, hoisting, closures, event loop, promises and async/await.',
+    playlistIds: ['PLlasXeu85E9cQ32gLCvAvr9vNaUccPVNP', 'PLlasXeu85E9eWOpw9jxHOQyGMRiBZ60aX'],
+  },
+  {
+    slug: 'python',
+    title: 'Python with Shradha Khapra',
+    instructor: 'Shradha Khapra',
+    description: 'Python full course: data types, collections, loops, functions, file I/O and OOP.',
+    playlistIds: ['PLGjplNEQ1it8-0CmoljS5yeV-GlKSUEt0'],
+  },
+  {
+    slug: 'system-design',
+    title: 'System Design with The Desi Architect',
+    instructor: 'The Desi Architect',
+    description: 'Zero to Architect, interview cheat codes, caching and real Indian-scale case studies.',
+    playlistIds: [
+      'PLAqYPSK9xbanG0KUXdGiqILNrirM1sDzN',
+      'PLAqYPSK9xbanrKpqEv6mEZkpafKoFgiv8',
+      'PLGDkQASsRwX0',
+      'PLAqYPSK9xbakfls7VHqI9aq3WEdf3p8RT',
+      'PLAqYPSK9xbamC417fbJG14POtVuX91w2v',
+      'PLAqYPSK9xbanS_sXS9nK0T3hTf9Sl587r',
     ],
   },
 ];
@@ -109,7 +151,7 @@ export function isCuratedPlaylist(playlistId: string): boolean {
 
 export type TopicVideo = PlaylistVideo & { playlistId: string; score: number };
 
-const NON_LECTURE = /quick update|major update|views|setup c\+\+ compiler/;
+const NON_LECTURE = /quick update|major update|life update|views|subscribers party|trailer|setup c\+\+ compiler/;
 
 /** Pick videos round-robin across topic keywords so every sub-topic gets coverage, then return in lecture order. */
 export async function findTopicVideos(
