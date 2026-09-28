@@ -12,6 +12,8 @@ export interface CourseTutorial {
   videoTitle: string;
   videoMeta: string;
   recordingUrl?: string;
+  /** Pull session videos from a curated YouTube track by title keywords (primary first). */
+  videoTopic?: { track: string; keywords: string[] };
   /** Question ids from the course assignment bank */
   questionIds: string[];
 }

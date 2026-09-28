@@ -21,6 +21,7 @@ import { projectsRoutes } from './routes/projects';
 import { blogRoutes } from './routes/blog';
 import { companionRoutes } from './routes/companion';
 import { taHelpRoutes } from './routes/taHelp';
+import { videoRoutes } from './routes/videos';
 import { connectRedis, disconnectRedis } from './services/redisService';
 import {
   assertEmailConfigForRuntime,
@@ -97,6 +98,7 @@ app.use('/api/companion', companionRoutes);
 app.use('/api/ta-help', taHelpRoutes);
 app.use('/api/careers', careersRoutes);
 app.use('/api/communication', communicationRoutes);
+app.use('/api/videos', videoRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

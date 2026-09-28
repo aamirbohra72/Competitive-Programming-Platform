@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { DashboardShell } from '@/components/DashboardShell';
@@ -27,6 +27,7 @@ import {
   type TutorialLearningContent,
 } from '@/data/tutorials/learning-content';
 import { isLlmDrivenCourse, type LlmCoursePack, type LlmTutorial } from '@/types/llm-course';
+import { TopicVideoPanel, useTopicVideos, type VideoTopic } from '@/components/videos/TopicVideoPanel';
 import styles from '../tutorial.module.css';
 
 type Tab = 'session' | 'assignment';
@@ -51,6 +52,7 @@ type UiTutorial = {
   videoTitle: string;
   videoMeta: string;
   recordingUrl?: string;
+  videoTopic?: VideoTopic;
   questions: UiQuestion[];
   learning: TutorialLearningContent;
   source: 'static' | 'llm';
@@ -106,6 +108,9 @@ export default function TutorialSessionPage() {
   const [tutorial, setTutorial] = useState<UiTutorial | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const topicVideos = useTopicVideos(tutorial?.videoTopic);
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -139,6 +144,7 @@ export default function TutorialSessionPage() {
               videoTitle: staticTutorial.videoTitle,
               videoMeta: staticTutorial.videoMeta,
               recordingUrl: staticTutorial.recordingUrl,
+              videoTopic: staticTutorial.videoTopic,
               questions: getQuestionsForTutorial(courseId, staticTutorial.questionIds),
               learning,
               source: 'static',
@@ -193,15 +199,27 @@ export default function TutorialSessionPage() {
   const currentFlash = flashcards[flashIndex];
   const coinTotal = totalCoins(coins, tutorial.learning);
 
-  const claimWatch = () => {
-    if (coins.watchClaimed) {
-      window.open(tutorial.recordingUrl || 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+  const openRecording = () => {
+    if (topicVideos.firstUnwatched) {
+      setActiveVideoId((id) => id ?? topicVideos.firstUnwatched!.videoId);
+      playerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    const next = { ...coins, watchClaimed: true };
-    saveCoinState(courseId, tutorialId, next);
-    setCoins(next);
-    window.open(tutorial.recordingUrl || 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+    window.open(
+      tutorial.recordingUrl ||
+        `https://www.youtube.com/results?search_query=${encodeURIComponent(tutorial.videoTitle)}`,
+      '_blank',
+      'noopener',
+    );
+  };
+
+  const claimWatch = () => {
+    if (!coins.watchClaimed) {
+      const next = { ...coins, watchClaimed: true };
+      saveCoinState(courseId, tutorialId, next);
+      setCoins(next);
+    }
+    openRecording();
   };
 
   const markTutorialComplete = async () => {
@@ -322,6 +340,16 @@ export default function TutorialSessionPage() {
                   </button>
                 </div>
               </div>
+
+              {tutorial.videoTopic ? (
+                <div ref={playerRef} style={{ scrollMarginTop: '5rem' }}>
+                  <TopicVideoPanel
+                    {...topicVideos}
+                    activeId={activeVideoId}
+                    onSelect={setActiveVideoId}
+                  />
+                </div>
+              ) : null}
 
               <div className={styles.coinRow}>
                 <div className={`${styles.coinCard} ${coins.watchClaimed ? '' : styles.coinMuted}`}>

@@ -3,10 +3,10 @@ import { prisma } from '@codeforces/db';
 export type CompleteLearningItemInput = {
   userId: string;
   courseId: string;
-  courseKind?: 'catalog' | 'generated';
+  courseKind?: 'catalog' | 'generated' | 'youtube';
   title?: string;
   itemId: string;
-  itemType: 'tutorial' | 'module' | 'topic' | 'assignment';
+  itemType: 'tutorial' | 'module' | 'topic' | 'assignment' | 'video';
   itemTitle?: string;
   itemHref?: string;
   score?: number;

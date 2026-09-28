@@ -55,6 +55,10 @@ export const dsaBank: CatalogBank = {
       dateLabel: 'Self-paced',
       duration: '2h 30m',
       videoTitle: 'Patterns: Two Sum, Window, Kadane, In-place tricks',
+      videoTopic: {
+        track: 'dsa',
+        keywords: ['kadane', 'two sum', 'sliding window', 'subarray', '3 sum', '4 sum', 'majority element', 'product of array', 'container with most water', 'buy and sell stock', 'array data structure', 'vectors'],
+      },
       questionIds: ['dsa-q1', 'dsa-q2', 'dsa-q3', 'dsa-q4', 'dsa-q5', 'dsa-q6'],
     }),
     tutorial({
@@ -64,6 +68,7 @@ export const dsaBank: CatalogBank = {
       dateLabel: 'Self-paced',
       duration: '2h 15m',
       videoTitle: 'Reverse, Midpoint, Cycles, Merge & Dummy Heads',
+      videoTopic: { track: 'dsa', keywords: ['linked list', 'lists', 'swap nodes', 'reverse nodes', 'random pointer'] },
       questionIds: ['dsa-q7', 'dsa-q8', 'dsa-q9', 'dsa-q10', 'dsa-q11', 'dsa-q12'],
     }),
     tutorial({
@@ -73,6 +78,10 @@ export const dsaBank: CatalogBank = {
       dateLabel: 'Self-paced',
       duration: '2h 20m',
       videoTitle: 'Parentheses, Monotonic Stack, Deque Windows, BFS/DFS',
+      videoTopic: {
+        track: 'dsa',
+        keywords: ['stack', 'queue', 'parentheses', 'next greater', 'previous smaller', 'histogram', 'sliding window maximum', 'stock span', 'lru cache', 'trapping rainwater'],
+      },
       questionIds: ['dsa-q13', 'dsa-q14', 'dsa-q15', 'dsa-q16', 'dsa-q17', 'dsa-q18'],
     }),
     tutorial({
@@ -82,6 +91,10 @@ export const dsaBank: CatalogBank = {
       dateLabel: 'Self-paced',
       duration: '3h 00m',
       videoTitle: 'Traversals, LCA, Balance, Serialize',
+      videoTopic: {
+        track: 'dsa',
+        keywords: ['binary tree', 'bst', 'binary search tree', 'lowest common ancestor', 'inorder', 'preorder', 'height', 'diameter', 'top view', 'level'],
+      },
       questionIds: ['dsa-q19', 'dsa-q20', 'dsa-q21', 'dsa-q22', 'dsa-q23', 'dsa-q24'],
     }),
     tutorial({
@@ -91,6 +104,10 @@ export const dsaBank: CatalogBank = {
       dateLabel: 'Self-paced',
       duration: '3h 30m',
       videoTitle: 'Dijkstra, Topo Sort, Knapsack, LCS, DSU',
+      videoTopic: {
+        track: 'dsa',
+        keywords: ['graph', 'dijkstra', 'topological', 'knapsack', 'disjoint set', 'dynamic programming', 'dp', 'bfs', 'dfs', 'spanning tree', 'bellman ford', 'islands'],
+      },
       questionIds: ['dsa-q25', 'dsa-q26', 'dsa-q27', 'dsa-q28', 'dsa-q29', 'dsa-q30'],
     }),
     tutorial({
@@ -100,6 +117,10 @@ export const dsaBank: CatalogBank = {
       dateLabel: 'Self-paced',
       duration: '2h 00m',
       videoTitle: 'Big-O, Stability, Heaps, Backtracking, Communication',
+      videoTopic: {
+        track: 'dsa',
+        keywords: ['time & space complexity', 'sorting algorithm', 'merge sort', 'quick sort', 'backtracking', 'recursion', 'binary search algorithm', 'n-queens', 'permutations', 'count inversions'],
+      },
       questionIds: ['dsa-q31', 'dsa-q32', 'dsa-q33', 'dsa-q34', 'dsa-q35', 'dsa-q36'],
     }),
   ],

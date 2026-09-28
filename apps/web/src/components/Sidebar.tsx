@@ -18,6 +18,7 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { label: 'Home', href: '/', icon: '🏠' },
   { label: 'Courses', href: '/learn', icon: '📚' },
+  { label: 'Video Courses', href: '/videos', icon: '🎬' },
   { label: 'Blog', href: '/blog', icon: '✍️' },
   { label: 'Gift a course', href: '/gift', icon: '🎁' },
   { label: 'Become Affiliate', href: '/affiliate', icon: '💵' },
