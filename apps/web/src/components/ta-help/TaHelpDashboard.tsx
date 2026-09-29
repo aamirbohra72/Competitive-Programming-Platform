@@ -133,18 +133,18 @@ export function TaHelpDashboard() {
         <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-white md:text-3xl">TA Help</h1>
-              <span className="rounded-full bg-emerald-600/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+              <h1 className="text-2xl font-bold text-[var(--text-theme)] md:text-3xl">TA Help</h1>
+              <span className="rounded-full bg-green-700 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                 Live queue
               </span>
             </div>
-            <p className="mt-2 text-sm text-[#a0a0a0]">
+            <p className="mt-2 text-sm text-[var(--text-muted)]">
               Raise text or video help requests — synced to the database and visible to TAs.
             </p>
             {staff ? (
               <Link
                 href="/ta-help/desk"
-                className="mt-2 inline-block text-sm font-semibold text-sky-400 hover:text-sky-300"
+                className="mt-2 inline-block text-sm font-semibold text-sky-700 hover:text-sky-800"
               >
                 Open TA Desk →
               </Link>
@@ -159,14 +159,14 @@ export function TaHelpDashboard() {
               }
               setCreateOpen(true);
             }}
-            className="shrink-0 rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+            className="shrink-0 rounded-lg bg-green-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-800"
           >
             Ask Support
           </button>
         </header>
 
         <nav
-          className="flex gap-1 overflow-x-auto border-b border-[#3a3a3a]"
+          className="flex gap-1 overflow-x-auto border-b border-[var(--border-theme)]"
           aria-label="Request status"
         >
           {TA_HELP_TABS.map((t) => {
@@ -179,8 +179,8 @@ export function TaHelpDashboard() {
                 className={cn(
                   'whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition',
                   active
-                    ? 'border-sky-500 text-sky-400'
-                    : 'border-transparent text-[#888] hover:text-[#c4c4c4]',
+                    ? 'border-green-700 text-green-800'
+                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-theme)]',
                 )}
               >
                 {t.label} ({counts[t.id]})
@@ -190,7 +190,7 @@ export function TaHelpDashboard() {
         </nav>
 
         <div
-          className="flex items-start gap-3 rounded-lg border border-violet-500/25 bg-violet-500/10 px-4 py-3 text-sm text-[#c4b5fd]"
+          className="flex items-start gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900"
           role="note"
         >
           <span className="mt-0.5 shrink-0" aria-hidden>
@@ -203,7 +203,7 @@ export function TaHelpDashboard() {
         </div>
 
         {error ? (
-          <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             {error}
           </p>
         ) : null}
@@ -212,23 +212,23 @@ export function TaHelpDashboard() {
           <button
             type="button"
             onClick={() => setShowFilters((v) => !v)}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-sky-400 hover:text-sky-300"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-green-700 hover:text-green-800"
           >
             {showFilters ? 'Hide filters' : 'See all filters'}
           </button>
-          <p className="text-xs text-[#777]">
+          <p className="text-xs text-[var(--text-muted)]">
             Showing {filtered.length} of {counts[tab]} in this tab
           </p>
         </div>
 
         {showFilters && (
-          <div className="flex flex-wrap gap-3 rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-4">
-            <label className="text-xs text-[#a0a0a0]">
+          <div className="flex flex-wrap gap-3 rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-4">
+            <label className="text-xs text-[var(--text-muted)]">
               Topic
               <select
                 value={topicFilter}
                 onChange={(e) => setTopicFilter(e.target.value)}
-                className="mt-1 block rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/60"
+                className="mt-1 block rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2 text-sm text-[var(--text-theme)] outline-none focus:border-green-500"
               >
                 <option value="all">All topics</option>
                 {topics.map((t) => (
@@ -238,12 +238,12 @@ export function TaHelpDashboard() {
                 ))}
               </select>
             </label>
-            <label className="text-xs text-[#a0a0a0]">
+            <label className="text-xs text-[var(--text-muted)]">
               Type
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="mt-1 block rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/60"
+                className="mt-1 block rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2 text-sm text-[var(--text-theme)] outline-none focus:border-green-500"
               >
                 <option value="all">All types</option>
                 <option value="text">Text HR</option>
@@ -255,17 +255,17 @@ export function TaHelpDashboard() {
 
         <div className="space-y-4">
           {loading ? (
-            <p className="text-sm text-[#888]">Loading your requests…</p>
+            <p className="text-sm text-[var(--text-muted)]">Loading your requests…</p>
           ) : filtered.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#3a3a3a] bg-[#222] px-6 py-12 text-center">
-              <p className="text-sm font-medium text-[#c4c4c4]">No requests in this tab</p>
-              <p className="mt-1 text-xs text-[#777]">
+            <div className="rounded-lg border border-dashed border-[var(--border-theme)] bg-[var(--surface-panel)] px-6 py-12 text-center">
+              <p className="text-sm font-medium text-[var(--text-theme)]">No requests in this tab</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">
                 Raise a new help request or switch tabs to see other statuses.
               </p>
               <button
                 type="button"
                 onClick={() => setCreateOpen(true)}
-                className="mt-4 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+                className="mt-4 rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
               >
                 Ask Support
               </button>
@@ -286,7 +286,7 @@ export function TaHelpDashboard() {
       <button
         type="button"
         onClick={() => setCreateOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-sky-600 text-2xl text-white shadow-lg shadow-black/40 transition hover:bg-sky-500"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-green-700 text-2xl text-white shadow-lg shadow-green-900/10 transition hover:bg-green-800"
         aria-label="New help request"
         title="New help request"
       >

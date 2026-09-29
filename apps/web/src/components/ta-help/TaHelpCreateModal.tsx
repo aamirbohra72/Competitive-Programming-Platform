@@ -9,9 +9,9 @@ import {
 } from '@/data/ta-help';
 
 const inputClass =
-  'w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2.5 text-sm text-white placeholder:text-[#666] outline-none transition focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40';
+  'w-full rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2.5 text-sm text-[var(--text-theme)] placeholder:text-[var(--text-muted)] outline-none transition focus:border-green-500 focus:ring-1 focus:ring-green-500/40';
 
-const labelClass = 'mb-1.5 block text-xs font-medium text-[#a0a0a0]';
+const labelClass = 'mb-1.5 block text-xs font-medium text-[var(--text-muted)]';
 
 export type TaHelpCreatePayload = {
   title: string;
@@ -70,25 +70,25 @@ export function TaHelpCreateModal({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 p-4"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-green-950/45 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] shadow-2xl"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-[var(--border-theme)] bg-white text-[var(--text-theme)] shadow-xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="ta-help-create-title"
       >
-        <div className="sticky top-0 flex items-center justify-between border-b border-[#3a3a3a] bg-[#2a2a2a] px-5 py-4">
-          <h2 id="ta-help-create-title" className="text-lg font-bold text-white">
+        <div className="sticky top-0 flex items-center justify-between border-b border-[var(--border-theme)] bg-[var(--surface-panel)] px-5 py-4">
+          <h2 id="ta-help-create-title" className="text-lg font-bold text-[var(--text-theme)]">
             {heading || (isCall ? 'Request a TA video call' : 'Ask a Teaching Assistant')}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded px-2 text-xl text-[#b0b0b0] hover:bg-[#3a3a3a] hover:text-white"
+            className="rounded px-2 text-xl text-[var(--text-muted)] hover:bg-green-100 hover:text-green-800"
             aria-label="Close"
           >
             ×
@@ -135,8 +135,8 @@ export function TaHelpCreateModal({
                   className={cn(
                     'flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition',
                     type === opt.id
-                      ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300'
-                      : 'border-[#3a3a3a] text-[#b0b0b0] hover:border-[#4a4a4a] hover:text-white',
+                      ? 'border-green-500 bg-green-50 text-green-800'
+                      : 'border-[var(--border-theme)] bg-white text-[var(--text-muted)] hover:border-green-400 hover:text-[var(--text-theme)]',
                   )}
                 >
                   {opt.label}
@@ -157,8 +157,8 @@ export function TaHelpCreateModal({
                     className={cn(
                       'rounded-lg border px-3 py-2 text-left text-xs font-medium transition',
                       slot === s
-                        ? 'border-sky-400/50 bg-sky-500/15 text-sky-200'
-                        : 'border-[#3a3a3a] text-[#b0b0b0] hover:border-[#4a4a4a]',
+                        ? 'border-sky-400 bg-sky-50 text-sky-800'
+                        : 'border-[var(--border-theme)] bg-white text-[var(--text-muted)] hover:border-sky-400',
                     )}
                   >
                     {s}
@@ -268,13 +268,13 @@ export function TaHelpCreateModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-[#3a3a3a] py-2.5 text-sm font-semibold text-[#b0b0b0] hover:border-[#4a4a4a] hover:text-white"
+              className="flex-1 rounded-lg border border-[var(--border-theme)] bg-white py-2.5 text-sm font-semibold text-[var(--text-theme)] hover:border-green-400 hover:bg-green-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 rounded-lg bg-orange-500 py-2.5 text-sm font-semibold text-white hover:bg-orange-600"
+              className="flex-1 rounded-lg bg-green-700 py-2.5 text-sm font-semibold text-white hover:bg-green-800"
             >
               {isCall ? 'Request call' : 'Submit request'}
             </button>
