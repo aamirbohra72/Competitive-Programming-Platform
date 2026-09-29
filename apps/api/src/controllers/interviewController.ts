@@ -1,8 +1,11 @@
 import { Response } from 'express';
+import { createRequire } from 'node:module';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth';
 import {
   createInterviewSession,
+  disqualifyInterviewSession,
+  finishInterviewSession,
   getInterviewSession,
   submitInterviewAnswer,
   INTERVIEW_TEMPLATE_JS_10M,
@@ -10,10 +13,15 @@ import {
 
 const createSessionBodySchema = z.object({
   template: z.string().optional(),
+  mode: z.enum(['PRACTICE', 'PROCTORED']).default('PRACTICE'),
 });
 
 const transcriptBodySchema = z.object({
   transcript: z.string().min(1, 'Transcript cannot be empty'),
+});
+
+const disqualifyBodySchema = z.object({
+  reason: z.enum(['tab-hidden', 'window-blur', 'fullscreen-exit', 'camera-stopped', 'microphone-stopped', 'screen-share-stopped', 'prohibited-actions']),
 });
 
 function mapInterviewError(err: unknown): { status: number; message: string } | null {
@@ -33,7 +41,12 @@ function mapInterviewError(err: unknown): { status: number; message: string } | 
       return { status: 400, message: 'No further questions for this session.' };
     case 'EMPTY_TRANSCRIPT':
       return { status: 400, message: 'Could not use an empty answer. Record audio or type a transcript.' };
+    case 'MISTRAL_API_KEY is not configured':
+      return { status: 503, message: 'Mistral is not configured (missing MISTRAL_API_KEY).' };
     default:
+      if (/rate limit|\b429\b/i.test(err.message)) {
+        return { status: 503, message: 'The AI interviewer is busy right now (rate limited). Wait a minute and try again.' };
+      }
       return null;
   }
 }
@@ -45,9 +58,36 @@ export const interviewController = {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
-      const body = createSessionBodySchema.parse(req.body ?? {});
+      const parsed = createSessionBodySchema.safeParse(req.body ?? {});
+      if (!parsed.success) {
+        res.status(400).json({ error: 'Invalid interview mode or template.' });
+        return;
+      }
+      const body = parsed.data;
+      if (body.mode === 'PROCTORED' && !req.file) {
+        res.status(400).json({ error: 'A PDF resume is required for a proctored interview.' });
+        return;
+      }
+      let resumeText: string | undefined;
+      if (req.file) {
+        if (req.file.mimetype !== 'application/pdf' || req.file.buffer.subarray(0, 5).toString() !== '%PDF-') {
+          res.status(400).json({ error: 'Upload a valid PDF resume.' });
+          return;
+        }
+        try {
+          const pdfParse = createRequire(__filename)('pdf-parse') as (buffer: Buffer) => Promise<{ text: string }>;
+          resumeText = (await pdfParse(req.file.buffer)).text.replace(/\s+/g, ' ').trim().slice(0, 12000);
+        } catch {
+          res.status(400).json({ error: 'Could not read this PDF. Upload a text-based resume.' });
+          return;
+        }
+        if (resumeText.length < 80) {
+          res.status(400).json({ error: 'This resume has too little extractable text. Upload a text-based PDF.' });
+          return;
+        }
+      }
       const template = body.template ?? INTERVIEW_TEMPLATE_JS_10M;
-      const state = await createInterviewSession(req.user.userId, template);
+      const state = await createInterviewSession(req.user.userId, template, body.mode, resumeText);
       res.status(201).json(state);
     } catch (err) {
       const mapped = mapInterviewError(err);
@@ -71,6 +111,47 @@ export const interviewController = {
       return;
     }
     res.json(state);
+  },
+
+  async disqualifySession(req: AuthRequest, res: Response): Promise<void> {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const parsed = disqualifyBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid disqualification reason' });
+      return;
+    }
+    try {
+      const state = await disqualifyInterviewSession(req.params.id, req.user.userId, parsed.data.reason);
+      res.json(state);
+    } catch (err) {
+      const mapped = mapInterviewError(err);
+      if (mapped) {
+        res.status(mapped.status).json({ error: mapped.message });
+        return;
+      }
+      throw err;
+    }
+  },
+
+  async finishSession(req: AuthRequest, res: Response): Promise<void> {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    try {
+      const state = await finishInterviewSession(req.params.id, req.user.userId);
+      res.json(state);
+    } catch (err) {
+      const mapped = mapInterviewError(err);
+      if (mapped) {
+        res.status(mapped.status).json({ error: mapped.message });
+        return;
+      }
+      throw err;
+    }
   },
 
   async submitAnswer(req: AuthRequest, res: Response): Promise<void> {

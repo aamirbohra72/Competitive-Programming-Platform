@@ -45,8 +45,10 @@ function mapGetUserMediaError(err: unknown, device: 'microphone' | 'camera'): st
   return device === 'microphone' ? message || 'Could not access microphone.' : message;
 }
 
-async function getVideoTrack(): Promise<MediaStream | null> {
-  const attempts: MediaStreamConstraints[] = [
+async function getVideoTrack(cameraId?: string): Promise<MediaStream | null> {
+  const attempts: MediaStreamConstraints[] = cameraId ? [
+    { video: { deviceId: { exact: cameraId } } },
+  ] : [
     { video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } },
     { video: { width: { ideal: 640 }, height: { ideal: 480 } } },
     { video: true },
@@ -62,7 +64,7 @@ async function getVideoTrack(): Promise<MediaStream | null> {
   return null;
 }
 
-export async function acquireInterviewMedia(): Promise<InterviewMediaResult> {
+export async function acquireInterviewMedia(options?: { microphoneId?: string; cameraId?: string }): Promise<InterviewMediaResult> {
   const notices: string[] = [];
 
   if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
@@ -79,6 +81,7 @@ export async function acquireInterviewMedia(): Promise<InterviewMediaResult> {
   try {
     audioStream = await navigator.mediaDevices.getUserMedia({
       audio: {
+        ...(options?.microphoneId ? { deviceId: { exact: options.microphoneId } } : {}),
         echoCancellation: true,
         noiseSuppression: true,
       },
@@ -88,7 +91,7 @@ export async function acquireInterviewMedia(): Promise<InterviewMediaResult> {
     throw new Error(mapGetUserMediaError(e, 'microphone'));
   }
 
-  const videoStream = await getVideoTrack();
+  const videoStream = await getVideoTrack(options?.cameraId);
 
   if (!videoStream) {
     notices.push(

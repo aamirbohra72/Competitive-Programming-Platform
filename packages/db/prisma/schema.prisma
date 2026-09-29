@@ -269,6 +269,8 @@ model InterviewSession {
   id                  String                 @id @default(cuid())
   userId              String
   template            String
+  mode                String                 @default("PRACTICE")
+  resumeContext       String?                @db.Text
   status              InterviewSessionStatus @default(IN_PROGRESS)
   startedAt           DateTime               @default(now())
   endsAt              DateTime

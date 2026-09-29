@@ -26,7 +26,7 @@ const sidebarItems: SidebarItem[] = [
   { label: 'Certificates', href: '/certificates', icon: '🏆' },
   { label: 'Billing', href: '/billing', icon: '💳' },
   { label: 'Playground', href: '/practice', icon: '💻' },
-  { label: 'Interview (JS)', href: '/interview', icon: '🎙️' },
+  { label: 'Interview', href: '/interview', icon: '🎙️' },
   { label: 'TA Help', href: '/ta-help', icon: '🧑‍🏫' },
   { label: 'TA Desk', href: '/ta-help/desk', icon: '🎧', staffOnly: true },
   { label: 'Placement Support', href: '/placement', icon: '💼' },

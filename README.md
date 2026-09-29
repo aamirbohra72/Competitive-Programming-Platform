@@ -66,6 +66,10 @@ INTERVIEW_ENABLED=true
 
 If `INTERVIEW_ENABLED` is not `true` in production, `/api/interview/*` returns 503. Development does not require `INTERVIEW_ENABLED`.
 
+The interview has **Practice** (optional PDF and camera) and **Proctored** modes. Proctored mode requires a text-based PDF resume (max 5 MB), working camera and microphone, an audible speaker test, confirmed entire-screen sharing, and fullscreen before the session starts. Browsers that cannot report the selected capture surface cannot enter Proctored mode. The resume text is sent to the configured Mistral service to plan a resume-specific first question; only the derived skills/project context is stored with the session. Follow-up questions probe resume claims and the final report includes skill gaps. At the ten-minute limit, the report uses only answers already submitted; without answers it explicitly says there is insufficient evidence. Neither camera nor screen video is uploaded.
+
+Leaving the tab, losing window focus, or exiting fullscreen for 5 seconds disqualifies the session; disconnecting a required camera, microphone, or screen share also ends it. Copy/paste, right-click, and page text selection are blocked in Proctored mode; five attempts disqualify the session. The API records disqualification as `ABANDONED`. Browser checks cannot prevent switching, reliably detect inspector access, or provide tamper-proof supervision; this is a practice-grade proctoring experience, not a certified exam system. Mobile QR pairing and second-device monitoring are not implemented yet. Apply the checked-in interview resume migration with `npm run db:migrate -w @codeforces/db` before starting the API.
+
 **Interview DB tables:** If `POST /api/interview/sessions` returns **500** (or **503** with “missing tables”), apply the schema to Postgres:
 
 ```bash

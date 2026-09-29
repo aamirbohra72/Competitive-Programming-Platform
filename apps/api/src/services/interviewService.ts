@@ -6,6 +6,7 @@ import {
 } from '@codeforces/db';
 import {
   transcribeAudio,
+  planResumeInterview,
   gradeTurnAndGenerateNext,
   generateFinalReport,
 } from './mistralInterviewService';
@@ -77,7 +78,9 @@ export function sessionPublicState(session: InterviewSession) {
 
 export async function createInterviewSession(
   userId: string,
-  template: string = INTERVIEW_TEMPLATE_JS_10M
+  template: string = INTERVIEW_TEMPLATE_JS_10M,
+  mode: 'PRACTICE' | 'PROCTORED' = 'PRACTICE',
+  resumeText?: string,
 ): Promise<ReturnType<typeof sessionPublicState>> {
   if (template !== INTERVIEW_TEMPLATE_JS_10M) {
     throw new Error('UNKNOWN_TEMPLATE');
@@ -85,15 +88,18 @@ export async function createInterviewSession(
 
   const startedAt = new Date();
   const endsAt = new Date(startedAt.getTime() + INTERVIEW_DURATION_MS);
+  const resumePlan = resumeText ? await planResumeInterview(resumeText) : null;
 
   const session = await prisma.interviewSession.create({
     data: {
       userId,
       template,
+      mode,
+      resumeContext: resumePlan ? JSON.stringify({ skills: resumePlan.skills, projects: resumePlan.projects }) : null,
       startedAt,
       endsAt,
       currentQuestion: 0,
-      currentQuestionText: INITIAL_JS_PROBLEM,
+      currentQuestionText: resumePlan?.question ?? INITIAL_JS_PROBLEM,
       status: InterviewSessionStatus.IN_PROGRESS,
     },
   });
@@ -105,6 +111,62 @@ export async function getInterviewSession(sessionId: string, userId: string) {
   const session = await loadSessionForUser(sessionId, userId);
   if (!session) return null;
   return sessionPublicState(session);
+}
+
+export async function disqualifyInterviewSession(
+  sessionId: string,
+  userId: string,
+  reason: string,
+) {
+  const updated = await prisma.interviewSession.updateMany({
+    where: { id: sessionId, userId, status: InterviewSessionStatus.IN_PROGRESS },
+    data: {
+      status: InterviewSessionStatus.ABANDONED,
+      currentQuestionText: null,
+      summaryJson: JSON.stringify({ disqualified: true, reason }),
+      reportDetail: `Disqualified: ${reason}`,
+    },
+  });
+  if (updated.count === 0) throw new Error('SESSION_NOT_ACTIVE');
+  const session = await loadSessionForUser(sessionId, userId);
+  if (!session) throw new Error('SESSION_NOT_FOUND');
+  return sessionPublicState(session);
+}
+
+export async function finishInterviewSession(sessionId: string, userId: string) {
+  const session = await loadSessionForUser(sessionId, userId);
+  if (!session) throw new Error('SESSION_NOT_FOUND');
+  if (session.status !== InterviewSessionStatus.IN_PROGRESS) throw new Error('SESSION_NOT_ACTIVE');
+
+  const turns = await prisma.interviewTurn.findMany({
+    where: { sessionId },
+    orderBy: { order: 'asc' },
+    select: { questionText: true, transcript: true, score: true },
+  });
+  const report = turns.length > 0 ? await generateFinalReport(turns, session.resumeContext) : null;
+  const updated = await prisma.interviewSession.updateMany({
+    where: { id: sessionId, userId, status: InterviewSessionStatus.IN_PROGRESS },
+    data: {
+      status: InterviewSessionStatus.COMPLETED,
+      currentQuestionText: null,
+      verdict: report?.verdict as InterviewVerdict | undefined,
+      overallScore: report ? Math.round(report.overallScore) : null,
+      summaryJson: JSON.stringify(report ? {
+        verdict: report.verdict,
+        overallScore: report.overallScore,
+        dimensions: report.dimensions ?? {},
+        weakTopics: report.weakTopics,
+        resumeSkillGaps: session.resumeContext ? report.weakTopics : [],
+        improvementPlan: report.improvementPlan,
+        strengths: report.strengths,
+      } : { strengths: [], weakTopics: [], improvementPlan: [] }),
+      reportDetail: report?.detailedMarkdown ?? 'No answers were recorded, so there is not enough evidence to assess skills.',
+    },
+  });
+  if (updated.count === 0) throw new Error('SESSION_NOT_ACTIVE');
+  const completed = await loadSessionForUser(sessionId, userId);
+  if (!completed) throw new Error('SESSION_NOT_FOUND');
+  return sessionPublicState(completed);
 }
 
 export async function submitInterviewAnswer(
@@ -158,7 +220,13 @@ export async function submitInterviewAnswer(
     transcript,
     previousTurns,
     !isLast,
+    session.resumeContext,
   );
+
+  const activeSession = await loadSessionForUser(sessionId, userId);
+  if (activeSession?.status !== InterviewSessionStatus.IN_PROGRESS) {
+    throw new Error('SESSION_NOT_ACTIVE');
+  }
 
   await prisma.interviewTurn.create({
     data: {
@@ -181,19 +249,20 @@ export async function submitInterviewAnswer(
       select: { questionText: true, transcript: true, score: true },
     });
 
-    const report = await generateFinalReport(turns);
+    const report = await generateFinalReport(turns, session.resumeContext);
 
     const summaryPayload = {
       verdict: report.verdict,
       overallScore: report.overallScore,
       dimensions: report.dimensions ?? {},
       weakTopics: report.weakTopics,
+      resumeSkillGaps: session.resumeContext ? report.weakTopics : [],
       improvementPlan: report.improvementPlan,
       strengths: report.strengths,
     };
 
-    await prisma.interviewSession.update({
-      where: { id: session.id },
+    const updated = await prisma.interviewSession.updateMany({
+      where: { id: session.id, status: InterviewSessionStatus.IN_PROGRESS },
       data: {
         status: InterviewSessionStatus.COMPLETED,
         currentQuestion: nextIndex,
@@ -204,14 +273,16 @@ export async function submitInterviewAnswer(
         reportDetail: report.detailedMarkdown,
       },
     });
+    if (updated.count === 0) throw new Error('SESSION_NOT_ACTIVE');
   } else {
-    await prisma.interviewSession.update({
-      where: { id: session.id },
+    const updated = await prisma.interviewSession.updateMany({
+      where: { id: session.id, status: InterviewSessionStatus.IN_PROGRESS },
       data: {
         currentQuestion: nextIndex,
         currentQuestionText: grade.nextQuestion,
       },
     });
+    if (updated.count === 0) throw new Error('SESSION_NOT_ACTIVE');
   }
 
   const updated = await prisma.interviewSession.findUniqueOrThrow({ where: { id: session.id } });

@@ -9,17 +9,37 @@ const upload = multer({
   limits: { fileSize: 12 * 1024 * 1024 },
 });
 
+const resumeUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+
 export const interviewRoutes = Router();
 
 interviewRoutes.use(requireInterviewEnabled);
 interviewRoutes.use(authenticate);
 
 interviewRoutes.post('/sessions', (req, res, next) => {
-  void interviewController.createSession(req, res).catch(next);
+  resumeUpload.single('resume')(req, res, (error) => {
+    if (error) {
+      res.status(error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE' ? 413 : 400)
+        .json({ error: 'Resume upload must be a PDF under 5 MB.' });
+      return;
+    }
+    void interviewController.createSession(req, res).catch(next);
+  });
 });
 
 interviewRoutes.get('/sessions/:id', (req, res, next) => {
   void interviewController.getSession(req, res).catch(next);
+});
+
+interviewRoutes.post('/sessions/:id/disqualify', (req, res, next) => {
+  void interviewController.disqualifySession(req, res).catch(next);
+});
+
+interviewRoutes.post('/sessions/:id/finish', (req, res, next) => {
+  void interviewController.finishSession(req, res).catch(next);
 });
 
 interviewRoutes.post('/sessions/:id/answers', upload.single('audio'), (req, res, next) => {
