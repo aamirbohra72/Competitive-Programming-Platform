@@ -6,6 +6,8 @@ import { cn } from '@/lib/cn';
 
 type Region = 'india' | 'international';
 
+const fieldClass = 'w-full rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2 text-[var(--text-theme)] placeholder:text-[var(--text-muted)] focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500';
+
 export function AffiliateKycForm() {
   const [region, setRegion] = useState<Region>('india');
   const [submitting, setSubmitting] = useState(false);
@@ -62,13 +64,13 @@ export function AffiliateKycForm() {
   );
 
   return (
-    <section className="rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-6">
-      <h2 className="text-lg font-semibold text-white">Affiliate verification (KYC)</h2>
+    <section className="rounded-lg border border-[var(--border-theme)] bg-white p-6">
+      <h2 className="text-lg font-semibold text-[var(--text-theme)]">Affiliate verification (KYC)</h2>
       <div
-        className="mt-4 rounded-lg border border-sky-500/30 bg-sky-500/10 p-4 text-sm text-[#b8d4e8]"
+        className="mt-4 rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900"
         role="note"
       >
-        <p className="font-medium text-sky-200">Before you submit</p>
+        <p className="font-medium text-sky-800">Before you submit</p>
         <ol className="mt-2 list-decimal space-y-1 pl-4">
           <li>Use details exactly as on your government ID.</li>
           <li>Keep ID images under 150KB when uploads are enabled.</li>
@@ -77,8 +79,8 @@ export function AffiliateKycForm() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-[#b0b0b0]">Where are you from?</span>
-        <div className="flex rounded-lg border border-[#3a3a3a] p-0.5">
+        <span className="text-sm text-[var(--text-muted)]">Where are you from?</span>
+        <div className="flex rounded-lg border border-[var(--border-theme)] p-0.5">
           {(
             [
               { id: 'international' as const, label: 'Outside India' },
@@ -91,7 +93,7 @@ export function AffiliateKycForm() {
               onClick={() => setRegion(opt.id)}
               className={cn(
                 'rounded-md px-3 py-1.5 text-xs font-semibold transition',
-                region === opt.id ? 'bg-emerald-600 text-white' : 'text-[#b0b0b0] hover:text-white'
+                region === opt.id ? 'bg-green-700 text-white' : 'text-[var(--text-muted)] hover:bg-green-50 hover:text-green-800'
               )}
             >
               {opt.label}
@@ -109,7 +111,7 @@ export function AffiliateKycForm() {
                 required
                 maxLength={10}
                 placeholder="ABCDE1234F"
-                className="w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-white placeholder:text-[#666] focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={fieldClass}
                 autoComplete="off"
               />
             </Field>
@@ -118,7 +120,7 @@ export function AffiliateKycForm() {
                 name="nameOnPan"
                 required
                 placeholder="Full name as on PAN"
-                className="w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-white placeholder:text-[#666] focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={fieldClass}
               />
             </Field>
             <Field label="Aadhaar number" required>
@@ -129,7 +131,7 @@ export function AffiliateKycForm() {
                 pattern="[0-9]{12}"
                 maxLength={12}
                 placeholder="12-digit Aadhaar"
-                className="w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-white placeholder:text-[#666] focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={fieldClass}
               />
             </Field>
             <Field label="State" required>
@@ -137,7 +139,7 @@ export function AffiliateKycForm() {
                 name="state"
                 required
                 defaultValue=""
-                className="w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={fieldClass}
               >
                 <option value="" disabled>
                   Select state
@@ -156,20 +158,20 @@ export function AffiliateKycForm() {
               <input
                 name="fullName"
                 required
-                className="w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-white placeholder:text-[#666] focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={fieldClass}
               />
             </Field>
             <Field label="Country" required>
               <input
                 name="country"
                 required
-                className="w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-white placeholder:text-[#666] focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={fieldClass}
               />
             </Field>
             <Field label="Tax ID (optional)">
               <input
                 name="taxId"
-                className="w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-white placeholder:text-[#666] focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={fieldClass}
               />
             </Field>
           </>
@@ -181,17 +183,17 @@ export function AffiliateKycForm() {
             required
             inputMode="tel"
             placeholder={region === 'india' ? '10-digit mobile' : 'Include country code if applicable'}
-            className="w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2 text-white placeholder:text-[#666] focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className={fieldClass}
           />
         </Field>
 
-        <p className="text-xs text-[#888]">
+        <p className="text-xs text-[var(--text-muted)]">
           Identity document uploads will attach to this application when file storage is enabled for your account.
         </p>
 
         {message ? (
           <p
-            className={cn('text-sm', message.type === 'ok' ? 'text-emerald-400' : 'text-red-400')}
+            className={cn('text-sm', message.type === 'ok' ? 'text-green-700' : 'text-red-700')}
             role="status"
           >
             {message.text}
@@ -201,7 +203,7 @@ export function AffiliateKycForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
+          className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-800 disabled:opacity-50"
         >
           {submitting ? 'Submitting…' : 'Submit application'}
         </button>
@@ -221,7 +223,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm text-[#b0b0b0]">
+      <span className="mb-1 block text-sm text-[var(--text-muted)]">
         {label}
         {required ? <span className="text-red-400"> *</span> : null}
       </span>

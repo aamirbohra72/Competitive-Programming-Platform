@@ -166,12 +166,12 @@ function PlaylistPlayer() {
 
   return (
     <DashboardShell navClassName="sticky top-0 z-50" mainClassName="min-h-0 overflow-y-auto p-6">
-      <Link href="/videos" className="text-sm text-[#b0b0b0] no-underline hover:text-white">
+      <Link href="/videos" className="text-sm text-[var(--text-muted)] no-underline hover:text-green-700">
         ← All video courses
       </Link>
 
-      {error && <p className="mt-4 text-red-400">{error}</p>}
-      {!data && !error && <p className="mt-4 text-[#b0b0b0]">Loading playlist…</p>}
+      {error && <p className="mt-4 text-red-700">{error}</p>}
+      {!data && !error && <p className="mt-4 text-[var(--text-muted)]">Loading playlist…</p>}
 
       {data && (
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -188,32 +188,32 @@ function PlaylistPlayer() {
                       type="button"
                       disabled={saving || completed.has(current.videoId)}
                       onClick={() => void markWatched(current.videoId)}
-                      className="rounded-md bg-[#22c55e] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                      className="rounded-md bg-green-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
                     >
                       {completed.has(current.videoId) ? '✓ Watched' : saving ? 'Saving…' : 'Mark as watched'}
                     </button>
                   ) : (
                     <Link
                       href={`/sign-in?redirect_url=/videos/${playlistId}`}
-                      className="text-sm text-[#22c55e]"
+                      className="text-sm font-semibold text-green-700"
                     >
                       Log in to track your progress
                     </Link>
                   )}
                 </div>
-                <p className="mt-4 whitespace-pre-line text-sm text-[#b0b0b0]">{current.description}</p>
+                <p className="mt-4 whitespace-pre-line text-sm text-[var(--text-muted)]">{current.description}</p>
               </div>
             )}
           </div>
 
-          <aside className="flex max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-xl border border-[#3a3a3a] bg-[#2a2a2a]">
-            <div className="border-b border-[#3a3a3a] p-4">
+          <aside className="flex max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)]">
+            <div className="border-b border-[var(--border-theme)] p-4">
               <h2 className="font-semibold">{data.playlist?.title}</h2>
-              <p className="mt-1 text-xs text-[#b0b0b0]">
+              <p className="mt-1 text-xs text-[var(--text-muted)]">
                 {data.playlist?.channelTitle} · {completed.size}/{videos.length} watched
               </p>
-              <div className="mt-2 h-1.5 w-full overflow-hidden rounded bg-[#3a3a3a]">
-                <div className="h-full bg-[#22c55e]" style={{ width: `${percent}%` }} />
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded bg-green-100">
+                <div className="h-full bg-green-700" style={{ width: `${percent}%` }} />
               </div>
             </div>
             <ol className="flex-1 overflow-y-auto">
@@ -224,9 +224,9 @@ function PlaylistPlayer() {
                     <button
                       type="button"
                       onClick={() => selectVideo(v.videoId)}
-                      className={`flex w-full gap-3 p-3 text-left transition hover:bg-[#333] ${active ? 'bg-[#22c55e]/15' : ''}`}
+                      className={`flex w-full gap-3 p-3 text-left transition hover:bg-green-50 ${active ? 'bg-green-100' : ''}`}
                     >
-                      <span className="w-6 shrink-0 pt-1 text-xs text-[#b0b0b0]">
+                      <span className="w-6 shrink-0 pt-1 text-xs text-[var(--text-muted)]">
                         {completed.has(v.videoId) ? '✓' : i + 1}
                       </span>
                       {v.thumbnail && (
@@ -234,10 +234,10 @@ function PlaylistPlayer() {
                         <img src={v.thumbnail} alt="" className="aspect-video w-28 shrink-0 rounded object-cover" />
                       )}
                       <span className="min-w-0">
-                        <span className={`line-clamp-2 text-sm ${active ? 'text-white' : 'text-[#ddd]'}`}>
+                        <span className={`line-clamp-2 text-sm ${active ? 'font-semibold text-green-800' : 'text-[var(--text-theme)]'}`}>
                           {v.title}
                         </span>
-                        <span className="text-xs text-[#888]">{formatDuration(v.durationSeconds)}</span>
+                        <span className="text-xs text-[var(--text-muted)]">{formatDuration(v.durationSeconds)}</span>
                       </span>
                     </button>
                   </li>

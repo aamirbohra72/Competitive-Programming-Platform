@@ -26,8 +26,8 @@ function ExternalLink({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10',
-        'bg-white/5 text-white/70 transition-colors hover:border-green-500/30 hover:bg-white/10 hover:text-green-400',
+        'inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-theme)]',
+        'bg-white text-green-700 transition-colors hover:border-green-400 hover:bg-green-50',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500',
       )}
       aria-label={label}
@@ -40,16 +40,16 @@ function ExternalLink({
 
 export function DsaProblemTable({ problems, completedIds, onToggleComplete }: DsaProblemTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-white/[0.08]">
+    <div className="overflow-x-auto rounded-lg border border-[var(--border-theme)]">
       <table className="w-full min-w-[640px] border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-white/[0.08] bg-[#242424]">
-            <th className="px-3 py-3 font-semibold text-white/70 w-14">Done</th>
-            <th className="px-3 py-3 font-semibold text-white/70">Problem</th>
-            <th className="px-3 py-3 font-semibold text-white/70 text-center w-16">Practice</th>
-            <th className="px-3 py-3 font-semibold text-white/70 text-center w-16">Video</th>
-            <th className="px-3 py-3 font-semibold text-white/70 text-center w-16">Notes</th>
-            <th className="px-3 py-3 font-semibold text-white/70 w-28">Difficulty</th>
+          <tr className="border-b border-[var(--border-theme)] bg-green-50">
+            <th className="px-3 py-3 font-semibold text-[var(--text-muted)] w-14">Done</th>
+            <th className="px-3 py-3 font-semibold text-[var(--text-muted)]">Problem</th>
+            <th className="px-3 py-3 font-semibold text-[var(--text-muted)] text-center w-16">Practice</th>
+            <th className="px-3 py-3 font-semibold text-[var(--text-muted)] text-center w-16">Video</th>
+            <th className="px-3 py-3 font-semibold text-[var(--text-muted)] text-center w-16">Notes</th>
+            <th className="px-3 py-3 font-semibold text-[var(--text-muted)] w-28">Difficulty</th>
           </tr>
         </thead>
         <tbody>
@@ -59,8 +59,8 @@ export function DsaProblemTable({ problems, completedIds, onToggleComplete }: Ds
               <tr
                 key={prob.id}
                 className={cn(
-                  'border-b border-white/[0.06] transition-colors hover:bg-white/[0.03]',
-                  rowIdx % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#1a1a1a]',
+                  'border-b border-[var(--border-theme)] transition-colors hover:bg-green-50',
+                  rowIdx % 2 === 0 ? 'bg-white' : 'bg-[var(--surface-panel)]',
                 )}
               >
                 <td className="px-3 py-3">
@@ -68,11 +68,11 @@ export function DsaProblemTable({ problems, completedIds, onToggleComplete }: Ds
                     type="checkbox"
                     checked={done}
                     onChange={(e) => onToggleComplete(prob.id, e.target.checked)}
-                    className="h-4 w-4 rounded border-white/30 bg-[#2a2a2a] text-green-600 focus:ring-green-500 focus:ring-offset-0 focus:ring-offset-[#1a1a1a]"
+                    className="h-4 w-4 rounded border-[var(--border-theme)] bg-white text-green-700 focus:ring-green-500 focus:ring-offset-0 focus:ring-offset-white"
                     aria-label={`Mark ${prob.title} as ${done ? 'incomplete' : 'complete'}`}
                   />
                 </td>
-                <td className="px-3 py-3 font-medium text-white">{prob.title}</td>
+                <td className="px-3 py-3 font-medium text-[var(--text-theme)]">{prob.title}</td>
                 <td className="px-3 py-3 text-center">
                   <ExternalLink
                     href={prob.practiceUrl}

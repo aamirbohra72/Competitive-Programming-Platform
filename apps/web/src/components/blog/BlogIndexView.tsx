@@ -132,38 +132,34 @@ export function BlogIndexView() {
 
   return (
     <div className="min-h-full">
-      <div className="relative overflow-hidden border-b border-white/[0.06] bg-[#161616]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_420px_at_12%_-20%,rgba(34,197,94,0.14),transparent_55%),radial-gradient(700px_360px_at_88%_0%,rgba(56,189,248,0.1),transparent_50%)]"
-        />
-        <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-400/90">
+      <div className="border-b border-[var(--border-theme)] bg-[var(--surface-panel)]">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-700">
             Engineering blog · Live via Mistral
           </p>
-          <h1 className="mt-3 max-w-3xl font-nav-brand text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+          <h1 className="mt-3 max-w-3xl font-nav-brand text-3xl font-bold text-[var(--text-theme)] sm:text-4xl lg:text-5xl">
             {hub?.headline || 'Build faster. Think deeper.'}
           </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/60">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-[var(--text-muted)]">
             {hub?.summary ||
               'Editorial tutorials plus fresh GenAI, blockchain, contest, and career notes — generated in real time.'}
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/55">
+            <span className="rounded-full border border-[var(--border-theme)] bg-white px-3 py-1 text-xs text-[var(--text-muted)]">
               {hub?.generatedAt
                 ? `Live pack · ${new Date(hub.generatedAt).toLocaleString()}`
                 : loading
                   ? 'Fetching live pack…'
                   : 'Editorial posts ready'}
             </span>
-            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/55">
+            <span className="rounded-full border border-[var(--border-theme)] bg-white px-3 py-1 text-xs text-[var(--text-muted)]">
               {editorialFeatured.length + editorialRecent.length} editorial · {livePosts.length || '—'} live
             </span>
             <button
               type="button"
               disabled={loading || refreshing}
               onClick={() => void load(true)}
-              className="ml-auto rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-1.5 text-xs font-semibold text-[#052e16] transition disabled:opacity-60"
+              className="ml-auto rounded-md bg-green-700 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-green-800 disabled:opacity-60"
             >
               {refreshing ? 'Regenerating…' : 'Regenerate with Mistral'}
             </button>
@@ -178,17 +174,17 @@ export function BlogIndexView() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by title, author, or tag…"
-              className="w-full flex-1 rounded-lg border border-white/10 bg-[#1a1a1a] px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-green-500/35 focus:outline-none focus:ring-2 focus:ring-green-500/25"
+              className="w-full flex-1 rounded-lg border border-[var(--border-theme)] bg-white px-4 py-3 text-sm text-[var(--text-theme)] placeholder:text-[var(--text-muted)] focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/25"
             />
             <Link
               href="/blog/write"
-              className="inline-flex shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+              className="inline-flex shrink-0 items-center justify-center rounded-lg border border-[var(--border-theme)] bg-white px-4 py-3 text-sm font-medium text-green-700 transition-colors hover:border-green-400 hover:bg-green-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
             >
               Write a post
             </Link>
           </div>
           {error ? (
-            <p className="mt-4 text-sm text-red-400">
+            <p className="mt-4 text-sm text-red-700">
               Live posts unavailable: {error}{' '}
               <button type="button" className="underline" onClick={() => void load(true)}>
                 Retry
@@ -200,11 +196,11 @@ export function BlogIndexView() {
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         {!hasAny ? (
-          <p className="rounded-lg border border-white/10 bg-[#242424] px-6 py-12 text-center text-white/60">
+          <p className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] px-6 py-12 text-center text-[var(--text-muted)]">
             No articles match “{query}”. Try another keyword or{' '}
             <button
               type="button"
-              className="text-green-400 underline decoration-green-500/40 hover:text-green-300"
+              className="text-green-700 underline decoration-green-500/40 hover:text-green-800"
               onClick={() => setQuery('')}
             >
               clear search
@@ -234,8 +230,8 @@ export function BlogIndexView() {
                         onClick={() => setCategory(c)}
                         className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
                           category === c
-                            ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-300'
-                            : 'border-white/10 bg-white/[0.03] text-white/55 hover:border-white/20'
+                            ? 'border-green-500 bg-green-50 text-green-800'
+                            : 'border-[var(--border-theme)] bg-white text-[var(--text-muted)] hover:border-green-400 hover:bg-green-50'
                         }`}
                       >
                         {c === 'all' ? 'All' : CATEGORY_LABEL[c] || c}
@@ -245,8 +241,8 @@ export function BlogIndexView() {
                 </div>
 
                 {loading && !hub ? (
-                  <div className="rounded-xl border border-white/10 bg-[#1a1a1a] px-6 py-10 text-center text-sm text-white/50">
-                    <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-2 border-white/15 border-t-emerald-400" />
+                  <div className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] px-6 py-10 text-center text-sm text-[var(--text-muted)]">
+                    <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-2 border-green-200 border-t-green-700" />
                     Generating fresh articles with Mistral…
                   </div>
                 ) : null}
@@ -255,7 +251,7 @@ export function BlogIndexView() {
                   <div className="mb-5 space-y-5">
                     {liveFeatured.map((post) => (
                       <div key={post.id} className="relative">
-                        <span className="absolute right-4 top-4 z-10 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-cyan-300">
+                        <span className="absolute right-4 top-4 z-10 rounded-full border border-sky-300 bg-sky-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sky-800">
                           AI · {CATEGORY_LABEL[post.category || ''] || post.category}
                         </span>
                         <BlogFeaturedCard post={post} />
@@ -268,7 +264,7 @@ export function BlogIndexView() {
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {liveRest.map((post) => (
                       <div key={post.id} className="relative h-full">
-                        <span className="absolute right-3 top-3 z-10 rounded-full border border-white/10 bg-[#121212]/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/55">
+                        <span className="absolute right-3 top-3 z-10 rounded-full border border-[var(--border-theme)] bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
                           {CATEGORY_LABEL[post.category || ''] || 'Live'}
                         </span>
                         <BlogPostCompactCard post={post} highlight />
@@ -278,7 +274,7 @@ export function BlogIndexView() {
                 ) : null}
 
                 {!loading && hub && filteredLive.length === 0 ? (
-                  <p className="rounded-lg border border-white/10 bg-[#242424] px-4 py-8 text-center text-sm text-white/50">
+                  <p className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] px-4 py-8 text-center text-sm text-[var(--text-muted)]">
                     No live posts match this filter.
                   </p>
                 ) : null}
@@ -322,18 +318,18 @@ export function BlogIndexView() {
           </div>
         )}
 
-        <footer className="mt-16 border-t border-white/[0.06] pt-10 text-center text-sm text-white/45">
+        <footer className="mt-16 border-t border-[var(--border-theme)] pt-10 text-center text-sm text-[var(--text-muted)]">
           <p>
             © {new Date().getFullYear()} Codeforces Platform —{' '}
-            <Link href="/learn" className="text-green-400/90 hover:text-green-300">
+            <Link href="/learn" className="text-green-700 hover:text-green-800">
               Learn
             </Link>
             {' · '}
-            <Link href="/practice" className="text-green-400/90 hover:text-green-300">
+            <Link href="/practice" className="text-green-700 hover:text-green-800">
               Practice
             </Link>
             {' · '}
-            <Link href="/leaderboard" className="text-green-400/90 hover:text-green-300">
+            <Link href="/leaderboard" className="text-green-700 hover:text-green-800">
               Leaderboard
             </Link>
           </p>

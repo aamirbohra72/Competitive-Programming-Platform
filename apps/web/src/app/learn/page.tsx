@@ -301,7 +301,7 @@ export default function LearnPage() {
     <DashboardShell navClassName="sticky top-0 z-50" mainClassName="min-h-0 overflow-y-auto p-8">
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Courses</h1>
-        <p style={{ color: '#b0b0b0', fontSize: '1rem' }}>Learn and master new skills</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>Learn and master new skills</p>
       </div>
 
       <div
@@ -320,8 +320,8 @@ export default function LearnPage() {
               padding: '0.5rem 1rem',
               borderRadius: '6px',
               border: 'none',
-              background: activeFilter === filter.value ? '#22c55e' : '#2a2a2a',
-              color: activeFilter === filter.value ? 'white' : '#b0b0b0',
+              background: activeFilter === filter.value ? 'var(--accent-theme)' : 'var(--surface-panel)',
+              color: activeFilter === filter.value ? 'white' : 'var(--text-theme)',
               cursor: 'pointer',
               fontSize: '0.9rem',
               fontWeight: activeFilter === filter.value ? '600' : '400',
@@ -329,14 +329,14 @@ export default function LearnPage() {
             }}
             onMouseEnter={(e) => {
               if (activeFilter !== filter.value) {
-                e.currentTarget.style.background = '#333';
-                e.currentTarget.style.color = '#fff';
+                e.currentTarget.style.background = 'var(--surface-panel)';
+                e.currentTarget.style.color = 'var(--accent-theme)';
               }
             }}
             onMouseLeave={(e) => {
               if (activeFilter !== filter.value) {
-                e.currentTarget.style.background = '#2a2a2a';
-                e.currentTarget.style.color = '#b0b0b0';
+                e.currentTarget.style.background = 'var(--surface-panel)';
+                e.currentTarget.style.color = 'var(--text-theme)';
               }
             }}
           >
@@ -363,13 +363,13 @@ export default function LearnPage() {
             <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#22c55e' }}>
               + Generate a custom course with AI
             </h2>
-            <p style={{ color: '#b0b0b0', fontSize: '0.95rem' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
               Paste notes, upload a PDF, or enter a topic — get a full notebook with lessons and
               quizzes.
             </p>
           </Link>
 
-          {generatedLoading && <p style={{ color: '#b0b0b0', marginBottom: '1rem' }}>Loading your courses…</p>}
+          {generatedLoading && <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Loading your courses…</p>}
           {generatedError && <p style={{ color: '#f87171', marginBottom: '1rem' }}>{generatedError}</p>}
 
           <div
@@ -387,12 +387,12 @@ export default function LearnPage() {
               >
                 <div
                   style={{
-                    background: '#2a2a2a',
+                    background: 'var(--surface-raised)',
                     borderRadius: '12px',
                     overflow: 'hidden',
                     cursor: 'pointer',
                     transition: 'transform 0.2s, box-shadow 0.2s',
-                    border: '1px solid #3a3a3a',
+                    border: '1px solid var(--border-theme)',
                     height: '100%',
                     width: '100%',
                     display: 'flex',
@@ -424,7 +424,7 @@ export default function LearnPage() {
                         top: '1rem',
                         right: '1rem',
                         background: '#22c55e',
-                        color: 'white',
+                        color: 'var(--text-theme)',
                         padding: '0.25rem 0.75rem',
                         borderRadius: '20px',
                         fontSize: '0.75rem',
@@ -465,7 +465,7 @@ export default function LearnPage() {
                     </h3>
                     <p
                       style={{
-                        color: '#b0b0b0',
+                        color: 'var(--text-muted)',
                         fontSize: '0.9rem',
                         lineHeight: '1.6',
                         marginBottom: '1rem',
@@ -504,7 +504,7 @@ export default function LearnPage() {
           </div>
 
           {!generatedLoading && !generatedError && generatedCourses.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#b0b0b0' }}>
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
               No generated courses yet. Click the green card above to create one.
             </div>
           )}
@@ -514,16 +514,16 @@ export default function LearnPage() {
       {activeFilter === 'career' && (
         <>
           <div style={{ marginBottom: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.35rem', color: '#fff' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.35rem', color: 'var(--text-theme)' }}>
               Career Bundles
             </h2>
-            <p style={{ color: '#b0b0b0', fontSize: '0.95rem' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
               Multi-course paths at a lower price than buying each course alone. One payment unlocks
               every included course.
             </p>
           </div>
           {payError && <p style={{ color: '#f87171', marginBottom: '1rem' }}>{payError}</p>}
-          {bundlesLoading && <p style={{ color: '#b0b0b0', marginBottom: '1rem' }}>Loading bundles…</p>}
+          {bundlesLoading && <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Loading bundles…</p>}
           <div
             style={{
               display: 'grid',
@@ -540,10 +540,10 @@ export default function LearnPage() {
                 <div
                   key={bundle.productId}
                   style={{
-                    background: '#2a2a2a',
+                    background: 'var(--surface-raised)',
                     borderRadius: '12px',
                     overflow: 'hidden',
-                    border: '1px solid #3a3a3a',
+                    border: '1px solid var(--border-theme)',
                     display: 'flex',
                     flexDirection: 'column',
                     height: '100%',
@@ -587,10 +587,10 @@ export default function LearnPage() {
                       gap: '0.75rem',
                     }}
                   >
-                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'white', margin: 0 }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-theme)', margin: 0 }}>
                       {bundle.title}
                     </h3>
-                    <p style={{ color: '#b0b0b0', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>
                       {bundle.description}
                     </p>
                     <ul
@@ -673,12 +673,12 @@ export default function LearnPage() {
               >
                 <div
                   style={{
-                    background: '#2a2a2a',
+                    background: 'var(--surface-raised)',
                     borderRadius: '12px',
                     overflow: 'hidden',
                     cursor: 'pointer',
                     transition: 'transform 0.2s, box-shadow 0.2s',
-                    border: '1px solid #3a3a3a',
+                    border: '1px solid var(--border-theme)',
                     height: '100%',
                     width: '100%',
                     display: 'flex',
@@ -765,7 +765,7 @@ export default function LearnPage() {
                         fontSize: '1.5rem',
                         fontWeight: '700',
                         marginBottom: '0.75rem',
-                        color: 'white',
+                        color: 'var(--text-theme)',
                       }}
                     >
                       {course.title.toUpperCase()}
@@ -781,8 +781,8 @@ export default function LearnPage() {
                     >
                       <span
                         style={{
-                          background: '#3a3a3a',
-                          color: '#b0b0b0',
+                          background: 'var(--surface-panel)',
+                          color: 'var(--text-muted)',
                           padding: '0.25rem 0.5rem',
                           borderRadius: '4px',
                           fontSize: '0.75rem',

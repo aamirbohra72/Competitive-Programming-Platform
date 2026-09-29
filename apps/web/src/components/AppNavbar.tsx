@@ -88,14 +88,14 @@ export function AppNavbar({ className, activeHref, activePage }: AppNavbarProps)
     <nav
       role="navigation"
       aria-label="Main"
-      className={cn('border-b border-nav-border bg-nav-bg text-white', className)}
+      className={cn('border-b border-nav-border bg-nav-bg text-[var(--text-theme)]', className)}
     >
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <div className="relative z-10 flex shrink-0 items-center gap-2 bg-nav-bg sm:gap-3">
           <SidebarTrigger />
           <Link
             href="/"
-            className="font-nav-brand truncate text-xl font-bold tracking-tight text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#121212]"
+            className="font-nav-brand truncate text-xl font-bold tracking-tight text-[var(--text-theme)] transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             Codeforces
           </Link>
@@ -110,8 +110,8 @@ export function AppNavbar({ className, activeHref, activePage }: AppNavbarProps)
                   key={href}
                   href={href}
                   className={cn(
-                    'whitespace-nowrap rounded-md px-2 py-1.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/5 hover:text-white lg:px-2.5',
-                    active && 'bg-white/10 text-green-400',
+                    'whitespace-nowrap rounded-md px-2 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:bg-green-50 hover:text-[var(--text-theme)] lg:px-2.5',
+                    active && 'bg-green-50 !text-[var(--accent-theme)]',
                   )}
                   aria-current={active ? 'page' : undefined}
                 >
@@ -129,8 +129,8 @@ export function AppNavbar({ className, activeHref, activePage }: AppNavbarProps)
               <Link
                 href="/admin/dashboard"
                 className={cn(
-                  'rounded-md px-2.5 py-1.5 text-sm font-medium text-white/90 hover:bg-white/5 hover:text-white',
-                  pathname.startsWith('/admin') && 'bg-white/10 text-green-400',
+                  'rounded-md px-2.5 py-1.5 text-sm font-medium text-[var(--text-muted)] hover:bg-green-50 hover:text-[var(--text-theme)]',
+                  pathname.startsWith('/admin') && 'bg-green-50 !text-[var(--accent-theme)]',
                 )}
               >
                 Admin
@@ -139,8 +139,8 @@ export function AppNavbar({ className, activeHref, activePage }: AppNavbarProps)
             <Link
               href="/submissions"
               className={cn(
-                'hidden rounded-md px-2.5 py-1.5 text-sm font-medium text-white/90 hover:bg-white/5 hover:text-white sm:inline-block',
-                pathname.startsWith('/submissions') && 'bg-white/10 text-green-400',
+                  'hidden rounded-md px-2.5 py-1.5 text-sm font-medium text-[var(--text-muted)] hover:bg-green-50 hover:text-[var(--text-theme)] sm:inline-block',
+                  pathname.startsWith('/submissions') && 'bg-green-50 !text-[var(--accent-theme)]',
               )}
             >
               Submissions
@@ -184,7 +184,7 @@ export function AppNavbar({ className, activeHref, activePage }: AppNavbarProps)
             <SignUpButton mode="modal">
               <button
                 type="button"
-                className="rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium text-white/90 hover:bg-white/5"
+                className="rounded-md border border-[var(--border-theme)] px-3 py-1.5 text-sm font-medium text-[var(--text-theme)] hover:bg-green-50"
               >
                 Sign up
               </button>

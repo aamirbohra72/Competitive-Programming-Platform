@@ -67,8 +67,8 @@ function HideSolutionToggle({
       className={cn(
         'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition',
         hidden
-          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'
-          : 'border-[#3a3a3a] bg-[#141414] text-white/55 hover:text-white',
+          ? 'border-green-300 bg-green-50 text-green-800'
+          : 'border-[var(--border-theme)] bg-white text-[var(--text-muted)] hover:text-green-700',
       )}
       aria-pressed={hidden}
     >
@@ -126,18 +126,18 @@ function ScriptPlayer({
 
   return (
     <>
-      <header className="shrink-0 border-b border-[#3a3a3a] px-3 py-3 sm:px-5 sm:py-4">
+      <header className="shrink-0 border-b border-[var(--border-theme)] bg-[var(--surface-panel)] px-3 py-3 sm:px-5 sm:py-4">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0 space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/40">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
               {meta.eyebrow}
             </p>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+              <h1 className="text-xl font-semibold tracking-tight text-[var(--text-theme)] sm:text-2xl">
                 {script.title}
               </h1>
               {meta.leetcode ? (
-                <span className="rounded-md border border-[#3a3a3a] px-1.5 py-0.5 text-[10px] text-white/50">
+                <span className="rounded-md border border-[var(--border-theme)] px-1.5 py-0.5 text-[10px] text-[var(--text-muted)]">
                   {meta.leetcode}
                 </span>
               ) : null}
@@ -145,7 +145,7 @@ function ScriptPlayer({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs tabular-nums text-white/40">
+            <span className="text-xs tabular-nums text-[var(--text-muted)]">
               step {player.currentStepIndex + 1} / {player.stepCount}
             </span>
             <HideSolutionToggle
@@ -155,13 +155,13 @@ function ScriptPlayer({
           </div>
         </div>
 
-        <div className="mt-2.5 max-w-3xl rounded-xl border border-[#3a3a3a] bg-[#141414] px-3 py-2.5">
-          <p className="text-[13px] leading-relaxed text-white/65">{meta.description}</p>
+        <div className="mt-2.5 max-w-3xl rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2.5">
+          <p className="text-[13px] leading-relaxed text-[var(--text-muted)]">{meta.description}</p>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             {meta.companies.map((c) => (
               <span
                 key={c}
-                className="rounded-md border border-[#3a3a3a] bg-[#1a1a1a] px-2 py-0.5 text-[11px] text-white/45"
+                className="rounded-md border border-[var(--border-theme)] bg-[var(--surface-panel)] px-2 py-0.5 text-[11px] text-[var(--text-muted)]"
               >
                 {c}
               </span>
@@ -174,7 +174,7 @@ function ScriptPlayer({
               setApproachId(id);
               onSolutionHiddenChange(false);
             }}
-            className="mt-3 border-t border-[#3a3a3a] pt-3"
+            className="mt-3 border-t border-[var(--border-theme)] pt-3"
           />
         </div>
       </header>
@@ -239,7 +239,7 @@ function DsaVisualizer({
   return (
     <div
       className={cn(
-        'flex h-full min-h-0 w-full flex-row overflow-hidden bg-[#1a1a1a] text-white',
+        'flex h-full min-h-0 w-full flex-row overflow-hidden bg-[var(--surface-page)] text-[var(--text-theme)]',
         className,
       )}
     >
@@ -255,7 +255,7 @@ function DsaVisualizer({
         ) : pattern ? (
           <PatternPlaceholder pattern={pattern} />
         ) : (
-          <div className="flex flex-1 items-center justify-center text-sm text-white/45">
+          <div className="flex flex-1 items-center justify-center text-sm text-[var(--text-muted)]">
             Pattern not found
           </div>
         )}
@@ -296,7 +296,7 @@ function LldVisualizer({
   return (
     <div
       className={cn(
-        'flex h-full min-h-0 w-full flex-row overflow-hidden bg-[#1a1a1a] text-white',
+        'flex h-full min-h-0 w-full flex-row overflow-hidden bg-[var(--surface-page)] text-[var(--text-theme)]',
         className,
       )}
     >
@@ -312,7 +312,7 @@ function LldVisualizer({
         ) : pattern ? (
           <PatternPlaceholder pattern={pattern} />
         ) : (
-          <div className="flex flex-1 items-center justify-center text-sm text-white/45">
+          <div className="flex flex-1 items-center justify-center text-sm text-[var(--text-muted)]">
             Pattern not found
           </div>
         )}

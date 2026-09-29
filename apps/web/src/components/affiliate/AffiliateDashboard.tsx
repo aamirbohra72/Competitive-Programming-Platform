@@ -139,26 +139,26 @@ export function AffiliateDashboard() {
     <DashboardShell mainClassName="p-4 pb-16 md:p-8">
       <div className="mx-auto max-w-6xl space-y-8">
         <header>
-          <h1 className="text-2xl font-bold text-white md:text-3xl">Hello, {displayName}</h1>
-          <p className="mt-2 text-[#b0b0b0]">
+          <h1 className="text-2xl font-bold text-[var(--text-theme)] md:text-3xl">Hello, {displayName}</h1>
+          <p className="mt-2 text-[var(--text-muted)]">
             You&apos;ve earned{' '}
-            <span className="font-semibold text-emerald-400">
+            <span className="font-semibold text-green-700">
               {formatInr(m?.earnedInrTillDate ?? 0)}
             </span>{' '}
             to date ({approxUsd(m?.earnedInrTillDate ?? 0)}).
           </p>
-          {loadError ? <p className="mt-2 text-sm text-amber-400">{loadError}</p> : null}
-          <p className="mt-3 text-sm text-[#a0a0a0]">
+          {loadError ? <p className="mt-2 text-sm text-amber-800">{loadError}</p> : null}
+          <p className="mt-3 text-sm text-[var(--text-muted)]">
             Looking to invite friends?{' '}
-            <Link href="/referral" className="font-semibold text-orange-400 hover:text-orange-300">
+            <Link href="/referral" className="font-semibold text-orange-700 hover:text-orange-800">
               Join the Referral Program →
             </Link>
           </p>
         </header>
 
-        <section className="rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-6">
-          <h2 className="text-lg font-semibold text-white">Commission you will earn</h2>
-          <p className="mt-1 text-sm text-[#a0a0a0]">Share tracked links — commission applies to qualifying purchases.</p>
+        <section className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-6">
+          <h2 className="text-lg font-semibold text-[var(--text-theme)]">Commission you will earn</h2>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Share tracked links — commission applies to qualifying purchases.</p>
           <div className="mt-4 max-w-2xl">
             <AffiliateCopyField
               label="General site link"
@@ -176,25 +176,25 @@ export function AffiliateDashboard() {
           <AffiliateMetricCard
             title="Total students registered"
             value={`${m?.studentsRegistered ?? 0} students`}
-            valueClassName="text-sky-400"
+            valueClassName="text-sky-700"
           />
           <AffiliateMetricCard
             title="Total redeemed amount"
             value={formatInr(m?.redeemedInr ?? 0)}
             subtitle={`Converted value in USD is ${approxUsd(m?.redeemedInr ?? 0)}`}
-            valueClassName="text-emerald-400"
+            valueClassName="text-green-700"
           />
           <AffiliateMetricCard
             title="Total pending amount"
             value={formatInr(m?.pendingInr ?? 0)}
             subtitle={`Converted value in USD is ${approxUsd(m?.pendingInr ?? 0)}`}
-            valueClassName="text-pink-400"
+            valueClassName="text-pink-700"
           />
           <AffiliateMetricCard
             title="Total locked amount"
             value={`${formatInr(m?.lockedInr ?? 0)} (${approxUsd(m?.lockedInr ?? 0)})`}
             subtitle="Locked commissions clear after refund windows close."
-            valueClassName="text-amber-400"
+            valueClassName="text-amber-700"
           />
         </div>
 

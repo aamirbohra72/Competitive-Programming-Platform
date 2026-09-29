@@ -20,20 +20,20 @@ export function DsaProgressRing({ completed, total, size = 56, className }: DsaP
   return (
     <div
       className={cn(
-        'flex flex-col items-center rounded-xl border border-white/10 bg-[#2a2a2a] px-3 py-2 shadow-lg shadow-black/30',
+        'flex flex-col items-center rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2 shadow-sm',
         className,
       )}
       role="img"
       aria-label={`Overall progress ${pct} percent`}
     >
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#d7e8dd" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="url(#dsaRingGrad)"
+          stroke={`url(#${gradId})`}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}
@@ -47,7 +47,7 @@ export function DsaProgressRing({ completed, total, size = 56, className }: DsaP
           </linearGradient>
         </defs>
       </svg>
-      <span className="text-xs font-bold text-white/80">{pct}%</span>
+      <span className="text-xs font-bold text-[var(--text-theme)]">{pct}%</span>
     </div>
   );
 }

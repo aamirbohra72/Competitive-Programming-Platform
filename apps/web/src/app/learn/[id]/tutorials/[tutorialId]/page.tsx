@@ -270,7 +270,7 @@ export default function TutorialSessionPage() {
                   cursor: 'pointer',
                   border: '1px solid rgba(52,211,153,0.45)',
                   background: progressSaved ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.12)',
-                  color: '#86efac',
+                  color: 'var(--accent-theme)',
                   fontWeight: 700,
                 }}
                 disabled={savingProgress || progressSaved}

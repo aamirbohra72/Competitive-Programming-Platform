@@ -8,11 +8,11 @@ import { getUser } from '@/lib/auth';
 import type { LeaderboardOverviewResponse } from '@/lib/leaderboard-overview';
 
 function getContributionLevel(count: number) {
-  if (count === 0) return '#161b22';
-  if (count === 1) return '#0e4429';
-  if (count === 2) return '#006d32';
-  if (count === 3) return '#26a641';
-  return '#39d353';
+  if (count === 0) return '#e6f1e9';
+  if (count === 1) return '#bbebc7';
+  if (count === 2) return '#78d79a';
+  if (count === 3) return '#36b765';
+  return '#15803d';
 }
 
 function buildWeeksFromDays(days: { date: string; count: number }[]) {
@@ -84,7 +84,7 @@ export default function LeaderboardPage() {
 
   return (
     <DashboardShell mainClassName="min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-6xl text-white">
+      <div className="mx-auto max-w-6xl text-[var(--text-theme)]">
         {error ? (
           <div className="mb-6 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {error}{' '}
@@ -95,7 +95,7 @@ export default function LeaderboardPage() {
         ) : null}
 
         {loading && !data ? (
-          <p className="text-white/60">Loading leaderboard…</p>
+          <p className="text-[var(--text-muted)]">Loading leaderboard…</p>
         ) : null}
 
         {data ? (
@@ -110,12 +110,12 @@ export default function LeaderboardPage() {
               <div className="text-center">
                 <h1 className="font-nav-brand text-xl font-semibold capitalize">{displayName}</h1>
                 {data.me?.rank != null ? (
-                  <p className="mt-1 text-sm text-green-400">Platform rank #{data.me.rank}</p>
+                  <p className="mt-1 text-sm text-green-700">Platform rank #{data.me.rank}</p>
                 ) : data.me ? (
-                  <p className="mt-1 text-sm text-white/45">Outside top 100 — keep solving!</p>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">Outside top 100 — keep solving!</p>
                 ) : (
-                  <p className="mt-1 text-sm text-white/45">
-                    <Link href="/sign-in" className="text-green-400 hover:underline">
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">
+                    <Link href="/sign-in" className="text-green-700 hover:underline">
                       Sign in
                     </Link>{' '}
                     for your stats
@@ -131,13 +131,13 @@ export default function LeaderboardPage() {
                 <div className="space-y-3">
                   <div className="rounded-md border border-[#3a3a3a] bg-[#1a1a1a] p-3">
                     <div className="text-xs text-[#9ca3af]">Current streak</div>
-                    <div className="text-2xl font-bold text-green-400">
+                    <div className="text-2xl font-bold text-green-700">
                       {data.me ? `${data.me.streak.current} days` : '—'}
                     </div>
                   </div>
                   <div className="rounded-md border border-[#3a3a3a] bg-[#1a1a1a] p-3">
                     <div className="text-xs text-[#9ca3af]">Longest streak</div>
-                    <div className="text-2xl font-bold text-orange-400">
+                    <div className="text-2xl font-bold text-orange-700">
                       {data.me ? `${data.me.streak.longest} days` : '—'}
                     </div>
                   </div>
@@ -152,12 +152,12 @@ export default function LeaderboardPage() {
                     <span aria-hidden>🏆</span>
                     <h2 className="text-base font-semibold">Platform leaderboard</h2>
                   </div>
-                  <span className="text-xs text-white/45">By unique problems solved (AC)</span>
+                  <span className="text-xs text-[var(--text-muted)]">By unique problems solved (AC)</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[480px] border-collapse text-left text-sm">
                     <thead>
-                      <tr className="border-b border-white/10 text-white/55">
+                      <tr className="border-b border-[var(--border-theme)] text-[var(--text-muted)]">
                         <th className="py-2 pr-3 font-medium">#</th>
                         <th className="py-2 pr-3 font-medium">User</th>
                         <th className="py-2 pr-3 font-medium">Solved</th>
@@ -168,7 +168,7 @@ export default function LeaderboardPage() {
                     <tbody>
                       {data.globalLeaderboard.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="py-8 text-center text-white/50">
+                          <td colSpan={5} className="py-8 text-center text-[var(--text-muted)]">
                             No accepted submissions yet. Be the first on the board.
                           </td>
                         </tr>
@@ -178,15 +178,15 @@ export default function LeaderboardPage() {
                             key={row.userId}
                             className={
                               meId && row.userId === meId
-                                ? 'border-b border-white/5 bg-green-500/10'
-                                : 'border-b border-white/5 hover:bg-white/[0.03]'
+                                ? 'border-b border-[var(--border-theme)] bg-green-50'
+                                : 'border-b border-[var(--border-theme)] hover:bg-green-50/50'
                             }
                           >
-                            <td className="py-2.5 pr-3 font-mono text-white/80">{row.rank}</td>
-                            <td className="py-2.5 pr-3 font-medium text-white">{row.username}</td>
-                            <td className="py-2.5 pr-3 text-green-400">{row.uniqueSolved}</td>
-                            <td className="py-2.5 pr-3 text-white/60">{row.acceptedSubmissions}</td>
-                            <td className="py-2.5 text-white/60">{row.scoreSum}</td>
+                            <td className="py-2.5 pr-3 font-mono text-[var(--text-muted)]">{row.rank}</td>
+                            <td className="py-2.5 pr-3 font-medium text-[var(--text-theme)]">{row.username}</td>
+                            <td className="py-2.5 pr-3 font-semibold text-green-700">{row.uniqueSolved}</td>
+                            <td className="py-2.5 pr-3 text-[var(--text-muted)]">{row.acceptedSubmissions}</td>
+                            <td className="py-2.5 text-[var(--text-muted)]">{row.scoreSum}</td>
                           </tr>
                         ))
                       )}
@@ -195,13 +195,13 @@ export default function LeaderboardPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-[#3a3a3a] bg-[#2a2a2a] p-4 sm:p-5">
+              <div className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-4 sm:p-5">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span aria-hidden>☰</span>
                     <h2 className="text-base font-semibold">Activity</h2>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#9ca3af]">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
                     <span>
                       {data.me ? `${data.me.contributions.totalSubmissions} submissions in` : 'Sign in to track'}{' '}
                     </span>
@@ -214,7 +214,7 @@ export default function LeaderboardPage() {
                       value={year}
                       onChange={(e) => setYear(parseInt(e.target.value, 10))}
                       disabled={loading}
-                      className="rounded border border-[#3a3a3a] bg-[#1a1a1a] px-2 py-1 text-sm text-white"
+                      className="rounded border border-[var(--border-theme)] bg-white px-2 py-1 text-sm text-[var(--text-theme)]"
                     >
                       {YEAR_OPTIONS.map((y) => (
                         <option key={y} value={y}>
@@ -225,13 +225,13 @@ export default function LeaderboardPage() {
                   </div>
                 </div>
                 {!data.me ? (
-                  <p className="text-sm text-white/50">Log in to see your submission heatmap for {year}.</p>
+                  <p className="text-sm text-[var(--text-muted)]">Log in to see your submission heatmap for {year}.</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <div className="flex gap-0.5">
                       <div className="mr-2 flex flex-col gap-0.5">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                          <div key={day} className="h-3 w-3 text-[0.65rem] leading-3 text-[#9ca3af]">
+                          <div key={day} className="h-3 w-3 text-[0.65rem] leading-3 text-[var(--text-muted)]">
                             {day === 'Sun' || day === 'Wed' || day === 'Fri' ? day[0] : ''}
                           </div>
                         ))}
@@ -242,7 +242,7 @@ export default function LeaderboardPage() {
                           return weekContribs.map((contrib, dayIndex) => (
                             <div
                               key={`${weekKey}-${dayIndex}`}
-                              className="h-3 w-3 rounded-sm border border-[#161b22]"
+                              className="h-3 w-3 rounded-sm border border-green-200"
                               style={{ background: getContributionLevel(contrib.count) }}
                               title={`${contrib.count} submission(s) on ${contrib.date}`}
                             />
@@ -268,16 +268,16 @@ export default function LeaderboardPage() {
                           <div
                             className="flex h-20 w-20 items-center justify-center rounded-full"
                             style={{
-                              background: `conic-gradient(#22c55e ${percentage * 3.6}deg, #3a3a3a 0deg)`,
+                              background: `conic-gradient(#15803d ${percentage * 3.6}deg, #d7e8dd 0deg)`,
                             }}
                           >
-                            <div className="flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#2a2a2a] text-sm font-bold">
+                            <div className="flex h-[60px] w-[60px] items-center justify-center rounded-full bg-white text-sm font-bold text-[var(--text-theme)]">
                               {percentage}%
                             </div>
                           </div>
                           <div className="text-center">
-                            <div className="text-xs text-[#9ca3af]">{stat.label}</div>
-                            <div className="text-xs text-[#6b7280]">
+                            <div className="text-xs text-[var(--text-muted)]">{stat.label}</div>
+                            <div className="text-xs text-[var(--text-muted)]">
                               {stat.solved} / {stat.total}
                             </div>
                           </div>
@@ -292,15 +292,15 @@ export default function LeaderboardPage() {
                         <span aria-hidden>📊</span>
                         <h3 className="text-base font-semibold">Course watch time</h3>
                       </div>
-                      <p className="mb-3 text-xs text-[#9ca3af]">Time invested in courses (hours)</p>
-                      <div className="flex h-40 items-end justify-center gap-8 rounded-md bg-[#1a1a1a] p-4">
+                      <p className="mb-3 text-xs text-[var(--text-muted)]">Time invested in courses (hours)</p>
+                      <div className="flex h-40 items-end justify-center gap-8 rounded-md bg-white p-4">
                         {watch.map((item) => (
                           <div key={item.course} className="flex flex-1 flex-col items-center gap-2">
                             <div
                               className="w-full min-h-[20px] rounded-t bg-green-500 transition-all"
                               style={{ height: `${Math.max(8, (item.hours / maxWatch) * 100)}%` }}
                             />
-                            <div className="text-center text-xs text-[#9ca3af]">{item.course}</div>
+                            <div className="text-center text-xs text-[var(--text-muted)]">{item.course}</div>
                           </div>
                         ))}
                       </div>
@@ -312,7 +312,7 @@ export default function LeaderboardPage() {
           </div>
         ) : null}
 
-        {loading && data ? <p className="mt-4 text-xs text-white/40">Refreshing…</p> : null}
+        {loading && data ? <p className="mt-4 text-xs text-[var(--text-muted)]">Refreshing…</p> : null}
       </div>
     </DashboardShell>
   );

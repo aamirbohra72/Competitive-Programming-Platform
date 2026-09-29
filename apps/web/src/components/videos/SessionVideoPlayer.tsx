@@ -106,11 +106,11 @@ export function SessionVideoPlayer({ session, topicVideos, fallbackUrl, onStart 
   return (
     <section>
       <div className="mb-3">
-        <span className="inline-block rounded-full bg-amber-400/15 px-2.5 py-0.5 text-xs font-semibold text-amber-300">
+        <span className="inline-block rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
           Session Recording
         </span>
-        <h2 className="mt-2 text-xl font-bold text-white">{session.title}</h2>
-        {metaLine ? <p className="mt-1 text-sm text-[#9ca3af]">{metaLine}</p> : null}
+        <h2 className="mt-2 text-xl font-bold text-[var(--text-theme)]">{session.title}</h2>
+        {metaLine ? <p className="mt-1 text-sm text-[var(--text-muted)]">{metaLine}</p> : null}
       </div>
 
       <div className={hasVideos ? 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]' : 'max-w-3xl'}>
@@ -147,11 +147,11 @@ export function SessionVideoPlayer({ session, topicVideos, fallbackUrl, onStart 
           {active ? (
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs text-[#9ca3af]">Now playing</p>
-                <h3 className="text-base font-semibold text-white">{active.title}</h3>
+                <p className="text-xs text-[var(--text-muted)]">Now playing</p>
+                <h3 className="text-base font-semibold text-[var(--text-theme)]">{active.title}</h3>
               </div>
               <div className="flex items-center gap-3">
-                <Link href={`/videos/${active.playlistId}?v=${active.videoId}`} className="text-xs text-[#22c55e]">
+                <Link href={`/videos/${active.playlistId}?v=${active.videoId}`} className="text-xs font-semibold text-green-700">
                   Open in playlist →
                 </Link>
                 {loggedIn ? (
@@ -159,7 +159,7 @@ export function SessionVideoPlayer({ session, topicVideos, fallbackUrl, onStart 
                     type="button"
                     disabled={completed.has(active.videoId)}
                     onClick={() => void markWatched(active)}
-                    className="rounded-md bg-[#22c55e] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
+                    className="rounded-md bg-green-700 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-60"
                   >
                     {completed.has(active.videoId) ? '✓ Watched' : 'Mark lecture watched'}
                   </button>
@@ -167,28 +167,28 @@ export function SessionVideoPlayer({ session, topicVideos, fallbackUrl, onStart 
               </div>
             </div>
           ) : null}
-          {error ? <p className="mt-2 text-sm text-red-400">{error}</p> : null}
+          {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
         </div>
 
         {hasVideos ? (
-          <aside className="flex max-h-[28rem] flex-col overflow-hidden rounded-xl border border-[#3a3a3a] bg-[#242424]">
-            <p className="border-b border-[#3a3a3a] p-3 text-sm font-semibold">Lectures for this session</p>
+          <aside className="flex max-h-[28rem] flex-col overflow-hidden rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)]">
+            <p className="border-b border-[var(--border-theme)] p-3 text-sm font-semibold text-[var(--text-theme)]">Lectures for this session</p>
             <ol className="flex-1 overflow-y-auto">
               {videos.map((v) => (
                 <li key={v.videoId}>
                   <button
                     type="button"
                     onClick={() => play(v.videoId)}
-                    className={`flex w-full gap-2 p-2.5 text-left hover:bg-[#333] ${v.videoId === activeId ? 'bg-[#22c55e]/15' : ''}`}
+                    className={`flex w-full gap-2 p-2.5 text-left hover:bg-green-50 ${v.videoId === activeId ? 'bg-green-100' : ''}`}
                   >
-                    <span className="w-4 shrink-0 pt-0.5 text-xs text-[#22c55e]">{completed.has(v.videoId) ? '✓' : ''}</span>
+                    <span className="w-4 shrink-0 pt-0.5 text-xs text-green-700">{completed.has(v.videoId) ? '✓' : ''}</span>
                     {v.thumbnail && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={v.thumbnail} alt="" className="aspect-video w-24 shrink-0 rounded object-cover" />
                     )}
                     <span className="min-w-0">
-                      <span className="line-clamp-2 text-xs text-[#ddd]">{v.title}</span>
-                      <span className="text-[11px] text-[#888]">{formatDuration(v.durationSeconds)}</span>
+                      <span className="line-clamp-2 text-xs text-[var(--text-theme)]">{v.title}</span>
+                      <span className="text-[11px] text-[var(--text-muted)]">{formatDuration(v.durationSeconds)}</span>
                     </span>
                   </button>
                 </li>

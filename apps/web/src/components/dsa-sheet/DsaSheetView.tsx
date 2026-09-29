@@ -49,32 +49,32 @@ export function DsaSheetView() {
   return (
     <DashboardShell mainClassName="min-h-0 overflow-y-auto p-0">
       <div className="relative">
-        <header className="border-b border-white/[0.06] bg-[#161616]">
+        <header className="border-b border-[var(--border-theme)] bg-[var(--surface-panel)]">
           <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-400/90">Curated path</p>
-            <h1 className="mt-3 font-nav-brand text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-700">Curated path</p>
+            <h1 className="mt-3 font-nav-brand text-3xl font-bold leading-tight text-[var(--text-theme)] sm:text-4xl lg:text-5xl">
               Master Data Structures & Algorithms{' '}
               <span aria-hidden className="inline-block">
                 🚀
               </span>
             </h1>
-            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-white/65">
+            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[var(--text-muted)]">
               We&apos;ve{' '}
-              <span className="font-semibold text-amber-400/95">handpicked</span> the{' '}
-              <span className="font-semibold text-green-400/95">most impactful DSA questions</span> that sharpen your
+              <span className="font-semibold text-amber-700">handpicked</span> the{' '}
+              <span className="font-semibold text-green-700">most impactful DSA questions</span> that sharpen your
               problem-solving and help you{' '}
-              <span className="font-semibold text-amber-400/95">crack real interviews with confidence</span>.
+              <span className="font-semibold text-amber-700">crack real interviews with confidence</span>.
             </p>
           </div>
         </header>
 
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           {!hydrated ? (
-            <p className="text-sm text-white/50">Loading progress…</p>
+            <p className="text-sm text-[var(--text-muted)]">Loading progress…</p>
           ) : (
             <>
               <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0 flex-1 rounded-xl border border-white/[0.08] bg-[#2a2a2a] p-6 shadow-sm shadow-black/20">
+                <div className="min-w-0 flex-1 rounded-lg border border-[var(--border-theme)] bg-white p-6 shadow-sm">
                   <DsaProgressBar completed={done} total={total} />
                 </div>
                 <div className="flex justify-center sm:justify-end shrink-0 sm:pt-1">

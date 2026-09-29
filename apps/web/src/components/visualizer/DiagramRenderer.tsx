@@ -41,7 +41,7 @@ export function DiagramRenderer({ step, className }: DiagramRendererProps) {
   return (
     <div
       className={cn(
-        'flex min-h-[220px] flex-1 items-center justify-center overflow-hidden rounded-xl border border-[#3a3a3a] bg-[#101010] p-3',
+        'visualizer-stage flex min-h-[220px] flex-1 items-center justify-center overflow-hidden rounded-lg border border-green-900 bg-[#163025] p-3',
         className,
       )}
     >

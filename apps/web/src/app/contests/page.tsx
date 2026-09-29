@@ -51,7 +51,7 @@ function ContestCountdown({ contest, now }: { contest: Contest; now: number }) {
       </span>
     );
   }
-  return <span style={{ color: '#9ca3af' }}>Finished {new Date(contest.endTime).toLocaleString()}</span>;
+  return <span style={{ color: 'var(--text-muted)' }}>Finished {new Date(contest.endTime).toLocaleString()}</span>;
 }
 
 export default function ContestsPage() {
@@ -110,8 +110,8 @@ export default function ContestsPage() {
       >
         <article
           style={{
-            background: '#1f1f1f',
-            border: status === 'LIVE' ? '1px solid #22c55e55' : '1px solid #333',
+            background: 'var(--surface-raised)',
+            border: status === 'LIVE' ? '1px solid var(--accent-theme)' : '1px solid var(--border-theme)',
             borderRadius: 10,
             padding: '1.25rem 1.5rem',
             marginBottom: '0.85rem',
@@ -121,15 +121,15 @@ export default function ContestsPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start' }}>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <h2 style={{ margin: 0, fontSize: '1.15rem', color: '#f3f4f6' }}>{contest.name}</h2>
+                <h2 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--text-theme)' }}>{contest.name}</h2>
                 {contest.kind && contest.kind !== 'PRACTICE' && (
                   <span
                     style={{
                       fontSize: '0.7rem',
                       letterSpacing: '0.04em',
                       textTransform: 'uppercase',
-                      color: '#9ca3af',
-                      border: '1px solid #444',
+                      color: 'var(--text-muted)',
+                      border: '1px solid var(--border-theme)',
                       borderRadius: 4,
                       padding: '0.1rem 0.4rem',
                     }}
@@ -142,7 +142,7 @@ export default function ContestsPage() {
                 <p
                   style={{
                     margin: '0.5rem 0 0.75rem',
-                    color: '#9ca3af',
+                    color: 'var(--text-muted)',
                     fontSize: '0.9rem',
                     lineHeight: 1.45,
                     display: '-webkit-box',
@@ -160,22 +160,22 @@ export default function ContestsPage() {
                   flexWrap: 'wrap',
                   gap: '0.85rem 1.25rem',
                   fontSize: '0.85rem',
-                  color: '#d1d5db',
+                  color: 'var(--text-theme)',
                 }}
               >
                 <ContestCountdown contest={contest} now={now} />
-                <span style={{ color: '#9ca3af' }}>
+                <span style={{ color: 'var(--text-muted)' }}>
                   {contest.problemCount ?? 0} problem{(contest.problemCount ?? 0) === 1 ? '' : 's'}
                 </span>
-                <span style={{ color: '#9ca3af' }}>
+                <span style={{ color: 'var(--text-muted)' }}>
                   {contest.participantCount ?? 0} registered
                 </span>
-                <span style={{ color: '#9ca3af' }}>Duration {formatDuration(durationMs)}</span>
+                <span style={{ color: 'var(--text-muted)' }}>Duration {formatDuration(durationMs)}</span>
                 {contest.isRegistered && (
-                  <span style={{ color: '#4ade80' }}>You&apos;re registered</span>
+                  <span style={{ color: 'var(--accent-theme)' }}>You&apos;re registered</span>
                 )}
               </div>
-              <div style={{ marginTop: '0.55rem', fontSize: '0.75rem', color: '#6b7280' }}>
+              <div style={{ marginTop: '0.55rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                 {new Date(contest.startTime).toLocaleString()} → {new Date(contest.endTime).toLocaleString()}
               </div>
             </div>
@@ -210,20 +210,20 @@ export default function ContestsPage() {
             fontSize: '0.85rem',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
-            color: '#9ca3af',
+            color: 'var(--text-muted)',
             marginBottom: '0.75rem',
           }}
         >
           {title} ({items.length})
         </h2>
-        {items.length === 0 ? <p style={{ color: '#6b7280' }}>{emptyHint}</p> : items.map(renderCard)}
+        {items.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>{emptyHint}</p> : items.map(renderCard)}
       </section>
     );
   };
 
   return (
     <DashboardShell mainClassName="p-8">
-      <div className="container text-white" style={{ maxWidth: 920 }}>
+      <div className="container text-[var(--text-theme)]" style={{ maxWidth: 920 }}>
         <div
           style={{
             display: 'flex',
@@ -236,7 +236,7 @@ export default function ContestsPage() {
         >
           <div>
             <h1 style={{ margin: 0, fontSize: '1.75rem' }}>Contests</h1>
-            <p style={{ margin: '0.35rem 0 0', color: '#9ca3af', fontSize: '0.9rem' }}>
+            <p style={{ margin: '0.35rem 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
               Live, upcoming, and past rounds — times update automatically.
             </p>
           </div>
@@ -244,7 +244,7 @@ export default function ContestsPage() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as ContestStatus | '')}
             aria-label="Filter contests by status"
-            className="rounded border border-[#3a3a3a] bg-[#2a2a2a] px-3 py-2 text-sm text-white"
+            className="rounded border border-[var(--border-theme)] bg-white px-3 py-2 text-sm text-[var(--text-theme)]"
           >
             <option value="">All Status</option>
             <option value="LIVE">Live</option>
@@ -253,11 +253,11 @@ export default function ContestsPage() {
           </select>
         </div>
 
-        {loading && <p style={{ color: '#9ca3af' }}>Loading contests…</p>}
+        {loading && <p style={{ color: 'var(--text-muted)' }}>Loading contests…</p>}
         {error && <p style={{ color: '#f87171' }}>{error}</p>}
 
         {!loading && !error && contests.length === 0 && (
-          <p style={{ color: '#9ca3af' }}>No contests found for this filter.</p>
+          <p style={{ color: 'var(--text-muted)' }}>No contests found for this filter.</p>
         )}
 
         {!loading && !error && contests.length > 0 && (

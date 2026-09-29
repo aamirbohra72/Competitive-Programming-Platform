@@ -5,7 +5,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#121212] text-white/70">
+        <div className="flex min-h-screen items-center justify-center bg-[var(--surface-panel)] text-[var(--text-muted)]">
           Redirecting to sign in…
         </div>
       }

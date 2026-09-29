@@ -126,7 +126,7 @@ export default function CertificatesPage() {
     <DashboardShell mainClassName="relative min-h-0 overflow-y-auto p-8">
       <div>
         <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Certificates</h1>
-        <p style={{ color: '#9ca3af', marginBottom: '1.5rem' }}>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
           View and claim your course certificates
         </p>
 
@@ -134,7 +134,7 @@ export default function CertificatesPage() {
           type="button"
           onClick={() => setIsModalOpen(true)}
           style={{
-            background: '#f97316',
+            background: 'var(--accent-theme)',
             color: 'white',
             border: 'none',
             padding: '0.75rem 1.5rem',
@@ -144,10 +144,10 @@ export default function CertificatesPage() {
             cursor: 'pointer',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#ea580c';
+            e.currentTarget.style.background = '#166534';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#f97316';
+            e.currentTarget.style.background = 'var(--accent-theme)';
           }}
         >
           Claim Your Certificates
@@ -170,14 +170,14 @@ export default function CertificatesPage() {
                       alignItems: 'center',
                       gap: '1rem',
                       padding: '1rem',
-                      background: '#2a2a2a',
+                      background: 'var(--surface-panel)',
                       borderRadius: 8,
-                      border: '1px solid #3a3a3a',
+                      border: '1px solid var(--border-theme)',
                     }}
                   >
                     <div>
                       <div style={{ fontWeight: 600 }}>{course.title}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: 4 }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
                         Course completed
                       </div>
                     </div>
@@ -216,7 +216,7 @@ export default function CertificatesPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
+            background: 'rgba(22, 48, 37, 0.45)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -229,14 +229,16 @@ export default function CertificatesPage() {
         >
           <div
             style={{
-              background: '#2a2a2a',
+              background: 'var(--surface-page)',
+              color: 'var(--text-theme)',
+              border: '1px solid var(--border-theme)',
               borderRadius: 12,
               width: '100%',
               maxWidth: 600,
               maxHeight: '80vh',
               overflowY: 'auto',
               position: 'relative',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+              boxShadow: '0 20px 60px rgba(22, 48, 37, 0.2)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -246,10 +248,10 @@ export default function CertificatesPage() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '1.5rem',
-                borderBottom: '1px solid #3a3a3a',
+                borderBottom: '1px solid var(--border-theme)',
                 position: 'sticky',
                 top: 0,
-                background: '#2a2a2a',
+                background: 'var(--surface-page)',
                 zIndex: 10,
               }}
             >
@@ -257,7 +259,7 @@ export default function CertificatesPage() {
                 style={{
                   fontSize: '1.5rem',
                   fontWeight: 'bold',
-                  color: 'white',
+                  color: 'var(--text-theme)',
                   margin: 0,
                 }}
               >
@@ -269,7 +271,7 @@ export default function CertificatesPage() {
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: 'white',
+                  color: 'var(--text-theme)',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
                   padding: '0.25rem 0.5rem',
@@ -279,7 +281,7 @@ export default function CertificatesPage() {
                   justifyContent: 'center',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#3a3a3a';
+                  e.currentTarget.style.background = 'var(--surface-panel)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
@@ -291,9 +293,9 @@ export default function CertificatesPage() {
             </div>
 
             <div style={{ padding: '1.5rem' }}>
-              <p style={{ color: '#9ca3af', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
                 Complete a course to unlock PDF certificate download. Finished courses show{' '}
-                <span style={{ color: '#86efac' }}>Generate Certificate</span>.
+                <span style={{ color: 'var(--accent-theme)', fontWeight: 600 }}>Generate Certificate</span>.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {courses.map((course) => {
@@ -308,12 +310,12 @@ export default function CertificatesPage() {
                         alignItems: 'center',
                         gap: '1rem',
                         padding: '1rem',
-                        background: '#1a1a1a',
+                        background: 'var(--surface-panel)',
                         borderRadius: 8,
                         border:
                           course.status === 'eligible'
                             ? '1px solid #166534'
-                            : '1px solid #3a3a3a',
+                            : '1px solid var(--border-theme)',
                         transition: 'border-color 0.2s',
                       }}
                     >
@@ -321,7 +323,7 @@ export default function CertificatesPage() {
                         <span
                           style={{
                             fontSize: '1rem',
-                            color: 'white',
+                            color: 'var(--text-theme)',
                             fontWeight: 500,
                             display: 'block',
                           }}
@@ -329,7 +331,7 @@ export default function CertificatesPage() {
                           {course.title}
                         </span>
                         {course.status === 'eligible' && (
-                          <span style={{ fontSize: '0.75rem', color: '#86efac' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--accent-theme)' }}>
                             Ready to generate
                           </span>
                         )}

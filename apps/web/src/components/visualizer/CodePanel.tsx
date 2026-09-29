@@ -22,11 +22,11 @@ export function CodePanel({
   return (
     <div
       className={cn(
-        'relative flex min-h-0 flex-col overflow-hidden rounded-xl border border-[#3a3a3a] bg-[#141414]',
+        'visualizer-stage relative flex min-h-0 flex-col overflow-hidden rounded-lg border border-green-900 bg-[#163025]',
         className,
       )}
     >
-      <div className="shrink-0 border-b border-[#3a3a3a] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
+      <div className="shrink-0 border-b border-green-900 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/70">
         {title}
       </div>
 
@@ -67,7 +67,7 @@ export function CodePanel({
 
         {hidden ? (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#141414]/90 px-4 text-center"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-green-950/90 px-4 text-center"
           >
             <p className="text-sm text-white/70">
               Try it yourself first — hit <span className="text-emerald-300">Practice</span> to

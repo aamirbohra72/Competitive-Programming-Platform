@@ -40,10 +40,10 @@ function IconButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-lg text-white/80 transition',
+        'inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-theme)] transition',
         primary
           ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-          : 'bg-white/5 hover:bg-white/10',
+          : 'bg-green-50 hover:bg-green-100',
         'disabled:cursor-not-allowed disabled:opacity-30',
       )}
     >
@@ -72,7 +72,7 @@ export function PlayerControls({
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center gap-3 border-t border-[#3a3a3a] bg-[#121212] px-3 py-2.5',
+        'flex flex-wrap items-center gap-3 border-t border-[var(--border-theme)] bg-[var(--surface-panel)] px-3 py-2.5',
         className,
       )}
     >
@@ -110,7 +110,7 @@ export function PlayerControls({
       </div>
 
       <div className="relative mx-1 min-w-[140px] flex-1">
-        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className="h-1.5 overflow-hidden rounded-full bg-green-100">
           <div
             className="h-full rounded-full bg-emerald-500 transition-[width] duration-150"
             style={{ width: `${progress}%` }}
@@ -135,7 +135,7 @@ export function PlayerControls({
           const next = order[(order.indexOf(speed) + 1) % order.length];
           onSpeedChange(next);
         }}
-        className="rounded-md border border-[#3a3a3a] bg-[#1a1a1a] px-2.5 py-1.5 font-mono text-xs text-white/70 hover:text-white"
+        className="rounded-md border border-[var(--border-theme)] bg-white px-2.5 py-1.5 font-mono text-xs text-[var(--text-theme)] hover:text-green-700"
         aria-label="Cycle playback speed"
       >
         {speed}x

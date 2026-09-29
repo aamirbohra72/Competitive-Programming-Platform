@@ -25,8 +25,8 @@ export function SidebarTrigger({ className }: SidebarTriggerProps) {
       aria-controls={sidebarId}
       aria-label={isOpen ? 'Close sidebar navigation' : 'Open sidebar navigation'}
       className={cn(
-        'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-white/90',
-        'hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#121212]',
+        'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-[var(--text-theme)]',
+        'hover:bg-green-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
         className,
       )}
     >

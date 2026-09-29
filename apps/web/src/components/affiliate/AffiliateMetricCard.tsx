@@ -9,10 +9,10 @@ export type AffiliateMetricCardProps = {
 
 export function AffiliateMetricCard({ title, value, subtitle, valueClassName }: AffiliateMetricCardProps) {
   return (
-    <div className="rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-4">
-      <p className="text-sm text-[#b0b0b0]">{title}</p>
-      <p className={cn('mt-1 text-lg font-semibold tabular-nums', valueClassName ?? 'text-white')}>{value}</p>
-      {subtitle ? <p className="mt-1 text-xs text-[#888]">{subtitle}</p> : null}
+    <div className="rounded-lg border border-[var(--border-theme)] bg-white p-4">
+      <p className="text-sm text-[var(--text-muted)]">{title}</p>
+      <p className={cn('mt-1 text-lg font-semibold tabular-nums', valueClassName ?? 'text-[var(--text-theme)]')}>{value}</p>
+      {subtitle ? <p className="mt-1 text-xs text-[var(--text-muted)]">{subtitle}</p> : null}
     </div>
   );
 }

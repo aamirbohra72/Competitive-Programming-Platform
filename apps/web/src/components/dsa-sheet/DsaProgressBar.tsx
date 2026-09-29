@@ -13,13 +13,13 @@ export function DsaProgressBar({ completed, total, className, showLabel = true }
     <div className={cn('w-full', className)}>
       {showLabel ? (
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-          <span className="font-medium text-white">Overall progress</span>
-          <span className="text-white/50">
+          <span className="font-medium text-[var(--text-theme)]">Overall progress</span>
+          <span className="text-[var(--text-muted)]">
             {completed} of {total} completed
           </span>
         </div>
       ) : null}
-      <div className="h-3 overflow-hidden rounded-full bg-white/10">
+      <div className="h-3 overflow-hidden rounded-full bg-green-100">
         <div
           className="h-full rounded-full bg-gradient-to-r from-green-600 to-emerald-500 transition-all duration-300"
           style={{ width: `${pct}%` }}
@@ -30,7 +30,7 @@ export function DsaProgressBar({ completed, total, className, showLabel = true }
         />
       </div>
       <div className="mt-1 flex justify-end">
-        <span className="text-sm font-semibold text-green-400">{pct}%</span>
+        <span className="text-sm font-semibold text-green-700">{pct}%</span>
       </div>
     </div>
   );

@@ -10,8 +10,8 @@ const config: Config = {
     extend: {
       colors: {
         nav: {
-          bg: '#121212',
-          border: '#1f1f1f',
+          bg: '#ffffff',
+          border: '#d7e8dd',
         },
       },
       fontFamily: {

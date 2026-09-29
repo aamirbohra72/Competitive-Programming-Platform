@@ -16,28 +16,64 @@ body {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: var(--surface-page);
   margin: 0;
   padding: 0;
 }
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  color-scheme: light;
+  --foreground-rgb: 22, 48, 37;
+  --surface-page: #ffffff;
+  --surface-panel: #f4faf6;
+  --surface-raised: #ffffff;
+  --border-theme: #d7e8dd;
+  --text-theme: #163025;
+  --text-muted: #52675a;
+  --accent-theme: #15803d;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+/* Map legacy page utilities to the shared palette without changing control colors. */
+:where(main, body > div) :is(
+  [class~="bg-[#1a1a1a]"], [class~="bg-[#161616]"],
+  [class~="bg-[#121212]"], [class~="bg-[#141414]"],
+  [class~="bg-[#0d0d0d]"], [class~="bg-[#101010]"]
+):not(:where(.visualizer-stage, [class*="editor"], [class*="Editor"], [class*="terminal"], [class*="Terminal"], [class*="editor"] *, [class*="Editor"] *, [class*="terminal"] *)) {
+  background-color: var(--surface-page);
+}
+
+:where(main, body > div) :is(
+  [class~="bg-[#2a2a2a]"], [class~="bg-[#242424]"],
+  [class~="bg-[#252525]"], [class~="bg-[#333]"],
+  [class~="bg-[#3a3a3a]"]
+):not(:where(.visualizer-stage, [class*="editor"], [class*="Editor"], [class*="terminal"], [class*="Terminal"], [class*="editor"] *, [class*="Editor"] *, [class*="terminal"] *)) {
+  background-color: var(--surface-panel);
+}
+
+:where(main, body > div) :is([class~="border-[#3a3a3a]"], [class~="border-[#4a4a4a]"], [class~="border-[#2a2a2a]"]) {
+  border-color: var(--border-theme);
+}
+
+:where(main, body > div) :is([class~="text-white"], [class~="text-[#e5e5e5]"]):not(:where(
+  button, a, [role="button"], button *, a *, [role="button"] *,
+  [class*="bg-green"], [class*="bg-emerald"], [class*="bg-red"],
+  [class*="bg-blue"], [class*="bg-amber"], [class*="bg-purple"],
+  [class*="bg-violet"], [class*="bg-gradient"],
+  [class*="bg-green"] *, [class*="bg-emerald"] *, [class*="bg-red"] *,
+  [class*="bg-blue"] *, [class*="bg-amber"] *, [class*="bg-purple"] *,
+  [class*="bg-violet"] *, [class*="bg-gradient"] *,
+  [class*="editor"], [class*="Editor"], [class*="terminal"], [class*="Terminal"],
+  [class*="editor"] *, [class*="Editor"] *, [class*="terminal"] *
+)) {
+  color: var(--text-theme);
+}
+
+:where(main, body > div) :is(
+  [class~="text-[#b0b0b0]"], [class~="text-[#a0a0a0]"],
+  [class~="text-[#888]"], [class~="text-[#777]"],
+  [class~="text-[#666]"], [class~="text-[#9ca3af]"]
+) {
+  color: var(--text-muted);
 }
 
 a {
@@ -61,21 +97,21 @@ a {
 }
 
 .btn-primary {
-  background-color: #0070f3;
+  background-color: var(--accent-theme);
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #0051cc;
+  background-color: #166534;
 }
 
 .btn-secondary {
-  background-color: #6c757d;
-  color: white;
+  background-color: var(--surface-panel);
+  color: var(--text-theme);
 }
 
 .btn-secondary:hover {
-  background-color: #5a6268;
+  background-color: #e7f5eb;
 }
 
 .form-group {
@@ -93,51 +129,39 @@ a {
 .form-group select {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-theme);
+  background: var(--surface-raised);
+  color: var(--text-theme);
   border-radius: 4px;
   font-size: 1rem;
 }
 
 .card {
-  background: white;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-theme);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-  .card {
-    background: #1a1a1a;
-    color: white;
-  }
-  
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
-    background: #2a2a2a;
-    color: white;
-    border-color: #444;
-  }
-}
-
-/* Scrollbar styling for dark theme */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: var(--surface-panel);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
+  background: #b7d3c0;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4a;
+  background: #85ad92;
 }
 
 /* Always-visible light scrollbar for the problem statement panel */

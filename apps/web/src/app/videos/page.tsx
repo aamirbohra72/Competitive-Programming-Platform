@@ -20,54 +20,54 @@ export default function VideosPage() {
   const cw = data?.continueWatching;
 
   return (
-    <DashboardShell navClassName="sticky top-0 z-50" mainClassName="min-h-0 overflow-y-auto p-8">
+    <DashboardShell navClassName="sticky top-0 z-50" mainClassName="min-h-0 overflow-y-auto p-4 sm:p-8">
       <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-semibold">Video Courses</h1>
-        <p className="text-[#b0b0b0]">Curated playlists with progress tracked just for you.</p>
+        <h1 className="mb-2 font-nav-brand text-3xl font-semibold text-[var(--text-theme)]">Video Courses</h1>
+        <p className="text-[var(--text-muted)]">Curated playlists with progress tracked just for you.</p>
       </div>
 
-      {error && <p className="mb-4 text-red-400">{error}</p>}
-      {!data && !error && <p className="text-[#b0b0b0]">Loading videos…</p>}
+      {error && <p className="mb-4 text-red-700">{error}</p>}
+      {!data && !error && <p className="text-[var(--text-muted)]">Loading videos…</p>}
 
       {cw?.lastVideoId && (
         <Link
           href={`/videos/${cw.playlistId}`}
-          className="mb-8 block rounded-xl border border-dashed border-[#22c55e] bg-[#22c55e]/10 p-5 no-underline"
+          className="mb-8 block rounded-lg border border-green-300 bg-green-50 p-5 no-underline transition hover:border-green-500"
         >
-          <p className="text-sm text-[#22c55e]">Continue watching · {cw.percent}% complete</p>
-          <p className="mt-1 text-lg font-semibold text-white">{cw.playlistTitle}</p>
-          <p className="mt-1 text-sm text-[#b0b0b0]">Last watched: {cw.lastVideoTitle}</p>
+          <p className="text-sm font-semibold text-green-700">Continue watching · {cw.percent}% complete</p>
+          <p className="mt-1 text-lg font-semibold text-[var(--text-theme)]">{cw.playlistTitle}</p>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Last watched: {cw.lastVideoTitle}</p>
         </Link>
       )}
 
       {data?.tracks.map((track) => (
         <section key={track.slug} className="mb-10">
-          <h2 className="text-xl font-semibold">{track.title}</h2>
-          <p className="mb-4 text-sm text-[#b0b0b0]">{track.description}</p>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6">
+          <h2 className="text-xl font-semibold text-[var(--text-theme)]">{track.title}</h2>
+          <p className="mb-4 text-sm text-[var(--text-muted)]">{track.description}</p>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] gap-6">
             {track.playlists.map((p) => (
               <Link
                 key={p.id}
                 href={`/videos/${p.id}`}
-                className="flex flex-col overflow-hidden rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] text-inherit no-underline transition hover:-translate-y-0.5 hover:border-[#22c55e]"
+                className="flex flex-col overflow-hidden rounded-lg border border-[var(--border-theme)] bg-white text-inherit no-underline transition hover:-translate-y-0.5 hover:border-green-500 hover:shadow-md hover:shadow-green-900/10"
               >
                 {p.thumbnail && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={p.thumbnail} alt="" className="aspect-video w-full object-cover" />
                 )}
                 <div className="flex flex-1 flex-col p-4">
-                  <h3 className="font-semibold text-white">{p.title}</h3>
-                  <p className="mt-1 text-xs text-[#b0b0b0]">
+                  <h3 className="font-semibold text-[var(--text-theme)]">{p.title}</h3>
+                  <p className="mt-1 text-xs text-[var(--text-muted)]">
                     {p.channelTitle} · {p.itemCount} videos
                   </p>
                   <div className="mt-auto pt-4">
-                    <div className="h-1.5 w-full overflow-hidden rounded bg-[#3a3a3a]">
+                    <div className="h-1.5 w-full overflow-hidden rounded bg-green-100">
                       <div
-                        className="h-full bg-[#22c55e]"
+                        className="h-full bg-green-700"
                         style={{ width: `${p.progress?.percent ?? 0}%` }}
                       />
                     </div>
-                    <p className="mt-1 text-xs text-[#b0b0b0]">
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">
                       {p.progress
                         ? `${p.progress.completedCount} watched · ${p.progress.percent}%`
                         : 'Not started'}

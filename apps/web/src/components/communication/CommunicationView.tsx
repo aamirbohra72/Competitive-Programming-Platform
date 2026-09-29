@@ -120,21 +120,21 @@ export function CommunicationView() {
   return (
     <DashboardShell mainClassName="min-h-0 overflow-y-auto p-0">
       <div className="relative">
-        <header className="border-b border-white/[0.06] bg-[#161616]">
+        <header className="border-b border-[var(--border-theme)] bg-[var(--surface-panel)]">
           <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300/90">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-700">
               Soft skills · Live via Mistral
             </p>
-            <h1 className="mt-3 font-nav-brand text-3xl font-bold leading-tight text-white sm:text-4xl">
+            <h1 className="mt-3 font-nav-brand text-3xl font-bold leading-tight text-[var(--text-theme)] sm:text-4xl">
               Meeting communication
             </h1>
-            <p className="mt-4 max-w-3xl text-lg leading-relaxed text-white/65">
+            <p className="mt-4 max-w-3xl text-lg leading-relaxed text-[var(--text-muted)]">
               Practice day-to-day software meetings — standups, planning, 1:1s, design reviews, retros,
               and stakeholder updates. Get AI coaching on what you would actually say.
             </p>
-            <p className="mt-3 text-sm text-white/45">
+            <p className="mt-3 text-sm text-[var(--text-muted)]">
               Part of{' '}
-              <Link href="/roadmaps" className="text-teal-300 hover:underline">
+              <Link href="/roadmaps" className="font-semibold text-green-700 hover:underline">
                 Roadmaps
               </Link>
               {' · '}
@@ -145,17 +145,17 @@ export function CommunicationView() {
 
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
           {error ? (
-            <div className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+            <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
               {error}
             </div>
           ) : null}
 
           <section className="mb-8">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Choose a meeting
             </h2>
             {loadingTypes ? (
-              <p className="text-sm text-white/50">Loading meeting types…</p>
+              <p className="text-sm text-[var(--text-muted)]">Loading meeting types…</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {types.map((t) => {
@@ -165,22 +165,22 @@ export function CommunicationView() {
                       key={t.id}
                       type="button"
                       onClick={() => setSelected(t.id)}
-                      className={`rounded-xl border p-4 text-left transition ${
+                      className={`rounded-lg border p-4 text-left transition ${
                         active
-                          ? 'border-teal-400/50 bg-teal-500/10 ring-1 ring-teal-400/30'
-                          : 'border-white/10 bg-[#242424] hover:border-white/20'
+                          ? 'border-green-500 bg-green-50 ring-1 ring-green-200'
+                          : 'border-[var(--border-theme)] bg-white hover:border-green-400 hover:bg-green-50/50'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-semibold text-white">{t.title}</h3>
-                        <span className="text-[11px] text-white/40">{t.duration}</span>
+                        <h3 className="font-semibold text-[var(--text-theme)]">{t.title}</h3>
+                        <span className="text-[11px] text-[var(--text-muted)]">{t.duration}</span>
                       </div>
-                      <p className="mt-2 text-sm leading-relaxed text-white/55">{t.blurb}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">{t.blurb}</p>
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {t.focus.map((f) => (
                           <span
                             key={f}
-                            className="rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-medium text-white/60"
+                            className="rounded-md border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-800"
                           >
                             {f}
                           </span>
@@ -193,13 +193,13 @@ export function CommunicationView() {
             )}
           </section>
 
-          <section className="rounded-xl border border-white/[0.08] bg-[#1f1f1f] p-5 sm:p-6">
+          <section className="border-t border-[var(--border-theme)] bg-[var(--surface-panel)] p-5 sm:p-6">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="font-nav-brand text-xl font-semibold text-white">
+                <h2 className="font-nav-brand text-xl font-semibold text-[var(--text-theme)]">
                   {selectedMeta?.title ?? 'Scenario'}
                 </h2>
-                <p className="text-sm text-white/45">
+                <p className="text-sm text-[var(--text-muted)]">
                   {scenario?.source === 'mistral'
                     ? 'Generated with Mistral'
                     : scenario?.source === 'fallback'
@@ -211,46 +211,46 @@ export function CommunicationView() {
                 type="button"
                 disabled={loadingScenario || !selected}
                 onClick={() => void loadScenario(selected)}
-                className="rounded-lg border border-white/15 bg-[#2a2a2a] px-3 py-1.5 text-sm font-semibold text-white hover:border-teal-400/40 disabled:opacity-50"
+                className="rounded-lg border border-[var(--border-theme)] bg-white px-3 py-1.5 text-sm font-semibold text-[var(--text-theme)] hover:border-green-400 disabled:opacity-50"
               >
                 {loadingScenario ? 'Generating…' : 'New scenario'}
               </button>
             </div>
 
             {loadingScenario && !scenario ? (
-              <p className="text-sm text-white/50">Asking Mistral for a realistic meeting scenario…</p>
+              <p className="text-sm text-[var(--text-muted)]">Asking Mistral for a realistic meeting scenario…</p>
             ) : null}
 
             {scenario ? (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{scenario.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/65">{scenario.setting}</p>
-                  <p className="mt-2 text-sm text-teal-200/90">
+                  <h3 className="text-lg font-semibold text-[var(--text-theme)]">{scenario.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">{scenario.setting}</p>
+                  <p className="mt-2 text-sm text-green-700">
                     Your role: <span className="font-semibold">{scenario.yourRole}</span>
                   </p>
-                  <p className="mt-1 text-sm text-white/50">Also in the room: {scenario.others.join(' · ')}</p>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">Also in the room: {scenario.others.join(' · ')}</p>
                 </div>
 
-                <div className="rounded-lg border border-teal-500/25 bg-teal-500/5 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-teal-300">Your prompt</p>
-                  <p className="mt-1 text-sm text-white">{scenario.prompt}</p>
+                <div className="rounded-lg border border-green-200 bg-white px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-green-700">Your prompt</p>
+                  <p className="mt-1 text-sm text-[var(--text-theme)]">{scenario.prompt}</p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/45">Goals</p>
-                    <ul className="list-disc space-y-1 pl-5 text-sm text-white/70">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Goals</p>
+                    <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-theme)]">
                       {scenario.goals.map((g) => (
                         <li key={g}>{g}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/45">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                       Pitfalls to avoid
                     </p>
-                    <ul className="list-disc space-y-1 pl-5 text-sm text-white/70">
+                    <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-theme)]">
                       {scenario.pitfalls.map((g) => (
                         <li key={g}>{g}</li>
                       ))}
@@ -259,7 +259,7 @@ export function CommunicationView() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-semibold text-white" htmlFor="meeting-response">
+                  <label className="mb-2 block text-sm font-semibold text-[var(--text-theme)]" htmlFor="meeting-response">
                     What would you say?
                   </label>
                   <textarea
@@ -268,21 +268,21 @@ export function CommunicationView() {
                     onChange={(e) => setResponse(e.target.value)}
                     rows={6}
                     placeholder="Write it like spoken dialogue — what you would say in the meeting…"
-                    className="w-full rounded-lg border border-white/10 bg-[#121212] px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-teal-400/50 focus:outline-none"
+                    className="w-full rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2.5 text-sm text-[var(--text-theme)] placeholder:text-[var(--text-muted)] focus:border-green-500 focus:outline-none"
                   />
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
                       disabled={loadingCoach}
                       onClick={() => void runCoach()}
-                      className="rounded-lg bg-teal-500 px-4 py-2 text-sm font-semibold text-[#042f2e] hover:bg-teal-400 disabled:opacity-50"
+                      className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800 disabled:opacity-50"
                     >
                       {loadingCoach ? 'Coaching…' : 'Get Mistral coaching'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowSample((v) => !v)}
-                      className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/5"
+                      className="rounded-lg border border-[var(--border-theme)] bg-white px-4 py-2 text-sm font-semibold text-[var(--text-theme)] hover:bg-green-50"
                     >
                       {showSample ? 'Hide sample' : 'Show strong sample'}
                     </button>
@@ -290,49 +290,49 @@ export function CommunicationView() {
                 </div>
 
                 {showSample ? (
-                  <div className="rounded-lg border border-white/10 bg-[#242424] px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-white/45">
+                  <div className="rounded-lg border border-[var(--border-theme)] bg-white px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                       Sample strong answer
                     </p>
-                    <p className="mt-2 text-sm leading-relaxed text-white/80">{scenario.sampleStrongAnswer}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-[var(--text-theme)]">{scenario.sampleStrongAnswer}</p>
                   </div>
                 ) : null}
 
                 {coach ? (
-                  <div className="rounded-xl border border-white/10 bg-[#242424] p-4 sm:p-5">
+                  <div className="rounded-lg border border-[var(--border-theme)] bg-white p-4 sm:p-5">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-teal-300">Coach feedback</p>
-                        <p className="mt-1 text-lg font-semibold text-white">{coach.verdict}</p>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-green-700">Coach feedback</p>
+                        <p className="mt-1 text-lg font-semibold text-[var(--text-theme)]">{coach.verdict}</p>
                       </div>
                       <div className="text-right">
-                        <div className="text-3xl font-bold text-teal-300">{coach.score}</div>
-                        <div className="text-xs text-white/45">/ 100 · {coach.source}</div>
+                        <div className="text-3xl font-bold text-green-700">{coach.score}</div>
+                        <div className="text-xs text-[var(--text-muted)]">/ 100 · {coach.source}</div>
                       </div>
                     </div>
                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
                       <div>
-                        <p className="mb-1 text-xs font-semibold uppercase text-green-300/90">Strengths</p>
-                        <ul className="list-disc space-y-1 pl-5 text-sm text-white/70">
+                        <p className="mb-1 text-xs font-semibold uppercase text-green-700">Strengths</p>
+                        <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-theme)]">
                           {coach.strengths.map((s) => (
                             <li key={s}>{s}</li>
                           ))}
                         </ul>
                       </div>
                       <div>
-                        <p className="mb-1 text-xs font-semibold uppercase text-amber-300/90">Improve</p>
-                        <ul className="list-disc space-y-1 pl-5 text-sm text-white/70">
+                        <p className="mb-1 text-xs font-semibold uppercase text-amber-800">Improve</p>
+                        <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--text-theme)]">
                           {coach.improvements.map((s) => (
                             <li key={s}>{s}</li>
                           ))}
                         </ul>
                       </div>
                     </div>
-                    <div className="mt-4 rounded-lg border border-teal-500/20 bg-teal-500/5 px-3 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-teal-300">Stronger rewrite</p>
-                      <p className="mt-2 text-sm leading-relaxed text-white">{coach.rewritten}</p>
+                    <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-green-700">Stronger rewrite</p>
+                      <p className="mt-2 text-sm leading-relaxed text-[var(--text-theme)]">{coach.rewritten}</p>
                     </div>
-                    <p className="mt-3 text-sm text-white/55">Next tip: {coach.nextTip}</p>
+                    <p className="mt-3 text-sm text-[var(--text-muted)]">Next tip: {coach.nextTip}</p>
                   </div>
                 ) : null}
               </div>

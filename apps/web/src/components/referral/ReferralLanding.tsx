@@ -20,9 +20,9 @@ import {
 } from '@/data/referral';
 
 const inputClass =
-  'w-full rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-3 py-2.5 text-sm text-white placeholder:text-[#666] outline-none transition focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40';
+  'w-full rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2.5 text-sm text-[var(--text-theme)] placeholder:text-[var(--text-muted)] outline-none transition focus:border-green-500 focus:ring-1 focus:ring-green-500/40';
 
-const labelClass = 'mb-1.5 block text-xs font-medium text-[#a0a0a0]';
+const labelClass = 'mb-1.5 block text-xs font-medium text-[var(--text-muted)]';
 
 function scrollToForm() {
   document.getElementById('refer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -111,7 +111,7 @@ export function ReferralLanding() {
   return (
     <DashboardShell mainClassName="relative min-h-0 overflow-y-auto p-0">
       {/* Promo bar */}
-      <div className="border-b border-[#3a3a3a] bg-[#111] px-4 py-2.5 text-center text-xs text-[#c4c4c4] md:text-sm">
+      <div className="border-b border-[var(--border-theme)] bg-[var(--surface-panel)] px-4 py-2.5 text-center text-xs text-[var(--text-muted)] md:text-sm">
         Earn {formatInr(REFERRAL_REWARD_INR)} per successful referral · Friends save{' '}
         {formatInr(REFERRAL_FRIEND_DISCOUNT_INR)} on signup · Track payouts after KYC
       </div>
@@ -120,19 +120,19 @@ export function ReferralLanding() {
         {/* Hero + form */}
         <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <div>
-            <p className="text-sm font-medium text-emerald-400">Referral Program</p>
-            <h1 className="mt-2 text-3xl font-bold leading-tight text-white md:text-4xl">
+            <p className="text-sm font-medium text-green-700">Referral Program</p>
+            <h1 className="mt-2 text-3xl font-bold leading-tight text-[var(--text-theme)] md:text-4xl">
               {displayName},{' '}
               <span className="block sm:inline">
                 earn{' '}
-                <span className="text-[#7dd3fc] line-through decoration-2">
+                <span className="text-sky-700 line-through decoration-2">
                   {formatInr(REFERRAL_OLD_REWARD_INR)}
                 </span>{' '}
-                <span className="text-emerald-400">{formatInr(REFERRAL_REWARD_INR)}</span> for
+                <span className="text-green-700">{formatInr(REFERRAL_REWARD_INR)}</span> for
                 every friend you refer!
               </span>
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#b0b0b0] md:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--text-muted)] md:text-base">
               Invite friends to Codeforces Platform courses. When they enroll, you get cash rewards
               and they get {formatInr(REFERRAL_FRIEND_DISCOUNT_INR)} off.
             </p>
@@ -143,40 +143,40 @@ export function ReferralLanding() {
                   type="button"
                   onClick={joinProgram}
                   disabled={joining}
-                  className="rounded-lg bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-70"
+                  className="rounded-lg bg-orange-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-800 disabled:opacity-70"
                 >
                   {joining ? 'Joining…' : 'Join Referral Program'}
                 </button>
               ) : (
-                <span className="inline-flex items-center rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-300">
+                <span className="inline-flex items-center rounded-lg border border-green-300 bg-green-50 px-4 py-2 text-sm font-semibold text-green-800">
                   ✓ You&apos;re in the program
                 </span>
               )}
               <button
                 type="button"
                 onClick={scrollToForm}
-                className="rounded-lg border border-[#3a3a3a] bg-[#2a2a2a] px-5 py-2.5 text-sm font-semibold text-white transition hover:border-[#4a4a4a] hover:bg-[#333]"
+                className="rounded-lg border border-[var(--border-theme)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--text-theme)] transition hover:border-green-400 hover:bg-green-50"
               >
                 Refer Your Friend
               </button>
               <Link
                 href="/affiliate"
-                className="rounded-lg border border-[#3a3a3a] px-5 py-2.5 text-sm font-semibold text-[#b0b0b0] transition hover:border-[#4a4a4a] hover:text-white"
+                className="rounded-lg border border-[var(--border-theme)] px-5 py-2.5 text-sm font-semibold text-green-700 transition hover:border-green-400 hover:bg-green-50"
               >
                 Open Affiliate Dashboard
               </Link>
             </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-5">
+              <div className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-[#888]">
+                    <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                       Your reward
                     </p>
-                    <p className="mt-2 text-2xl font-bold text-white">
+                    <p className="mt-2 text-2xl font-bold text-green-700">
                       {formatInr(REFERRAL_REWARD_INR)}
-                      <span className="text-sm font-medium text-[#888]"> / referral</span>
+                      <span className="text-sm font-medium text-[var(--text-muted)]"> / referral</span>
                     </p>
                   </div>
                   <span className="text-3xl" aria-hidden>
@@ -184,15 +184,15 @@ export function ReferralLanding() {
                   </span>
                 </div>
               </div>
-              <div className="rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-5">
+              <div className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-[#888]">
+                    <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                       Their benefit
                     </p>
-                    <p className="mt-2 text-2xl font-bold text-white">
+                    <p className="mt-2 text-2xl font-bold text-green-700">
                       {formatInr(REFERRAL_FRIEND_DISCOUNT_INR)}
-                      <span className="text-sm font-medium text-[#888]"> off</span>
+                      <span className="text-sm font-medium text-[var(--text-muted)]"> off</span>
                     </p>
                   </div>
                   <span className="text-3xl" aria-hidden>
@@ -206,18 +206,18 @@ export function ReferralLanding() {
           {/* Refer form */}
           <div
             id="refer-form"
-            className="rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-6 shadow-xl shadow-black/30"
+            className="rounded-lg border border-[var(--border-theme)] bg-white p-6 shadow-sm"
           >
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-[var(--text-theme)]">
               Know someone who deserves a better career?
             </h2>
-            <p className="mt-1 text-sm text-[#a0a0a0]">
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
               Share their details — we&apos;ll take it from there.
             </p>
 
             {!joined && (
               <div
-                className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+                className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800"
                 role="status"
               >
                 Join the referral program to unlock submissions.
@@ -244,7 +244,7 @@ export function ReferralLanding() {
                   Friend&apos;s phone number
                 </label>
                 <div className="flex gap-2">
-                  <span className="inline-flex items-center rounded-lg border border-[#3a3a3a] bg-[#222] px-3 text-sm text-[#b0b0b0]">
+                  <span className="inline-flex items-center rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] px-3 text-sm text-[var(--text-muted)]">
                     +91
                   </span>
                   <input
@@ -315,7 +315,7 @@ export function ReferralLanding() {
               <button
                 type="submit"
                 disabled={!joined || submitting}
-                className="w-full rounded-lg bg-orange-500 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-lg bg-orange-700 py-3 text-sm font-semibold text-white transition hover:bg-orange-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? 'Submitting…' : 'Refer your friend'}
               </button>
@@ -325,47 +325,47 @@ export function ReferralLanding() {
 
         {/* How it works */}
         <section>
-          <h2 className="text-center text-2xl font-bold text-white md:text-3xl">
+          <h2 className="text-center text-2xl font-bold text-[var(--text-theme)] md:text-3xl">
             How does it work?
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {REFERRAL_STEPS.map((step, i) => (
               <div
                 key={step.id}
-                className="rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-5 text-center"
+                className="rounded-lg border border-[var(--border-theme)] bg-white p-5 text-center"
               >
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#1a1a1a] text-2xl ring-1 ring-[#3a3a3a]">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-2xl ring-1 ring-green-200">
                   {step.icon}
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-green-700">
                   Step {i + 1}
                 </p>
-                <h3 className="mt-1 text-base font-semibold text-white">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#a0a0a0]">{step.description}</p>
+                <h3 className="mt-1 text-base font-semibold text-[var(--text-theme)]">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">{step.description}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Rewards table */}
-        <section className="rounded-2xl border border-[#3a3a3a] bg-[#222] px-4 py-10 md:px-8">
-          <h2 className="text-center text-2xl font-bold text-white">
+        <section className="border-y border-[var(--border-theme)] bg-[var(--surface-panel)] px-4 py-10 md:px-8">
+          <h2 className="text-center text-2xl font-bold text-[var(--text-theme)]">
             Rewards you get for successful referrals
           </h2>
-          <div className="mx-auto mt-8 max-w-md overflow-hidden rounded-xl border border-[#3a3a3a] bg-[#2a2a2a]">
-            <div className="grid grid-cols-2 border-b border-[#3a3a3a] bg-[#1f1f1f] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[#888]">
+          <div className="mx-auto mt-8 max-w-md overflow-hidden rounded-lg border border-[var(--border-theme)] bg-white">
+            <div className="grid grid-cols-2 border-b border-[var(--border-theme)] bg-green-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               <span>Referrals</span>
               <span className="text-right">Cash</span>
             </div>
             {tableRows.map((row) => (
               <div
                 key={row.referrals}
-                className="grid grid-cols-2 border-b border-[#3a3a3a] px-4 py-3 text-sm last:border-b-0"
+                className="grid grid-cols-2 border-b border-[var(--border-theme)] px-4 py-3 text-sm last:border-b-0"
               >
-                <span className="text-[#c4c4c4]">
+                <span className="text-[var(--text-theme)]">
                   {row.referrals} {row.referrals === 1 ? 'referral' : 'referrals'}
                 </span>
-                <span className="text-right font-semibold text-emerald-400">
+                <span className="text-right font-semibold text-green-700">
                   {formatInr(row.cash)}
                 </span>
               </div>
@@ -375,21 +375,21 @@ export function ReferralLanding() {
 
         {/* Calculator */}
         <section>
-          <h2 className="text-center text-2xl font-bold text-white md:text-3xl">
+          <h2 className="text-center text-2xl font-bold text-[var(--text-theme)] md:text-3xl">
             Rewards Calculator
           </h2>
-          <p className="mx-auto mt-2 max-w-xl text-center text-sm text-[#a0a0a0]">
+          <p className="mx-auto mt-2 max-w-xl text-center text-sm text-[var(--text-muted)]">
             See how much you can earn — move the slider to project your cash reward.
           </p>
 
-          <div className="mx-auto mt-8 max-w-3xl rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-6">
+          <div className="mx-auto mt-8 max-w-3xl rounded-lg border border-[var(--border-theme)] bg-white p-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-medium text-[#c4c4c4]">
+              <p className="text-sm font-medium text-[var(--text-theme)]">
                 Know how much you can earn by referring
               </p>
               <a
                 href="#rewards-details"
-                className="text-xs font-semibold text-sky-400 hover:text-sky-300"
+                className="text-xs font-semibold text-sky-700 hover:text-sky-800"
               >
                 View reward details
               </a>
@@ -403,30 +403,30 @@ export function ReferralLanding() {
                 step={1}
                 value={referrals}
                 onChange={(e) => setReferrals(Number(e.target.value))}
-                className="h-2 w-full cursor-pointer appearance-none rounded-full bg-[#3a3a3a] accent-emerald-500"
+                className="h-2 w-full cursor-pointer appearance-none rounded-full bg-green-100 accent-green-700"
                 aria-label="Number of referrals"
               />
-              <div className="mt-2 flex justify-between text-[10px] text-[#777] sm:text-xs">
+              <div className="mt-2 flex justify-between text-[10px] text-[var(--text-muted)] sm:text-xs">
                 {Array.from({ length: REFERRAL_MAX_CALCULATOR }, (_, i) => (
-                  <span key={i + 1} className={cn(referrals === i + 1 && 'font-semibold text-emerald-400')}>
+                  <span key={i + 1} className={cn(referrals === i + 1 && 'font-semibold text-green-700')}>
                     {i + 1}
                   </span>
                 ))}
               </div>
-              <p className="mt-2 text-center text-sm text-white">
-                <span className="font-semibold text-emerald-400">{referrals}</span>{' '}
+              <p className="mt-2 text-center text-sm text-[var(--text-theme)]">
+                <span className="font-semibold text-green-700">{referrals}</span>{' '}
                 {referrals === 1 ? 'Referral' : 'Referrals'}
               </p>
             </div>
 
             <div
               id="rewards-details"
-              className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#3a3a3a] bg-[#1a1a1a] p-5"
+              className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-5"
             >
               <div>
-                <p className="text-xs uppercase tracking-wide text-[#888]">In cash reward</p>
-                <p className="mt-1 text-sm text-[#7dd3fc] line-through">{formatInr(oldCash)}</p>
-                <p className="text-3xl font-bold text-white">{formatInr(cashReward)}</p>
+                <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">In cash reward</p>
+                <p className="mt-1 text-sm text-sky-700 line-through">{formatInr(oldCash)}</p>
+                <p className="text-3xl font-bold text-green-700">{formatInr(cashReward)}</p>
               </div>
               <span className="text-5xl" aria-hidden>
                 💰
@@ -437,34 +437,34 @@ export function ReferralLanding() {
 
         {/* Who can I refer */}
         <section>
-          <h2 className="text-center text-2xl font-bold text-white md:text-3xl">
-            <span className="text-emerald-400">Who</span> can I refer?
+          <h2 className="text-center text-2xl font-bold text-[var(--text-theme)] md:text-3xl">
+            <span className="text-green-700">Who</span> can I refer?
           </h2>
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {REFERRAL_AUDIENCES.map((a) => (
               <div
                 key={a.id}
-                className="flex flex-col items-center rounded-xl border border-[#3a3a3a] bg-[#2a2a2a] p-4 text-center"
+                className="flex flex-col items-center rounded-lg border border-[var(--border-theme)] bg-white p-4 text-center"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1a1a1a] text-xl ring-1 ring-[#3a3a3a]">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-xl ring-1 ring-green-200">
                   {a.icon}
                 </span>
-                <p className="mt-3 text-xs leading-snug text-[#c4c4c4]">{a.label}</p>
+                <p className="mt-3 text-xs leading-snug text-[var(--text-theme)]">{a.label}</p>
               </div>
             ))}
           </div>
-          <p className="mt-6 text-center text-sm text-[#888]">
+          <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
             Your friend saves {formatInr(REFERRAL_FRIEND_DISCOUNT_INR)} when they sign up for a
             course on Codeforces Platform.
           </p>
         </section>
 
         {/* Why refer + CTA */}
-        <section className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-[#2a2a2a] to-[#1f2920] px-6 py-10 text-center md:px-10">
-          <h2 className="text-2xl font-bold text-white">
-            <span className="text-emerald-400">Why</span> should I refer?
+        <section className="border-y border-[var(--border-theme)] bg-[var(--surface-panel)] px-6 py-10 text-center md:px-10">
+          <h2 className="text-2xl font-bold text-[var(--text-theme)]">
+            <span className="text-green-700">Why</span> should I refer?
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-[#b0b0b0]">
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-[var(--text-muted)]">
             Help friends level up their careers while you earn {formatInr(REFERRAL_REWARD_INR)} per
             successful enrollment. Track commissions and payouts from your Affiliate dashboard after
             a quick KYC.
@@ -474,7 +474,7 @@ export function ReferralLanding() {
               <button
                 type="button"
                 onClick={joinProgram}
-                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
+                className="rounded-lg bg-orange-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-800"
               >
                 Join Referral Program
               </button>
@@ -482,14 +482,14 @@ export function ReferralLanding() {
               <button
                 type="button"
                 onClick={scrollToForm}
-                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
+                className="rounded-lg bg-orange-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-800"
               >
                 Refer Your Friend
               </button>
             )}
             <Link
               href="/affiliate"
-              className="rounded-lg border border-[#3a3a3a] bg-[#1a1a1a] px-6 py-3 text-sm font-semibold text-white transition hover:border-[#4a4a4a]"
+              className="rounded-lg border border-[var(--border-theme)] bg-white px-6 py-3 text-sm font-semibold text-green-700 transition hover:border-green-400 hover:bg-green-50"
             >
               Manage payouts
             </Link>

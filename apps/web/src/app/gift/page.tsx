@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Navbar } from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
+import { DashboardShell } from '@/components/DashboardShell';
 
 interface Course {
   id: string;
@@ -86,23 +85,12 @@ export default function GiftPage() {
   const selectedCoursesList = mockCourses.filter((course) => selectedCourses.has(course.id));
 
   return (
-    <>
-      <Navbar />
-      <div style={{ display: 'flex', minHeight: 'calc(100vh - 60px)' }}>
-        <Sidebar />
-        <main
-          style={{
-            marginLeft: '240px',
-            flex: 1,
-            background: '#1a1a1a',
-            color: 'white',
-            padding: '2rem',
-          }}
-        >
+    <DashboardShell mainClassName="min-h-0 overflow-y-auto p-4 sm:p-8">
           {/* Selected Gift(s) Section */}
           <div
             style={{
-              background: '#2a2a2a',
+              background: 'var(--surface-panel)',
+              border: '1px solid var(--border-theme)',
               borderRadius: '8px',
               padding: '1.5rem',
               marginBottom: '2rem',
@@ -112,7 +100,7 @@ export default function GiftPage() {
               style={{
                 fontSize: '1.5rem',
                 fontWeight: 'bold',
-                color: '#f97316',
+                color: 'var(--accent-theme)',
                 marginBottom: '1rem',
               }}
             >
@@ -121,14 +109,14 @@ export default function GiftPage() {
             <div
               style={{
                 height: '1px',
-                background: '#3a3a3a',
+                background: 'var(--border-theme)',
                 marginBottom: '1rem',
               }}
             />
             {selectedCourses.size === 0 ? (
               <>
-                <p style={{ color: '#9ca3af', marginBottom: '0.5rem' }}>No Gift Selected</p>
-                <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                <p style={{ color: 'var(--text-theme)', marginBottom: '0.5rem' }}>No Gift Selected</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                   Please select the course(s) you'd like to gift from the list below.
                 </p>
               </>
@@ -138,7 +126,7 @@ export default function GiftPage() {
                   <div
                     key={course.id}
                     style={{
-                      background: '#1a1a1a',
+                      background: 'var(--surface-raised)',
                       padding: '1rem',
                       borderRadius: '6px',
                       display: 'flex',
@@ -150,7 +138,7 @@ export default function GiftPage() {
                       <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.25rem' }}>
                         {course.title}
                       </h3>
-                      <p style={{ fontSize: '0.85rem', color: '#9ca3af' }}>{course.description}</p>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{course.description}</p>
                     </div>
                     <button
                       onClick={() => toggleCourseSelection(course.id)}
@@ -180,13 +168,13 @@ export default function GiftPage() {
                   style={{
                     marginTop: '1rem',
                     padding: '1rem',
-                    background: '#1a1a1a',
+                    background: 'var(--surface-raised)',
                     borderRadius: '6px',
-                    border: '1px solid #3a3a3a',
+                    border: '1px solid var(--border-theme)',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{ color: '#9ca3af' }}>Total Courses:</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Total Courses:</span>
                     <span style={{ fontWeight: '600' }}>{selectedCourses.size}</span>
                   </div>
                   <button
@@ -226,12 +214,13 @@ export default function GiftPage() {
                 <div
                   key={course.id}
                   style={{
-                    background: '#2a2a2a',
+                    background: 'var(--surface-raised)',
                     borderRadius: '8px',
                     padding: '1.5rem',
                     display: 'flex',
                     gap: '1.5rem',
-                    border: isSelected ? '2px solid #f97316' : '1px solid #3a3a3a',
+                    flexWrap: 'wrap',
+                    border: isSelected ? '2px solid var(--accent-theme)' : '1px solid var(--border-theme)',
                     transition: 'all 0.2s',
                   }}
                 >
@@ -239,8 +228,9 @@ export default function GiftPage() {
                   <div
                     style={{
                       width: '200px',
+                      maxWidth: '100%',
                       height: '150px',
-                      background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                      background: 'var(--accent-theme)',
                       borderRadius: '8px',
                       display: 'flex',
                       alignItems: 'center',
@@ -270,26 +260,26 @@ export default function GiftPage() {
                   </div>
 
                   {/* Course Details */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <h2
                       style={{
                         fontSize: '1.25rem',
                         fontWeight: '600',
-                        color: 'white',
+                        color: 'var(--text-theme)',
                         margin: 0,
                       }}
                     >
                       {course.title}
                     </h2>
-                    <p style={{ color: '#9ca3af', fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
                       {course.description}
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#9ca3af', fontSize: '0.875rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                         <span>Course Validity :</span>
-                        <span style={{ color: 'white', fontWeight: '500' }}>{course.validity}</span>
+                        <span style={{ color: 'var(--text-theme)', fontWeight: '500' }}>{course.validity}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#9ca3af', fontSize: '0.875rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                         <span>🌐</span>
                         <span>{course.language}</span>
                       </div>
@@ -306,7 +296,7 @@ export default function GiftPage() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.5rem',
-                            color: '#9ca3af',
+                            color: 'var(--text-muted)',
                             fontSize: '0.875rem',
                           }}
                         >
@@ -318,9 +308,9 @@ export default function GiftPage() {
                             style={{
                               marginTop: '0.5rem',
                               padding: '0.75rem',
-                              background: '#1a1a1a',
+                              background: 'var(--surface-panel)',
                               borderRadius: '6px',
-                              color: '#9ca3af',
+                              color: 'var(--text-muted)',
                               fontSize: '0.875rem',
                             }}
                           >
@@ -347,7 +337,7 @@ export default function GiftPage() {
                         width: '20px',
                         height: '20px',
                         cursor: 'pointer',
-                        accentColor: '#f97316',
+                        accentColor: 'var(--accent-theme)',
                       }}
                     />
                   </div>
@@ -386,9 +376,7 @@ export default function GiftPage() {
           >
             <span style={{ fontSize: '2rem' }}>💬</span>
           </div>
-        </main>
-      </div>
-    </>
+    </DashboardShell>
   );
 }
 

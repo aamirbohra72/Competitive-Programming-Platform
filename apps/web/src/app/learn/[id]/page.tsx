@@ -315,7 +315,7 @@ export default function CourseDetailPage() {
 
   return (
     <DashboardShell mainClassName="min-h-0 overflow-y-auto p-0">
-      <main style={{ background: '#1a1a1a', color: 'white', padding: '2rem', minHeight: '100%' }}>
+      <main style={{ background: 'var(--surface-page)', color: 'var(--text-theme)', padding: '2rem', minHeight: '100%' }}>
         <Link
           href="/learn"
           style={{ display: 'inline-block', marginBottom: '1.5rem', color: '#22c55e', textDecoration: 'none' }}
@@ -342,8 +342,8 @@ export default function CourseDetailPage() {
               )}
               <span
                 style={{
-                  background: '#3a3a3a',
-                  color: '#b0b0b0',
+                  background: 'var(--surface-panel)',
+                  color: 'var(--text-muted)',
                   padding: '0.25rem 0.5rem',
                   borderRadius: 4,
                   fontSize: '0.75rem',
@@ -367,7 +367,7 @@ export default function CourseDetailPage() {
             <p
               style={{
                 fontSize: '0.95rem',
-                color: '#86efac',
+                color: 'var(--accent-theme)',
                 lineHeight: 1.5,
                 marginBottom: '1rem',
                 padding: '0.75rem 1rem',
@@ -376,7 +376,7 @@ export default function CourseDetailPage() {
                 border: '1px solid rgba(34,197,94,0.25)',
               }}
             >
-              <strong style={{ color: '#bbf7d0' }}>You will be able to: </strong>
+              <strong style={{ color: 'var(--accent-theme)' }}>You will be able to: </strong>
               {course.outcome}
             </p>
             <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1rem' }}>
@@ -390,9 +390,9 @@ export default function CourseDetailPage() {
               <div style={{ marginBottom: '1.5rem', maxWidth: 420 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#94a3b8', marginBottom: 6 }}>
                   <span>Course progress</span>
-                  <span style={{ color: '#86efac', fontWeight: 700 }}>{percent}%</span>
+                  <span style={{ color: 'var(--accent-theme)', fontWeight: 700 }}>{percent}%</span>
                 </div>
-                <div style={{ height: 8, borderRadius: 999, background: '#2a2a2a', overflow: 'hidden' }}>
+                <div style={{ height: 8, borderRadius: 999, background: 'var(--surface-panel)', overflow: 'hidden' }}>
                   <div
                     style={{
                       width: `${percent}%`,
@@ -577,10 +577,10 @@ export default function CourseDetailPage() {
                   <div
                     key={module.id}
                     style={{
-                      background: '#2a2a2a',
+                      background: 'var(--surface-panel)',
                       padding: '1.5rem',
                       borderRadius: 8,
-                      border: '1px solid #3a3a3a',
+                      border: '1px solid var(--border-theme)',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -593,7 +593,7 @@ export default function CourseDetailPage() {
                           width: 40,
                           height: 40,
                           borderRadius: '50%',
-                          background: module.completed ? '#22c55e' : '#3a3a3a',
+                          background: module.completed ? '#22c55e' : 'var(--surface-raised)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -620,7 +620,7 @@ export default function CourseDetailPage() {
                           style={{
                             padding: '0.5rem 1rem',
                             background: 'transparent',
-                            color: '#86efac',
+                            color: 'var(--accent-theme)',
                             border: '1px solid rgba(52,211,153,0.4)',
                             borderRadius: 6,
                             fontWeight: 600,
@@ -666,10 +666,10 @@ export default function CourseDetailPage() {
                           display: 'block',
                           textDecoration: 'none',
                           color: 'inherit',
-                          background: '#2a2a2a',
+                          background: 'var(--surface-panel)',
                           padding: '1.35rem 1.5rem',
                           borderRadius: 10,
-                          border: '1px solid #3a3a3a',
+                          border: '1px solid var(--border-theme)',
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', marginBottom: 8 }}>
@@ -710,8 +710,8 @@ export default function CourseDetailPage() {
 const chipStyle = {
   padding: '0.25rem 0.6rem',
   borderRadius: 8,
-  background: 'rgba(255,255,255,0.08)',
-  color: '#e5e5e5',
+  background: 'var(--surface-panel)',
+  color: 'var(--text-muted)',
   fontSize: '0.75rem',
   fontWeight: 500,
 } as const;

@@ -1,7 +1,7 @@
 .page {
   min-height: calc(100vh - 3.5rem);
-  background: #1a1a1a;
-  color: #e5e5e5;
+  background: var(--surface-page);
+  color: var(--text-theme);
 }
 
 @media print {
@@ -22,7 +22,7 @@
 
 .header {
   border-bottom: 1px solid #2f2f2f;
-  background: #1f1f1f;
+  background: var(--surface-panel);
   padding: 1.25rem 1.5rem 0;
 }
 
@@ -44,12 +44,12 @@
   margin: 0 0 0.35rem;
   font-size: clamp(1.5rem, 2.5vw, 1.85rem);
   font-weight: 700;
-  color: #fff;
+  color: var(--text-theme);
 }
 
 .subtitle {
   margin: 0 0 1rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   font-size: 0.95rem;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .mainTabActive {
-  color: #fff;
+  color: var(--accent-theme);
   border-bottom-color: #22c55e;
 }
 
@@ -1223,4 +1223,68 @@
   .homeNavRight {
     display: none;
   }
+}
+
+.page :is(.jobCard, .sideCard, .panelCard, .appliedListPane, .appliedDetailPane, .appliedCard, .timelineCard, .roleCard, .homeDetailCard) {
+  background: var(--surface-raised);
+  border-color: var(--border-theme);
+}
+
+.page :is(.homeSidebar, .homeBanner, .empty, .stateBox) {
+  background: var(--surface-panel);
+  border-color: var(--border-theme);
+}
+
+.page :is(.logo, .tag, .timelineDot, .reqTable th) {
+  background: var(--surface-panel);
+  border-color: var(--border-theme);
+}
+
+.page :is(.select, .searchInput, .textInput, .companySearch, .ghostBtn, .homeNavArrow, .filterTab:not(.filterTabActive), .appliedFilter:not(.appliedFilterActive), .statusChip:not(.statusChipActive)) {
+  background: var(--surface-raised);
+  border-color: var(--border-theme);
+  color: var(--text-theme);
+}
+
+.page :is(.homeTitle, .homeBannerTitle, .homeDetailTitle, .homeAccordionHead, .profileName, .sideTitle, .appliedListTitle, .appliedDetailTitle, .timelineTitle, .roleSubhead, .reqTable th, .detailItem strong) {
+  color: var(--text-theme);
+}
+
+.page :is(.company, .posted, .details, .profileRole, .sideLabel, .panelCopy, .homeSubtitle, .homeMetaLabel, .homeDetailPoints, .timelineHead, .timelineNote, .roleCopy, .roleList, .radio, .tag, .homeTask, .homeNavArrow),
+.page .reqTable td {
+  color: var(--text-muted);
+}
+
+.page :is(.jobTitle, .appliedJobTitle, .linkBtn, .detailTabActive, .homeBannerEyebrow) {
+  color: var(--accent-theme);
+}
+
+.page :is(.homeTaskActive, .filterTabActive, .appliedFilterActive, .statusChipActive:not(.statusChipRejected)) {
+  background: var(--accent-theme);
+  color: white;
+}
+
+.page .statusChipRejected.statusChipActive {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.page :is(.badgeEligible, .appBadgeOffer, .reqOk, .homeBadgeComplete) {
+  color: var(--accent-theme);
+}
+
+.page :is(.badgePending, .appBadgePending, .appBadgeReview) {
+  color: #1d4ed8;
+}
+
+.page :is(.badgeClosed, .appBadgeRejected, .reqMissing, .homeBadgeUrgent, .errorBox) {
+  color: #b91c1c;
+}
+
+.page :is(.reqPending, .homeBadgePending) {
+  color: #92400e;
+}
+
+.page .homeTask:hover:not(.homeTaskActive) {
+  background: var(--surface-panel);
 }

@@ -29,12 +29,12 @@ export function SolutionPanel({
     <div className={cn('flex min-h-0 flex-col gap-2 sm:gap-3', className)}>
       <div className="flex shrink-0 items-center justify-between gap-2 px-0.5">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white/80">{approach.label}</p>
-          <p className="font-mono text-[10px] text-white/35">
+          <p className="truncate text-sm font-medium text-[var(--text-theme)]">{approach.label}</p>
+          <p className="font-mono text-[10px] text-[var(--text-muted)]">
             time {approach.complexity.time} · space {approach.complexity.space}
           </p>
         </div>
-        <span className="shrink-0 font-mono text-[11px] tabular-nums text-white/40">
+        <span className="shrink-0 font-mono text-[11px] tabular-nums text-[var(--text-muted)]">
           step {stepIndex + 1} / {stepCount}
         </span>
       </div>

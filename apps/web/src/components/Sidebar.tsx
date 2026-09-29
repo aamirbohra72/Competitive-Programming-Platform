@@ -63,7 +63,7 @@ export function Sidebar() {
       id={sidebarId}
       aria-hidden={!panelOpen}
       className={cn(
-        'fixed left-0 z-40 w-[240px] overflow-y-auto border-r border-[#3a3a3a] bg-[#2a2a2a] py-6 text-white transition-transform duration-200 ease-out',
+        'fixed left-0 z-40 w-[240px] overflow-y-auto border-r border-[var(--border-theme)] bg-[var(--surface-panel)] py-6 text-[var(--text-theme)] transition-transform duration-200 ease-out',
         'top-14 h-[calc(100vh-3.5rem)]',
         panelOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none',
       )}
@@ -84,22 +84,22 @@ export function Sidebar() {
                 alignItems: 'center',
                 gap: '0.75rem',
                 padding: '0.75rem 1.5rem',
-                color: isActive ? '#fff' : '#b0b0b0',
-                background: isActive ? '#3a3a3a' : 'transparent',
+                color: isActive ? 'var(--accent-theme)' : 'var(--text-muted)',
+                background: isActive ? 'var(--surface-raised)' : 'transparent',
                 textDecoration: 'none',
-                borderLeft: isActive ? '3px solid #22c55e' : '3px solid transparent',
+                borderLeft: isActive ? '3px solid var(--accent-theme)' : '3px solid transparent',
                 transition: 'all 0.2s',
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
-                  e.currentTarget.style.background = '#333';
-                  e.currentTarget.style.color = '#fff';
+                  e.currentTarget.style.background = 'var(--surface-raised)';
+                  e.currentTarget.style.color = 'var(--text-theme)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isActive) {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#b0b0b0';
+                  e.currentTarget.style.color = 'var(--text-muted)';
                 }
               }}
             >

@@ -107,8 +107,8 @@ export default function ProfilePage() {
       <Navbar />
       <div
         style={{
-          background: '#1a1a1a',
-          color: 'white',
+          background: 'var(--surface-page)',
+          color: 'var(--text-theme)',
           minHeight: 'calc(100vh - 60px)',
           padding: '2rem',
         }}
@@ -118,7 +118,7 @@ export default function ProfilePage() {
             maxWidth: '1200px',
             margin: '0 auto',
             display: 'grid',
-            gridTemplateColumns: '300px 1fr',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
             gap: '2rem',
           }}
         >
@@ -156,7 +156,7 @@ export default function ProfilePage() {
             {(isOwnProfile || streakPublic) && (
               <div
                 style={{
-                  background: '#2a2a2a',
+                  background: 'var(--surface-panel)',
                   borderRadius: '8px',
                   padding: '1.5rem',
                   display: 'flex',
@@ -174,13 +174,13 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ background: '#1a1a1a', borderRadius: '6px', padding: '1rem', border: '1px solid #3a3a3a' }}>
+                  <div style={{ background: 'var(--surface-raised)', borderRadius: '6px', padding: '1rem', border: '1px solid var(--border-theme)' }}>
                     <div style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '0.5rem' }}>Current streak</div>
                     <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#22c55e' }}>
                       {loading ? '—' : `${user?.streak.current ?? 0} days`}
                     </div>
                   </div>
-                  <div style={{ background: '#1a1a1a', borderRadius: '6px', padding: '1rem', border: '1px solid #3a3a3a' }}>
+                  <div style={{ background: 'var(--surface-raised)', borderRadius: '6px', padding: '1rem', border: '1px solid var(--border-theme)' }}>
                     <div style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '0.5rem' }}>Longest streak</div>
                     <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f97316' }}>
                       {loading ? '—' : `${user?.streak.longest ?? 0} days`}
@@ -201,7 +201,7 @@ export default function ProfilePage() {
             {(isOwnProfile || contributionsPublic) && (
               <div
                 style={{
-                  background: '#2a2a2a',
+                  background: 'var(--surface-panel)',
                   borderRadius: '8px',
                   padding: '1.5rem',
                   display: 'flex',
@@ -230,9 +230,9 @@ export default function ProfilePage() {
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
                     style={{
-                      background: '#1a1a1a',
-                      border: '1px solid #3a3a3a',
-                      color: 'white',
+                      background: 'var(--surface-raised)',
+                      border: '1px solid var(--border-theme)',
+                      color: 'var(--text-theme)',
                       padding: '0.25rem 0.5rem',
                       borderRadius: '4px',
                       fontSize: '0.875rem',
@@ -291,7 +291,7 @@ export default function ProfilePage() {
             {(isOwnProfile || interviewPracticePublic) && (
               <div
                 style={{
-                  background: '#2a2a2a',
+                  background: 'var(--surface-panel)',
                   borderRadius: '8px',
                   padding: '1.5rem',
                   display: 'flex',
@@ -327,7 +327,7 @@ export default function ProfilePage() {
                             width: '80px',
                             height: '80px',
                             borderRadius: '50%',
-                            background: `conic-gradient(#22c55e ${percentage * 3.6}deg, #3a3a3a 0deg)`,
+                            background: `conic-gradient(#22c55e ${percentage * 3.6}deg, #d7e8dd 0deg)`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -338,7 +338,7 @@ export default function ProfilePage() {
                               width: '60px',
                               height: '60px',
                               borderRadius: '50%',
-                              background: '#2a2a2a',
+                              background: 'var(--surface-panel)',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -380,7 +380,7 @@ export default function ProfilePage() {
                       <div
                         style={{
                           height: '150px',
-                          background: '#1a1a1a',
+                          background: 'var(--surface-raised)',
                           borderRadius: '6px',
                           padding: '1rem',
                           display: 'flex',

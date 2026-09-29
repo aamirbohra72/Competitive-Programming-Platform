@@ -301,11 +301,11 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
         aria-expanded={open}
         aria-controls={panelId}
         className={cn(
-          'inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1.5 text-sm font-semibold text-sky-100 transition hover:bg-sky-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400',
-          open && 'bg-sky-500/25',
+          'inline-flex items-center gap-2 rounded-full border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800 transition hover:bg-green-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600',
+          open && 'bg-green-100',
         )}
       >
-        <RobotIcon className="h-4 w-4 text-sky-300" />
+        <RobotIcon className="h-4 w-4 text-green-700" />
         <span className="hidden sm:inline">Ask Support</span>
         {waitingCalls > 0 ? (
           <span className="rounded-full bg-orange-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
@@ -320,22 +320,22 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
           role="dialog"
           aria-label="Support Companion"
           className={cn(
-            'fixed z-[80] flex flex-col overflow-hidden border border-white/10 bg-[#161616] shadow-2xl shadow-black/50',
+            'fixed z-[80] flex flex-col overflow-hidden border border-[var(--border-theme)] bg-white text-[var(--text-theme)] shadow-xl shadow-green-900/10',
             expanded
               ? 'inset-3 rounded-2xl sm:inset-6'
               : 'bottom-3 right-3 top-auto h-[min(640px,calc(100vh-5.5rem))] w-[min(420px,calc(100vw-1.5rem))] rounded-2xl sm:bottom-4 sm:right-4',
           )}
         >
-          <header className="flex items-center gap-2 border-b border-white/10 bg-[#1c1c1c] px-3 py-2.5">
-            <RobotIcon className="h-5 w-5 text-sky-400" />
+          <header className="flex items-center gap-2 border-b border-[var(--border-theme)] bg-[var(--surface-panel)] px-3 py-2.5">
+            <RobotIcon className="h-5 w-5 text-green-700" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="truncate text-sm font-bold text-white">Support Companion</h2>
-                <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-300">
+                <h2 className="truncate text-sm font-bold text-[var(--text-theme)]">Support Companion</h2>
+                <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-800">
                   beta
                 </span>
               </div>
-              <p className="truncate text-[11px] text-white/45">
+              <p className="truncate text-[11px] text-[var(--text-muted)]">
                 {waitingCalls > 0
                   ? `${waitingCalls} video call request${waitingCalls === 1 ? '' : 's'} waiting`
                   : 'Jobs · Courses · Pause/Restart · Live TA calls'}
@@ -344,14 +344,14 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
             <button
               type="button"
               onClick={() => openTaRequest('video')}
-              className="hidden rounded-md bg-sky-500 px-2 py-1 text-[11px] font-semibold text-white hover:bg-sky-400 sm:inline-flex"
+              className="hidden rounded-md bg-green-700 px-2 py-1 text-[11px] font-semibold text-white hover:bg-green-800 sm:inline-flex"
             >
               Call
             </button>
             <button
               type="button"
               onClick={resetChat}
-              className="rounded-md p-1.5 text-white/55 hover:bg-white/5 hover:text-white"
+              className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-green-100 hover:text-green-800"
               title="New chat"
               aria-label="New chat"
             >
@@ -362,7 +362,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="rounded-md p-1.5 text-white/55 hover:bg-white/5 hover:text-white"
+              className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-green-100 hover:text-green-800"
               title={expanded ? 'Shrink' : 'Expand'}
               aria-label={expanded ? 'Shrink' : 'Expand'}
             >
@@ -377,7 +377,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-md p-1.5 text-white/55 hover:bg-white/5 hover:text-white"
+              className="rounded-md p-1.5 text-[var(--text-muted)] hover:bg-green-100 hover:text-green-800"
               aria-label="Close"
             >
               <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden>
@@ -386,14 +386,14 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
             </button>
           </header>
 
-          <div className="flex flex-wrap gap-1.5 border-b border-white/5 bg-[#141414] px-3 py-2">
+          <div className="flex flex-wrap gap-1.5 border-b border-[var(--border-theme)] bg-[var(--surface-panel)] px-3 py-2">
             {QUICK_PROMPTS.map((q) => (
               <button
                 key={q.label}
                 type="button"
                 disabled={sending}
                 onClick={() => void send(q.text)}
-                className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-white/70 transition hover:border-sky-400/30 hover:text-sky-200 disabled:opacity-50"
+                className="rounded-full border border-[var(--border-theme)] bg-white px-2.5 py-1 text-[11px] font-medium text-[var(--text-muted)] transition hover:border-green-400 hover:text-green-800 disabled:opacity-50"
               >
                 {q.label}
               </button>
@@ -401,7 +401,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
             <button
               type="button"
               onClick={() => openTaRequest('video')}
-              className="rounded-full border border-sky-400/40 bg-sky-500/15 px-2.5 py-1 text-[11px] font-semibold text-sky-200 hover:bg-sky-500/25"
+              className="rounded-full border border-green-300 bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-800 hover:bg-green-100"
             >
               Request a Call
             </button>
@@ -414,7 +414,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
                 className={cn('flex gap-2', m.role === 'user' ? 'justify-end' : 'justify-start')}
               >
                 {m.role === 'assistant' ? (
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sky-300">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-800">
                     <RobotIcon className="h-4 w-4" />
                   </div>
                 ) : null}
@@ -423,8 +423,8 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
                     className={cn(
                       'rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed',
                       m.role === 'user'
-                        ? 'rounded-br-md bg-violet-500/25 text-violet-50'
-                        : 'rounded-bl-md bg-[#242424] text-white/85',
+                        ? 'rounded-br-md bg-green-700 text-white'
+                        : 'rounded-bl-md bg-[var(--surface-panel)] text-[var(--text-theme)]',
                     )}
                   >
                     {m.content}
@@ -436,7 +436,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
                           <Link
                             key={`${m.id}-${a.label}`}
                             href={a.href}
-                            className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/10"
+                            className="inline-flex items-center justify-center rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2 text-xs font-semibold text-green-800 transition hover:bg-green-50"
                           >
                             {a.label}
                           </Link>
@@ -445,7 +445,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
                             key={`${m.id}-${a.label}`}
                             type="button"
                             onClick={() => handleAction(a)}
-                            className="inline-flex items-center justify-center rounded-lg bg-sky-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-400"
+                            className="inline-flex items-center justify-center rounded-lg bg-green-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-800"
                           >
                             {a.label}
                           </button>
@@ -453,7 +453,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
                       )}
                     </div>
                   ) : null}
-                  <div className="mt-1 text-[10px] text-white/35">{formatStamp(m.createdAt)}</div>
+                  <div className="mt-1 text-[10px] text-[var(--text-muted)]">{formatStamp(m.createdAt)}</div>
                 </div>
                 {m.role === 'user' ? (
                   <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/25 text-xs font-bold text-amber-200">
@@ -463,7 +463,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
               </div>
             ))}
             {sending ? (
-              <div className="flex items-center gap-2 text-xs text-white/45">
+              <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-sky-400" />
                 Companion is typing…
               </div>
@@ -473,7 +473,7 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
           </div>
 
           <form
-            className="border-t border-white/10 bg-[#1c1c1c] p-3"
+            className="border-t border-[var(--border-theme)] bg-[var(--surface-panel)] p-3"
             onSubmit={(e) => {
               e.preventDefault();
               void send(input);
@@ -483,14 +483,14 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
               <button
                 type="button"
                 onClick={() => openTaRequest('video')}
-                className="flex-1 rounded-lg bg-sky-500 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-400"
+                className="flex-1 rounded-lg bg-green-700 px-3 py-2 text-xs font-semibold text-white hover:bg-green-800"
               >
                 Request a Call
               </button>
               <button
                 type="button"
                 onClick={() => openTaRequest('text')}
-                className="flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white/80 hover:bg-white/10"
+                className="flex-1 rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2 text-xs font-semibold text-[var(--text-theme)] hover:bg-green-50"
               >
                 Text a TA
               </button>
@@ -508,19 +508,19 @@ export function SupportCompanion({ className }: SupportCompanionProps) {
                   }
                 }}
                 placeholder="Ask about jobs, courses, pause/restart…"
-                className="min-h-[44px] flex-1 resize-none rounded-xl border border-white/10 bg-[#121212] px-3 py-2.5 text-sm text-white placeholder:text-white/35 focus:border-sky-400/40 focus:outline-none focus:ring-2 focus:ring-sky-500/25"
+                className="min-h-[44px] flex-1 resize-none rounded-lg border border-[var(--border-theme)] bg-white px-3 py-2.5 text-sm text-[var(--text-theme)] placeholder:text-[var(--text-muted)] focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/25"
               />
               <button
                 type="submit"
                 disabled={sending || !input.trim()}
-                className="rounded-xl bg-emerald-500 px-3.5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-400 disabled:opacity-50"
+                className="rounded-lg bg-green-700 px-3.5 py-2.5 text-sm font-semibold text-white transition hover:bg-green-800 disabled:opacity-50"
               >
                 Send
               </button>
             </div>
-            <p className="mt-2 text-center text-[10px] text-white/35">
+            <p className="mt-2 text-center text-[10px] text-[var(--text-muted)]">
               Calls land in{' '}
-              <Link href="/ta-help" className="text-sky-300 hover:text-sky-200">
+              <Link href="/ta-help" className="text-green-700 hover:text-green-800">
                 TA Help → Waiting on TA
               </Link>
             </p>

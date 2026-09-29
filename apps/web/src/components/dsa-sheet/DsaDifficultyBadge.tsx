@@ -2,9 +2,9 @@ import type { DsaDifficulty } from '@/data/dsa-sheet';
 import { cn } from '@/lib/cn';
 
 const styles: Record<DsaDifficulty, string> = {
-  Easy: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  Medium: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  Hard: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+  Easy: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  Medium: 'bg-amber-50 text-amber-800 border-amber-200',
+  Hard: 'bg-rose-50 text-rose-800 border-rose-200',
 };
 
 type DsaDifficultyBadgeProps = {

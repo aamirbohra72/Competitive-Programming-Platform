@@ -25,14 +25,14 @@ export function AffiliateCopyField({ label, value, className, copyLabel = 'Copy 
   }, [value]);
 
   return (
-    <div className={cn('rounded-lg border border-dashed border-emerald-500/50 bg-emerald-500/10 p-3', className)}>
-      {label ? <p className="mb-2 text-xs font-medium text-[#a0a0a0]">{label}</p> : null}
+    <div className={cn('rounded-lg border border-green-300 bg-green-50 p-3', className)}>
+      {label ? <p className="mb-2 text-xs font-medium text-[var(--text-muted)]">{label}</p> : null}
       <div className="flex flex-wrap items-center gap-2">
-        <code className="min-w-0 flex-1 break-all text-sm text-white">{value}</code>
+        <code className="min-w-0 flex-1 break-all text-sm text-[var(--text-theme)]">{value}</code>
         <button
           type="button"
           onClick={onCopy}
-          className="shrink-0 rounded-md bg-[#3a3a3a] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#4a4a4a]"
+          className="shrink-0 rounded-md bg-green-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-green-800"
           aria-label={copyLabel}
         >
           {copied ? 'Copied' : 'Copy'}

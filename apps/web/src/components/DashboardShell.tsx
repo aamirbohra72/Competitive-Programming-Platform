@@ -22,8 +22,8 @@ function DashboardShellMain({ children, mainClassName }: Pick<DashboardShellProp
   return (
     <main
       className={cn(
-        'min-h-[calc(100vh-3.5rem)] flex-1 bg-[#1a1a1a] text-white antialiased transition-[margin] duration-200 ease-out',
-        showOffset && 'ml-[240px]',
+        'min-h-[calc(100vh-3.5rem)] min-w-0 flex-1 bg-[var(--surface-page)] text-[var(--text-theme)] antialiased',
+        showOffset && 'lg:ml-[240px]',
         mainClassName,
       )}
     >

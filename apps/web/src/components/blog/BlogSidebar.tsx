@@ -14,19 +14,19 @@ export function BlogSidebar({ topics, className }: BlogSidebarProps) {
       {topics.map((topic) => (
         <div key={topic.id}>
           <BlogSectionTitle className="mb-4">{topic.label}</BlogSectionTitle>
-          <ul className="space-y-0 divide-y divide-white/[0.06] rounded-lg border border-white/[0.08] bg-[#242424]">
+          <ul className="space-y-0 divide-y divide-[var(--border-theme)] rounded-lg border border-[var(--border-theme)] bg-white">
             {topic.items.map((item) => (
               <li key={item.id}>
-                <span className="block px-4 py-3 text-sm leading-snug text-white/75">{item.title}</span>
+                <span className="block px-4 py-3 text-sm leading-snug text-[var(--text-theme)]">{item.title}</span>
               </li>
             ))}
           </ul>
         </div>
       ))}
 
-      <div className="rounded-xl border border-white/[0.08] bg-gradient-to-b from-[#2a2a2a] to-[#1f1f1f] p-6">
-        <BlogSectionTitle className="mb-3 text-white/70">Newsletter</BlogSectionTitle>
-        <p className="text-sm leading-relaxed text-white/55">
+      <div className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-6">
+        <BlogSectionTitle className="mb-3">Newsletter</BlogSectionTitle>
+        <p className="text-sm leading-relaxed text-[var(--text-muted)]">
           Weekly notes on algorithms, system design, and contest patterns. No spam.
         </p>
         <form
@@ -43,22 +43,22 @@ export function BlogSidebar({ topics, className }: BlogSidebarProps) {
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className="w-full rounded-md border border-white/10 bg-[#1a1a1a] px-3 py-2.5 text-sm text-white placeholder:text-white/35 focus:border-green-500/40 focus:outline-none focus:ring-2 focus:ring-green-500/30"
+            className="w-full rounded-md border border-[var(--border-theme)] bg-white px-3 py-2.5 text-sm text-[var(--text-theme)] placeholder:text-[var(--text-muted)] focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30"
           />
           <button
             type="submit"
-            className="w-full rounded-md bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1f1f1f]"
+            className="w-full rounded-md bg-green-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             Subscribe
           </button>
         </form>
-        <p className="mt-4 text-center text-xs text-white/35">
+        <p className="mt-4 text-center text-xs text-[var(--text-muted)]">
           Prefer to code?{' '}
-          <Link href="/practice" className="text-green-400 hover:text-green-300">
+          <Link href="/practice" className="text-green-700 hover:text-green-800">
             Practice
           </Link>{' '}
           or{' '}
-          <Link href="/learn" className="text-green-400 hover:text-green-300">
+          <Link href="/learn" className="text-green-700 hover:text-green-800">
             Courses
           </Link>
           .

@@ -28,12 +28,12 @@ export function ApproachTabs({
             className={cn(
               'group flex flex-col items-start border-b-2 pb-1 text-left transition',
               active
-                ? 'border-emerald-400 text-white'
-                : 'border-transparent text-white/45 hover:text-white/70',
+                ? 'border-green-700 text-green-800'
+                : 'border-transparent text-[var(--text-muted)] hover:text-green-700',
             )}
           >
             <span className="text-sm font-medium">{approach.label}</span>
-            <span className="font-mono text-[10px] text-white/35 group-hover:text-white/50">
+            <span className="font-mono text-[10px] text-[var(--text-muted)]">
               time {approach.complexity.time} · space {approach.complexity.space}
             </span>
           </button>

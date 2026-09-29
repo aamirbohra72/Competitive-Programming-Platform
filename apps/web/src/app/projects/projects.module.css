@@ -5,11 +5,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background:
-    radial-gradient(1200px 500px at 10% -10%, rgba(34, 197, 94, 0.12), transparent 55%),
-    radial-gradient(900px 400px at 90% 0%, rgba(56, 189, 248, 0.1), transparent 50%),
-    #121212;
-  color: #e5e7eb;
+  background: var(--surface-page);
+  color: var(--text-theme);
 }
 
 .hero {
@@ -40,13 +37,13 @@
   font-size: clamp(1.5rem, 2.5vw, 2rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #f8fafc;
+  color: var(--text-theme);
   max-width: 42rem;
 }
 
 .heroSummary {
   margin: 0.65rem 0 0;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 0.95rem;
   line-height: 1.55;
   max-width: 40rem;
@@ -109,7 +106,7 @@
   text-align: left;
   border-radius: 14px;
   border: 1px solid #333;
-  background: #1a1a1a;
+  background: var(--surface-panel);
   padding: 0.9rem 1rem;
   cursor: pointer;
   transition: border-color 0.15s, transform 0.15s, background 0.15s;
@@ -121,7 +118,7 @@
 }
 
 .trackCardActive {
-  background: #152019;
+  background: #e7f5eb;
   border-color: color-mix(in srgb, var(--track-accent) 55%, #333);
   box-shadow: inset 3px 0 0 var(--track-accent);
 }
@@ -138,13 +135,13 @@
   margin: 0.35rem 0 0.25rem;
   font-size: 1rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--text-theme);
 }
 
 .trackBlurb {
   margin: 0;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   line-height: 1.45;
 }
 
@@ -191,8 +188,8 @@
   border-radius: 8px;
   font-size: 0.875rem;
   box-sizing: border-box;
-  background: #1a1a1a;
-  color: #e5e7eb;
+  background: var(--surface-raised);
+  color: var(--text-theme);
 }
 
 .searchIcon {
@@ -233,9 +230,9 @@
 
 .card {
   text-align: left;
-  border: 1px solid #2f2f2f;
+  border: 1px solid var(--border-theme);
   border-radius: 14px;
-  background: linear-gradient(180deg, #1c1c1c, #171717);
+  background: var(--surface-raised);
   padding: 0.9rem 1rem;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
@@ -262,14 +259,14 @@
   margin: 0;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-theme);
   line-height: 1.35;
 }
 
 .cardDesc {
   margin: 0.45rem 0 0.55rem;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   line-height: 1.45;
 }
 
@@ -279,9 +276,9 @@
   gap: 0.3rem;
   font-size: 0.68rem;
   font-weight: 600;
-  color: #cbd5e1;
-  background: #222;
-  border: 1px solid #333;
+  color: var(--text-muted);
+  background: var(--surface-panel);
+  border: 1px solid var(--border-theme);
   border-radius: 999px;
   padding: 0.15rem 0.55rem;
   margin-bottom: 0.45rem;
@@ -350,7 +347,7 @@
   font-size: 1.45rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #f8fafc;
+  color: var(--text-theme);
   line-height: 1.25;
 }
 
@@ -364,12 +361,12 @@
 
 .metaItem {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .detailIntro {
   margin: 1rem 0 0;
-  color: #cbd5e1;
+  color: var(--text-theme);
   line-height: 1.6;
   font-size: 0.95rem;
 }
@@ -392,7 +389,7 @@
 
 .prizeBox p {
   margin: 0;
-  color: #e2e8f0;
+  color: var(--text-theme);
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -412,15 +409,15 @@
 
 .box {
   border-radius: 12px;
-  border: 1px solid #333;
-  background: #171717;
+  border: 1px solid var(--border-theme);
+  background: var(--surface-panel);
   padding: 0.85rem;
 }
 
 .box h4 {
   margin: 0 0 0.55rem;
   font-size: 0.8rem;
-  color: #e2e8f0;
+  color: var(--text-theme);
 }
 
 .section {
@@ -430,13 +427,13 @@
 .section h3 {
   margin: 0 0 0.65rem;
   font-size: 1rem;
-  color: #f1f5f9;
+  color: var(--text-theme);
 }
 
 .section ul {
   margin: 0;
   padding-left: 1.15rem;
-  color: #cbd5e1;
+  color: var(--text-muted);
   line-height: 1.55;
   font-size: 0.9rem;
 }

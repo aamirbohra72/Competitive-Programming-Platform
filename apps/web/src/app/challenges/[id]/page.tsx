@@ -70,7 +70,7 @@ export default function ChallengePage() {
     return (
       <>
         <Navbar />
-        <div className="container" style={{ background: '#1a1a1a', color: 'white', minHeight: 'calc(100vh - 60px)', padding: '2rem' }}>Loading...</div>
+        <div className="container" style={{ background: 'var(--surface-page)', color: 'var(--text-theme)', minHeight: 'calc(100vh - 60px)', padding: '2rem' }}>Loading...</div>
       </>
     );
   }
@@ -79,7 +79,7 @@ export default function ChallengePage() {
     return (
       <>
         <Navbar />
-        <div className="container" style={{ background: '#1a1a1a', color: 'white', minHeight: 'calc(100vh - 60px)', padding: '2rem' }}>Challenge not found</div>
+        <div className="container" style={{ background: 'var(--surface-page)', color: 'var(--text-theme)', minHeight: 'calc(100vh - 60px)', padding: '2rem' }}>Challenge not found</div>
       </>
     );
   }
@@ -87,54 +87,54 @@ export default function ChallengePage() {
   return (
     <>
       <Navbar />
-      <div className="container" style={{ background: '#1a1a1a', color: 'white', minHeight: 'calc(100vh - 60px)', padding: '2rem' }}>
-        <h1 style={{ color: 'white', marginBottom: '0.5rem' }}>{challenge.title}</h1>
+      <div className="container" style={{ background: 'var(--surface-page)', color: 'var(--text-theme)', minHeight: 'calc(100vh - 60px)', padding: '2rem' }}>
+        <h1 style={{ color: 'var(--text-theme)', marginBottom: '0.5rem' }}>{challenge.title}</h1>
         <p style={{ marginTop: '0.5rem', marginBottom: '1rem', color: '#9ca3af' }}>
           Difficulty: {challenge.difficulty} | Contest: {challenge.contest?.name || 'N/A'}
         </p>
 
-        <div className="card" style={{ marginBottom: '2rem', background: '#2a2a2a', color: 'white' }}>
-          <h2 style={{ color: 'white' }}>Description</h2>
-          <p style={{ whiteSpace: 'pre-wrap', marginTop: '1rem', color: '#e5e7eb' }}>{challenge.description}</p>
+        <div className="card" style={{ marginBottom: '2rem', background: 'var(--surface-panel)', color: 'var(--text-theme)' }}>
+          <h2 style={{ color: 'var(--text-theme)' }}>Description</h2>
+          <p style={{ whiteSpace: 'pre-wrap', marginTop: '1rem', color: 'var(--text-muted)' }}>{challenge.description}</p>
 
-          <h3 style={{ marginTop: '2rem', color: 'white' }}>Input Format</h3>
-          <pre style={{ background: '#1a1a1a', color: '#e5e7eb', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid #3a3a3a' }}>
+          <h3 style={{ marginTop: '2rem', color: 'var(--text-theme)' }}>Input Format</h3>
+          <pre style={{ background: 'var(--surface-raised)', color: 'var(--text-theme)', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid var(--border-theme)' }}>
             {challenge.inputFormat}
           </pre>
 
-          <h3 style={{ marginTop: '1.5rem', color: 'white' }}>Output Format</h3>
-          <pre style={{ background: '#1a1a1a', color: '#e5e7eb', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid #3a3a3a' }}>
+          <h3 style={{ marginTop: '1.5rem', color: 'var(--text-theme)' }}>Output Format</h3>
+          <pre style={{ background: 'var(--surface-raised)', color: 'var(--text-theme)', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid var(--border-theme)' }}>
             {challenge.outputFormat}
           </pre>
 
-          <h3 style={{ marginTop: '1.5rem', color: 'white' }}>Constraints</h3>
-          <pre style={{ background: '#1a1a1a', color: '#e5e7eb', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid #3a3a3a' }}>
+          <h3 style={{ marginTop: '1.5rem', color: 'var(--text-theme)' }}>Constraints</h3>
+          <pre style={{ background: 'var(--surface-raised)', color: 'var(--text-theme)', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid var(--border-theme)' }}>
             {challenge.constraints}
           </pre>
 
-          <h3 style={{ marginTop: '1.5rem', color: 'white' }}>Sample Input</h3>
-          <pre style={{ background: '#1a1a1a', color: '#e5e7eb', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid #3a3a3a' }}>
+          <h3 style={{ marginTop: '1.5rem', color: 'var(--text-theme)' }}>Sample Input</h3>
+          <pre style={{ background: 'var(--surface-raised)', color: 'var(--text-theme)', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid var(--border-theme)' }}>
             {challenge.sampleInput || 'N/A'}
           </pre>
 
-          <h3 style={{ marginTop: '1.5rem', color: 'white' }}>Sample Output</h3>
-          <pre style={{ background: '#1a1a1a', color: '#e5e7eb', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid #3a3a3a' }}>
+          <h3 style={{ marginTop: '1.5rem', color: 'var(--text-theme)' }}>Sample Output</h3>
+          <pre style={{ background: 'var(--surface-raised)', color: 'var(--text-theme)', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', border: '1px solid var(--border-theme)' }}>
             {challenge.sampleOutput || 'N/A'}
           </pre>
         </div>
 
-        <div className="card" style={{ background: '#2a2a2a', color: 'white' }}>
-          <h2 style={{ color: 'white' }}>Submit Solution</h2>
+        <div className="card" style={{ background: 'var(--surface-panel)', color: 'var(--text-theme)' }}>
+          <h2 style={{ color: 'var(--text-theme)' }}>Submit Solution</h2>
           {error && <div style={{ color: '#f48771', marginTop: '1rem' }}>{error}</div>}
           <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
             <div className="form-group">
-              <label htmlFor="language" style={{ color: 'white' }}>Language</label>
+              <label htmlFor="language" style={{ color: 'var(--text-theme)' }}>Language</label>
               <select
                 id="language"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
                 required
-                style={{ background: '#1a1a1a', color: 'white', border: '1px solid #3a3a3a' }}
+                style={{ background: 'var(--surface-raised)', color: 'var(--text-theme)', border: '1px solid var(--border-theme)' }}
               >
                 <option value="javascript">JavaScript</option>
                 <option value="python">Python</option>
@@ -143,14 +143,14 @@ export default function ChallengePage() {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="sourceCode" style={{ color: 'white' }}>Source Code</label>
+              <label htmlFor="sourceCode" style={{ color: 'var(--text-theme)' }}>Source Code</label>
               <textarea
                 id="sourceCode"
                 value={sourceCode}
                 onChange={(e) => setSourceCode(e.target.value)}
                 required
                 rows={15}
-                style={{ fontFamily: 'monospace', background: '#1a1a1a', color: '#e5e7eb', border: '1px solid #3a3a3a' }}
+                style={{ fontFamily: 'monospace', background: 'var(--surface-raised)', color: 'var(--text-theme)', border: '1px solid var(--border-theme)' }}
               />
             </div>
             <button type="submit" className="btn btn-primary" disabled={submitting}>

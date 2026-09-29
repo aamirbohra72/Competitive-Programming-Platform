@@ -52,21 +52,21 @@ export function LldPatternNav({ activePatternId, onSelect, className }: LldPatte
   return (
     <aside
       className={cn(
-        'flex w-[220px] shrink-0 flex-col border-r border-[#3a3a3a] bg-[#161616] lg:w-[260px]',
+        'flex w-[140px] shrink-0 flex-col border-r border-[var(--border-theme)] bg-[var(--surface-panel)] sm:w-[220px] lg:w-[260px]',
         className,
       )}
     >
-      <div className="shrink-0 border-b border-[#3a3a3a] px-3 py-3">
+      <div className="shrink-0 border-b border-[var(--border-theme)] px-3 py-3">
         <Link
           href="/visualizer"
-          className="mb-2 inline-flex items-center gap-1 text-[11px] text-white/40 transition hover:text-white/70"
+          className="mb-2 inline-flex items-center gap-1 text-[11px] text-[var(--text-muted)] transition hover:text-green-700"
         >
           ← All tracks
         </Link>
-        <div className="text-sm font-semibold text-white">
-          <span className="text-emerald-400">LLD</span> Visual
+        <div className="text-sm font-semibold text-[var(--text-theme)]">
+          <span className="text-green-700">LLD</span> Visual
         </div>
-        <p className="mt-0.5 text-[11px] text-white/40">
+        <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">
           {stats.animated} animated · {stats.total} topics
         </p>
         <div className="relative mt-3">
@@ -75,7 +75,7 @@ export function LldPatternNav({ activePatternId, onSelect, className }: LldPatte
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search topics…"
-            className="w-full rounded-lg border border-[#3a3a3a] bg-[#0d0d0d] py-2 pl-3 pr-8 text-xs text-white placeholder:text-white/30 outline-none focus:border-emerald-500/40"
+            className="w-full rounded-lg border border-[var(--border-theme)] bg-white py-2 pl-3 pr-8 text-xs text-[var(--text-theme)] placeholder:text-[var(--text-muted)] outline-none focus:border-green-500"
           />
         </div>
       </div>
@@ -85,7 +85,7 @@ export function LldPatternNav({ activePatternId, onSelect, className }: LldPatte
         aria-label={trackMeta?.subtitle ?? 'LLD topics'}
       >
         {visibleCategories.length === 0 ? (
-          <p className="px-2 py-4 text-center text-xs text-white/35">No topics match</p>
+          <p className="px-2 py-4 text-center text-xs text-[var(--text-muted)]">No topics match</p>
         ) : (
           visibleCategories.map((category) => {
             const isOpen = openCategories.has(category.id) || Boolean(query.trim());
@@ -94,7 +94,7 @@ export function LldPatternNav({ activePatternId, onSelect, className }: LldPatte
                 <button
                   type="button"
                   onClick={() => toggleCategory(category.id)}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-white/40 transition hover:bg-white/5 hover:text-white/60"
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-muted)] transition hover:bg-green-50 hover:text-green-700"
                 >
                   <span
                     className={cn(
@@ -105,7 +105,7 @@ export function LldPatternNav({ activePatternId, onSelect, className }: LldPatte
                     ▸
                   </span>
                   <span className="min-w-0 flex-1 truncate">{category.title}</span>
-                  <span className="shrink-0 tabular-nums text-white/25">
+                  <span className="shrink-0 tabular-nums text-[var(--text-muted)]">
                     {category.patterns.length}
                   </span>
                 </button>
@@ -121,8 +121,8 @@ export function LldPatternNav({ activePatternId, onSelect, className }: LldPatte
                             className={cn(
                               'flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] transition',
                               active
-                                ? 'bg-emerald-500/20 font-medium text-emerald-200'
-                                : 'text-white/55 hover:bg-white/5 hover:text-white',
+                                ? 'bg-green-100 font-medium text-green-800'
+                                : 'text-[var(--text-muted)] hover:bg-green-50 hover:text-[var(--text-theme)]',
                             )}
                           >
                             <span className="min-w-0 flex-1 leading-snug">{pattern.title}</span>

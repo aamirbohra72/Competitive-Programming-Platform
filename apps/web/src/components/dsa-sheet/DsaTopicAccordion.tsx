@@ -25,7 +25,7 @@ export function DsaTopicAccordion({
   const pct = total === 0 ? 0 : Math.min(100, Math.round((done / total) * 100));
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#2a2a2a] shadow-sm shadow-black/20">
+    <div className="overflow-hidden rounded-lg border border-[var(--border-theme)] bg-white shadow-sm">
       <button
         type="button"
         id={`dsa-topic-${topic.id}`}
@@ -34,13 +34,13 @@ export function DsaTopicAccordion({
         onClick={onToggle}
         className={cn(
           'flex w-full items-center gap-3 px-4 py-4 text-left transition-colors',
-          'hover:bg-white/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-inset',
+          'hover:bg-green-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-inset',
         )}
       >
         <span
           className={cn(
-            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 text-white/60 transition-transform',
-            isOpen && 'rotate-90 text-green-400 border-green-500/30',
+            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border-theme)] text-[var(--text-muted)] transition-transform',
+            isOpen && 'rotate-90 text-green-700 border-green-400',
           )}
           aria-hidden
         >
@@ -48,18 +48,18 @@ export function DsaTopicAccordion({
             <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
-        <span className="font-nav-brand text-base font-semibold text-white sm:text-lg">
+        <span className="font-nav-brand text-base font-semibold text-[var(--text-theme)] sm:text-lg">
           {topic.order}. {topic.title}
         </span>
-        <span className="ml-auto shrink-0 text-right text-sm text-white/45">
+        <span className="ml-auto shrink-0 text-right text-sm text-[var(--text-muted)]">
           <span className="tabular-nums">
             {done}/{total} completed
           </span>{' '}
-          <span className="ml-2 font-semibold text-amber-400 tabular-nums">{pct}%</span>
+          <span className="ml-2 font-semibold text-amber-700 tabular-nums">{pct}%</span>
         </span>
       </button>
       <div id={`dsa-panel-${topic.id}`} role="region" aria-labelledby={`dsa-topic-${topic.id}`} hidden={!isOpen}>
-        <div className="border-t border-white/[0.08] bg-[#1a1a1a] p-4 sm:p-5">
+        <div className="border-t border-[var(--border-theme)] bg-[var(--surface-panel)] p-4 sm:p-5">
           <DsaProblemTable problems={topic.problems} completedIds={completedIds} onToggleComplete={onToggleProblem} />
         </div>
       </div>

@@ -13,7 +13,7 @@ export function BlogSectionTitle({ children, className, id }: BlogSectionTitlePr
     <h2
       id={id}
       className={cn(
-        'flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/55',
+        'flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-green-700',
         className,
       )}
     >

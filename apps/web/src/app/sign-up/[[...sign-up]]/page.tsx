@@ -4,12 +4,12 @@ import { SignUp } from '@clerk/nextjs';
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#121212] p-6">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--surface-panel)] p-6">
       <SignUp
         appearance={{
           elements: {
             rootBox: 'mx-auto',
-            card: 'bg-[#1a1a1a] border border-[#3a3a3a]',
+            card: 'bg-white border border-[#d7e8dd]',
           },
         }}
         routing="path"
