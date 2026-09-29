@@ -44,7 +44,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm ci && npm run build -w @codeforces/web
+    buildCommand: npm ci && npx prisma generate --schema packages/db/prisma/schema.prisma && npm run build -w @codeforces/web
     startCommand: npm run start -w @codeforces/web
     envVars:
       - key: NEXT_PUBLIC_API_URL
