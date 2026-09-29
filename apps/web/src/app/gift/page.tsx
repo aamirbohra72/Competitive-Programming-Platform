@@ -117,7 +117,7 @@ export default function GiftPage() {
               <>
                 <p style={{ color: 'var(--text-theme)', marginBottom: '0.5rem' }}>No Gift Selected</p>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  Please select the course(s) you'd like to gift from the list below.
+                  Please select the course(s) you&apos;d like to gift from the list below.
                 </p>
               </>
             ) : (

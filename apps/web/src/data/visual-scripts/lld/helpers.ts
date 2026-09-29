@@ -1,18 +1,14 @@
-import type { Step } from '@/types/visual-script';
+import type { Step, UmlClassBox, UmlRelation } from '@/types/visual-script';
 
 export function umlStep(
   activeLine: number,
-  classes: Parameters<typeof umlDiagram>[0]['classes'],
-  relations: Parameters<typeof umlDiagram>[0]['relations'],
+  classes: UmlClassBox[],
+  relations: UmlRelation[],
   state: Step['state'],
   captionSeed: string,
   label?: string,
 ): Step {
   return { activeLine, diagram: { kind: 'umlClass', classes, relations, label }, state, captionSeed };
-}
-
-function umlDiagram(d: { classes: import('@/types/visual-script').UmlClassBox[]; relations: import('@/types/visual-script').UmlRelation[]; label?: string }) {
-  return d;
 }
 
 export function fsmStep(

@@ -115,8 +115,8 @@ export default function TutorialProblemPage() {
           });
           setLearning(l);
         }
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || 'Failed to load problem');
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load problem');
       } finally {
         if (!cancelled) setLoading(false);
       }

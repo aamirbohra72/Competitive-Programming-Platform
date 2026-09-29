@@ -149,8 +149,8 @@ export default function TutorialSessionPage() {
             });
           }
         }
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message || 'Failed to load tutorial');
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load tutorial');
       } finally {
         if (!cancelled) setLoading(false);
       }

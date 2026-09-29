@@ -367,8 +367,8 @@ export default function PracticeProblemPage() {
       if (finalSubmission.status === 'ACCEPTED') {
         void fetchAcceptedSolution();
       }
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.error || err?.message || 'Submission failed';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Submission failed';
       setError(errorMessage);
       setPanelMessage(errorMessage);
     } finally {

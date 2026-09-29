@@ -58,9 +58,9 @@ function buildSrcDoc(source: string, exportName: string, props: Record<string, u
       white-space: pre-wrap;
     }
   </style>
-  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"><\/script>
-  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"><\/script>
-  <script src="https://unpkg.com/@babel/standalone@7.26.9/babel.min.js"><\/script>
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.9/babel.min.js"></script>
 </head>
 <body>
   <div id="error"></div>
@@ -114,7 +114,7 @@ function buildSrcDoc(source: string, exportName: string, props: Record<string, u
         showError(err);
       }
     })();
-  <\/script>
+  </script>
 </body>
 </html>`;
 }
