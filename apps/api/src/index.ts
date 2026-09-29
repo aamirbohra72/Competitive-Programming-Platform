@@ -46,7 +46,7 @@ assertRuntimeEnv();
 assertEmailConfigForRuntime();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 function corsOriginOption(): cors.CorsOptions['origin'] {
   const raw = process.env.CORS_ORIGIN?.trim();
@@ -145,7 +145,7 @@ process.on('SIGINT', () => {
   void shutdown('SIGINT');
 });
 
-const server: http.Server = app.listen(PORT, () => {
+const server: http.Server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 API server running on http://localhost:${PORT}`);
   const mode = getEmailDeliveryMode();
   console.log(`📬 Email delivery mode: ${mode}`);
