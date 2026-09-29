@@ -1,0 +1,70 @@
+services:
+  - type: web
+    name: codeforces-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npx prisma generate --schema packages/db/prisma/schema.prisma && npm run build -w @codeforces/api
+    startCommand: npx prisma migrate deploy --schema packages/db/prisma/schema.prisma && npm run start -w @codeforces/api
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: codeforces-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: codeforces-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: PUBLIC_APP_URL
+        fromService:
+          type: web
+          name: codeforces-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: PAYMENTS_ENABLED
+        value: 'false'
+      - key: MISTRAL_REQUIRED
+        value: 'false'
+      - key: JUDGE_ENABLED
+        value: 'false'
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_SENDER_NAME
+        value: Codeforces Platform
+
+  - type: web
+    name: codeforces-web
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build -w @codeforces/web
+    startCommand: npm run start -w @codeforces/web
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: codeforces-api
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_APP_URL
+        fromService:
+          type: web
+          name: codeforces-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+
+databases:
+  - name: codeforces-db
+    databaseName: codeforces
+    user: codeforces_user
+    plan: free
+    region: oregon

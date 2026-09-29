@@ -1,6 +1,11 @@
 import { getToken, setToken, removeToken } from '@/lib/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+const configuredApiUrl = (
+  process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api'
+).replace(/\/+$/, '');
+const API_URL = configuredApiUrl.endsWith('/api')
+  ? configuredApiUrl
+  : `${configuredApiUrl}/api`;
 
 export interface ApiError {
   error: string;

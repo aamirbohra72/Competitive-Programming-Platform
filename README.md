@@ -243,6 +243,18 @@ npm run format           # Format code with Prettier
 - **Validation**: Zod
 - **Linting**: ESLint + Prettier
 
+## Deploy to Render
+
+The root [render.yaml](render.yaml) Blueprint creates the API, Next.js web service, and PostgreSQL database. In Render, choose **New > Blueprint** and connect this repository. The Blueprint generates `JWT_SECRET` and prompts for these values:
+
+- `CLERK_SECRET_KEY` for both services (use the same Clerk secret in each prompt)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` for the web service
+- `BREVO_API_KEY` and `BREVO_SENDER_EMAIL` for production OTP email. Use a Brevo HTTP API key (`xkeysib-`), not its SMTP key, because Free Render services restrict SMTP ports.
+
+The API applies Prisma migrations before starting. Push `render.yaml` and the app changes to your Git provider, then create the Blueprint. Set the Clerk production domain/redirect URLs to the generated web-service URL.
+
+This Blueprint uses Render's Free plans for a test deployment. Free web services spin down after 15 minutes idle, and a Free Postgres database expires 30 days after creation; upgrade the database and services for persistent production use. Payments and Mistral-backed features are disabled until you configure their credentials. Code execution is Docker-based and will remain unavailable on standard Render services, even though the site and API can run. `JUDGE_ENABLED=false` only bypasses the Docker readiness check.
+
 ## 📝 Features
 
 ### Implemented
