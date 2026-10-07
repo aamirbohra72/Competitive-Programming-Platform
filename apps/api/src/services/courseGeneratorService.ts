@@ -6,7 +6,7 @@ import {
   generateTopicContent,
   type CourseStructureDTO,
   type TopicType,
-} from './mistralService';
+} from './groqCourseService';
 
 const MAX_SOURCE_LENGTH = 50_000;
 
@@ -114,9 +114,9 @@ export async function generateAndPersistCourse(input: GenerateCourseInput): Prom
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[courses] structure generation failed:', msg);
     throw new Error(
-      msg.includes('MISTRAL_API_KEY')
+      msg.includes('GROQ_API_KEY')
         ? msg
-        : `AI outline failed: ${msg}. Check MISTRAL_API_KEY and API logs, then retry.`,
+        : `AI outline failed: ${msg}. Check GROQ_API_KEY and API logs, then retry.`,
     );
   }
   console.log(

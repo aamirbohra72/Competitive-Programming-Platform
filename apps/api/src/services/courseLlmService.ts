@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mistralChatJson } from './mistralInterviewService';
+import { groqChatJson } from './groqAiService';
 import { cacheDel, cacheGet, cacheSet } from './redisService';
 
 const questionSchema = z.object({
@@ -98,8 +98,8 @@ async function generatePackWithLlm(courseId: string): Promise<LlmCoursePack> {
     throw new Error('COURSE_NOT_LLM_ENABLED');
   }
 
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
-    throw new Error('MISTRAL_API_KEY_MISSING');
+  if (!process.env.GROQ_API_KEY?.trim()) {
+    throw new Error('GROQ_API_KEY_MISSING');
   }
 
   const system = `You are a senior React/JavaScript curriculum designer.
@@ -156,7 +156,7 @@ Hard requirements:
 - For multiple_choice: correct_answer MUST exactly match one options[] string
 - Content ONLY about React/JS frontend`;
 
-  const raw = await mistralChatJson(system, user);
+  const raw = await groqChatJson(system, user);
   const parsed = packSchema.parse(JSON.parse(extractJsonObject(raw)));
   return {
     ...parsed,

@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { mistralChat } from './mistralInterviewService';
+import { groqChat } from './groqAiService';
 import { withRetry } from '../lib/retry';
 
-const LARGE_MODEL = 'mistral-large-latest';
-const SMALL_MODEL = 'mistral-small-latest';
+const LARGE_MODEL = 'openai/gpt-oss-120b';
+const SMALL_MODEL = 'openai/gpt-oss-20b';
 
 const topicTypeSchema = z.enum([
   'diagnostic',
@@ -80,7 +80,7 @@ async function chatComplete(
 ): Promise<string> {
   return withRetry(
     () =>
-      mistralChat(system, user, {
+      groqChat(system, user, {
         model,
         jsonMode,
       }),

@@ -37,7 +37,7 @@ export const KNOWN_ERROR_CODES: Record<string, { status: number; message: string
   },
   JUDGE_BUSY: { status: 429, message: 'Judge is busy, try again shortly' },
   COURSE_NOT_LLM_ENABLED: { status: 404, message: 'This course is not configured for live LLM content.' },
-  MISTRAL_API_KEY_MISSING: { status: 503, message: 'Mistral is not configured (missing MISTRAL_API_KEY).' },
+  GROQ_API_KEY_MISSING: { status: 503, message: 'Groq is not configured (missing GROQ_API_KEY).' },
   TUTORIAL_NOT_FOUND: { status: 404, message: 'Resource not found.' },
   TOPIC_NOT_FOUND: { status: 404, message: 'Topic not found' },
   TOPIC_NOT_QUIZ: { status: 400, message: 'This topic does not have a quiz' },

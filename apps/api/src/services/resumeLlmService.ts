@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mistralChatJson } from './mistralInterviewService';
+import { groqChatJson } from './groqAiService';
 
 const experienceSchema = z.object({
   id: z.string(),
@@ -251,7 +251,7 @@ function heuristicImprove(input: ResumeData): ResumeSuggestions {
 export async function suggestResumeImprovements(input: unknown): Promise<ResumeSuggestions> {
   const normalized = normalizeResume(input);
 
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
+  if (!process.env.GROQ_API_KEY?.trim()) {
     return heuristicImprove(normalized);
   }
 
@@ -278,7 +278,7 @@ Rules:
 - Keep single-column ATS style content (no tables/columns in text)`;
 
   try {
-    const raw = await mistralChatJson(system, user);
+    const raw = await groqChatJson(system, user);
     return suggestionsSchema.parse(JSON.parse(extractJsonObject(raw)));
   } catch {
     return heuristicImprove(normalized);

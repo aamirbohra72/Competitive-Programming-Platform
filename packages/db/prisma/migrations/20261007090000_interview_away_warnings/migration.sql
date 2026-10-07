@@ -1,0 +1,1 @@
+ALTER TABLE "InterviewSession" ADD COLUMN "awayWarnings" INTEGER NOT NULL DEFAULT 0;

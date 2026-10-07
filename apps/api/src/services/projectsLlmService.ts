@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mistralChat } from './mistralInterviewService';
+import { groqChat } from './groqAiService';
 import { cacheDel, cacheGet, cacheSet } from './redisService';
 
 const CACHE_KEY = 'projects-hub:hackathon:v1';
@@ -35,7 +35,7 @@ const projectIdeaSchema = z.object({
 
 const hubSchema = z.object({
   generatedAt: z.string(),
-  source: z.literal('mistral'),
+  source: z.literal('groq'),
   headline: z.string(),
   summary: z.string(),
   tracks: z.array(
@@ -71,7 +71,7 @@ const USER_PROMPT = `Generate a fresh "Projects Hub" of hackathon-ready ideas fo
 Schema:
 {
   "generatedAt": ISO string,
-  "source": "mistral",
+  "source": "groq",
   "headline": string,
   "summary": string (1-2 sentences),
   "tracks": [
@@ -103,16 +103,16 @@ Rules:
 - Make ideas concrete and buildable in a weekend–2 weeks, not vague.
 - For colosseum: prefer Solana stack (Anchor, Web3.js, Helius, Jupiter, etc.) when relevant.
 - For genai/agentic: prefer modern stacks (Next.js, Python, LangGraph/CrewAI-style patterns, vector DBs, MCP).
-- Resource URLs must be real official docs when possible (docs.solana.com, mistral.ai, openai.com, etc.).
+- Resource URLs must be real official docs when possible (docs.solana.com, groq.com, openai.com, etc.).
 - generatedAt must be current ISO time.`;
 
 async function generateHubWithLlm(): Promise<ProjectsHub> {
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
-    throw new Error('MISTRAL_API_KEY is not configured');
+  if (!process.env.GROQ_API_KEY?.trim()) {
+    throw new Error('GROQ_API_KEY is not configured');
   }
 
-  const raw = await mistralChat(SYSTEM, USER_PROMPT, {
-    model: process.env.MISTRAL_CHAT_MODEL?.trim() || 'mistral-small-latest',
+  const raw = await groqChat(SYSTEM, USER_PROMPT, {
+    model: process.env.GROQ_CHAT_MODEL?.trim() || 'llama-3.3-70b-versatile',
     jsonMode: true,
   });
 
@@ -120,7 +120,7 @@ async function generateHubWithLlm(): Promise<ProjectsHub> {
   const hub = hubSchema.parse({
     ...(parsed as object),
     generatedAt: new Date().toISOString(),
-    source: 'mistral',
+    source: 'groq',
   });
 
   // Drop non-http resource links the model occasionally invents

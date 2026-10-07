@@ -49,10 +49,14 @@ export function assertRuntimeEnv(): void {
     }
   }
 
-  // Soft skills / blog / interview / communication depend on Mistral in production.
-  if (!process.env.MISTRAL_API_KEY?.trim() && process.env.MISTRAL_REQUIRED !== 'false') {
+  // Blog, communication, and other existing AI features still use Groq.
+  if (!process.env.GROQ_API_KEY?.trim() && process.env.GROQ_REQUIRED !== 'false') {
     throw new Error(
-      'MISTRAL_API_KEY is required in production for interview, blog, communication, and AI features. Set MISTRAL_REQUIRED=false to boot without it.',
+      'GROQ_API_KEY is required in production for blog, communication, and other AI features. Set GROQ_REQUIRED=false to boot without them.',
     );
+  }
+
+  if (process.env.INTERVIEW_ENABLED === 'true' && !process.env.GROQ_API_KEY?.trim()) {
+    throw new Error('GROQ_API_KEY is required in production when INTERVIEW_ENABLED=true.');
   }
 }

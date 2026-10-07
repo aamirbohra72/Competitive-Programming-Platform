@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev:free-ports": "node scripts/free-dev-ports.mjs",
-    "dev": "node scripts/free-dev-ports.mjs && turbo run dev",
+    "dev": "node scripts/dev.mjs",
+    "dev:turbo": "node scripts/free-dev-ports.mjs && turbo run dev",
+    "dev:windows-ca": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev-with-windows-ca.ps1",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",

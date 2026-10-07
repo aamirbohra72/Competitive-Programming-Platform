@@ -38,6 +38,10 @@ interviewRoutes.post('/sessions/:id/disqualify', (req, res, next) => {
   void interviewController.disqualifySession(req, res).catch(next);
 });
 
+interviewRoutes.post('/sessions/:id/away-warning', (req, res, next) => {
+  void interviewController.registerAwayWarning(req, res).catch(next);
+});
+
 interviewRoutes.post('/sessions/:id/finish', (req, res, next) => {
   void interviewController.finishSession(req, res).catch(next);
 });

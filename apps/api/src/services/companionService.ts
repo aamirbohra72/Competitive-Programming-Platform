@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mistralChatMessages } from './mistralInterviewService';
+import { groqChatMessages } from './groqAiService';
 
 const historyItemSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -82,8 +82,8 @@ export function parseCompanionRequest(body: unknown): CompanionChatInput {
 }
 
 export async function chatWithCompanion(input: CompanionChatInput): Promise<CompanionChatResult> {
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
-    throw new Error('MISTRAL_API_KEY is not configured');
+  if (!process.env.GROQ_API_KEY?.trim()) {
+    throw new Error('GROQ_API_KEY is not configured');
   }
 
   const history = input.history.slice(-12);
@@ -93,8 +93,8 @@ export async function chatWithCompanion(input: CompanionChatInput): Promise<Comp
     { role: 'user', content: input.message },
   ];
 
-  const raw = await mistralChatMessages(messages, {
-    model: process.env.MISTRAL_CHAT_MODEL?.trim() || 'mistral-small-latest',
+  const raw = await groqChatMessages(messages, {
+    model: process.env.GROQ_CHAT_MODEL?.trim() || 'llama-3.3-70b-versatile',
     jsonMode: true,
     temperature: 0.4,
   });

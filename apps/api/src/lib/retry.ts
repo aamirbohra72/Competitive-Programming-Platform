@@ -10,7 +10,7 @@ function isRetryableNetworkError(err: unknown): boolean {
 }
 
 /**
- * Retry transient I/O (Razorpay / Mistral / Brevo). Never retries 4xx except 429.
+ * Retry transient I/O (Razorpay / Groq / Brevo). Never retries 4xx except 429.
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,

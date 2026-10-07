@@ -7,8 +7,9 @@ import {
   disqualifyInterviewSession,
   finishInterviewSession,
   getInterviewSession,
+  registerInterviewAwayWarning,
   submitInterviewAnswer,
-  INTERVIEW_TEMPLATE_JS_10M,
+  INTERVIEW_TEMPLATE_RESUME_10M,
 } from '../services/interviewService';
 
 const createSessionBodySchema = z.object({
@@ -24,11 +25,24 @@ const disqualifyBodySchema = z.object({
   reason: z.enum(['tab-hidden', 'window-blur', 'fullscreen-exit', 'camera-stopped', 'microphone-stopped', 'screen-share-stopped', 'prohibited-actions']),
 });
 
+const awayWarningBodySchema = z.object({
+  reason: z.enum(['tab-hidden', 'window-blur', 'fullscreen-exit']),
+});
+
 function mapInterviewError(err: unknown): { status: number; message: string } | null {
   if (!(err instanceof Error)) return null;
+  if (err instanceof z.ZodError || /failed to validate json|invalid json/i.test(err.message)) {
+    return { status: 502, message: 'Groq returned an incomplete interview response. Please try again.' };
+  }
+  if (/Groq TLS certificate is not trusted/i.test(err.message)) {
+    return { status: 503, message: 'The server cannot verify Groq’s TLS certificate. Start the Windows dev server with npm run dev:windows-ca.' };
+  }
+  if (/Groq (chat|transcription) request failed|fetch failed|network error/i.test(err.message)) {
+    return { status: 503, message: 'Groq is temporarily unreachable. Please retry in a moment.' };
+  }
   switch (err.message) {
-    case 'MISTRAL_API_KEY_MISSING':
-      return { status: 503, message: 'Mistral is not configured (missing MISTRAL_API_KEY).' };
+    case 'GROQ_API_KEY_MISSING':
+      return { status: 503, message: 'Groq is not configured (missing GROQ_API_KEY).' };
     case 'UNKNOWN_TEMPLATE':
       return { status: 400, message: 'Unknown interview template.' };
     case 'SESSION_NOT_FOUND':
@@ -41,11 +55,11 @@ function mapInterviewError(err: unknown): { status: number; message: string } | 
       return { status: 400, message: 'No further questions for this session.' };
     case 'EMPTY_TRANSCRIPT':
       return { status: 400, message: 'Could not use an empty answer. Record audio or type a transcript.' };
-    case 'MISTRAL_API_KEY is not configured':
-      return { status: 503, message: 'Mistral is not configured (missing MISTRAL_API_KEY).' };
+    case 'GROQ_API_KEY is not configured':
+      return { status: 503, message: 'Groq is not configured (missing GROQ_API_KEY).' };
     default:
       if (/rate limit|\b429\b/i.test(err.message)) {
-        return { status: 503, message: 'The AI interviewer is busy right now (rate limited). Wait a minute and try again.' };
+        return { status: 503, message: 'The Groq interviewer is busy right now (rate limited). Wait a minute and try again.' };
       }
       return null;
   }
@@ -64,8 +78,8 @@ export const interviewController = {
         return;
       }
       const body = parsed.data;
-      if (body.mode === 'PROCTORED' && !req.file) {
-        res.status(400).json({ error: 'A PDF resume is required for a proctored interview.' });
+      if (!req.file) {
+        res.status(400).json({ error: 'A PDF resume is required for a resume-based interview.' });
         return;
       }
       let resumeText: string | undefined;
@@ -86,7 +100,7 @@ export const interviewController = {
           return;
         }
       }
-      const template = body.template ?? INTERVIEW_TEMPLATE_JS_10M;
+      const template = body.template ?? INTERVIEW_TEMPLATE_RESUME_10M;
       const state = await createInterviewSession(req.user.userId, template, body.mode, resumeText);
       res.status(201).json(state);
     } catch (err) {
@@ -125,6 +139,29 @@ export const interviewController = {
     }
     try {
       const state = await disqualifyInterviewSession(req.params.id, req.user.userId, parsed.data.reason);
+      res.json(state);
+    } catch (err) {
+      const mapped = mapInterviewError(err);
+      if (mapped) {
+        res.status(mapped.status).json({ error: mapped.message });
+        return;
+      }
+      throw err;
+    }
+  },
+
+  async registerAwayWarning(req: AuthRequest, res: Response): Promise<void> {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    const parsed = awayWarningBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid proctoring event' });
+      return;
+    }
+    try {
+      const state = await registerInterviewAwayWarning(req.params.id, req.user.userId);
       res.json(state);
     } catch (err) {
       const mapped = mapInterviewError(err);

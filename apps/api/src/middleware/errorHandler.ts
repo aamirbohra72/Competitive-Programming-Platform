@@ -72,10 +72,10 @@ export function errorHandler(
       res.status(known.status).json({ error: known.message, code: err.message });
       return;
     }
-    if (err.message.includes('MISTRAL_API_KEY')) {
+    if (err.message.includes('GROQ_API_KEY')) {
       res.status(503).json({
-        error: 'Mistral is not configured (missing MISTRAL_API_KEY).',
-        code: 'MISTRAL_API_KEY_MISSING',
+        error: 'Groq is not configured (missing GROQ_API_KEY).',
+        code: 'GROQ_API_KEY_MISSING',
       });
       return;
     }

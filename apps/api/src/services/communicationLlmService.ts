@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mistralChat } from './mistralInterviewService';
+import { groqChat } from './groqAiService';
 import { cacheGet, cacheSet } from './redisService';
 
 export const MEETING_TYPES = [
@@ -42,7 +42,7 @@ const coachSchema = z.object({
 });
 
 export type MeetingScenario = z.infer<typeof scenarioSchema> & {
-  source: 'mistral' | 'fallback';
+  source: 'groq' | 'fallback';
   generatedAt: string;
 };
 
@@ -53,7 +53,7 @@ export type MeetingCoachResult = {
   improvements: string[];
   rewritten: string;
   nextTip: string;
-  source: 'mistral' | 'fallback';
+  source: 'groq' | 'fallback';
 };
 
 function normalizeCoach(
@@ -343,19 +343,19 @@ export async function generateMeetingScenario(meetingTypeRaw: string): Promise<M
   if (cached) {
     try {
       const parsed = scenarioSchema.parse(JSON.parse(cached));
-      return { ...parsed, source: 'mistral', generatedAt: new Date().toISOString() };
+      return { ...parsed, source: 'groq', generatedAt: new Date().toISOString() };
     } catch {
       /* regenerate */
     }
   }
 
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
+  if (!process.env.GROQ_API_KEY?.trim()) {
     return fallbackScenario(meetingType);
   }
 
   try {
-    const raw = await mistralChat(SCENARIO_SYSTEM, scenarioUserPrompt(meetingType), {
-      model: process.env.MISTRAL_CHAT_MODEL?.trim() || 'mistral-small-latest',
+    const raw = await groqChat(SCENARIO_SYSTEM, scenarioUserPrompt(meetingType), {
+      model: process.env.GROQ_CHAT_MODEL?.trim() || 'llama-3.3-70b-versatile',
       jsonMode: true,
     });
     const parsed = scenarioSchema.parse({
@@ -364,7 +364,7 @@ export async function generateMeetingScenario(meetingTypeRaw: string): Promise<M
     });
     const pack: MeetingScenario = {
       ...parsed,
-      source: 'mistral',
+      source: 'groq',
       generatedAt: new Date().toISOString(),
     };
     await cacheSet(cacheKey, JSON.stringify(parsed), 60 * 30);
@@ -384,7 +384,7 @@ export async function coachMeetingResponse(input: {
   const userResponse = z.string().min(20).max(4000).parse(input.userResponse);
   const scenario = scenarioSchema.parse(input.scenario);
 
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
+  if (!process.env.GROQ_API_KEY?.trim()) {
     return {
       score: 70,
       verdict: 'Solid structure — tighten the ask and cut jargon (offline coach mode).',
@@ -397,16 +397,16 @@ export async function coachMeetingResponse(input: {
   }
 
   try {
-    const raw = await mistralChat(
+    const raw = await groqChat(
       COACH_SYSTEM,
-      coachUserPrompt({ meetingType, scenario: { ...scenario, source: 'mistral', generatedAt: '' }, userResponse }),
+      coachUserPrompt({ meetingType, scenario: { ...scenario, source: 'groq', generatedAt: '' }, userResponse }),
       {
-        model: process.env.MISTRAL_CHAT_MODEL?.trim() || 'mistral-small-latest',
+        model: process.env.GROQ_CHAT_MODEL?.trim() || 'llama-3.3-70b-versatile',
         jsonMode: true,
       },
     );
     const parsed = coachSchema.parse(parseJsonLoose(raw));
-    return { ...normalizeCoach(parsed, scenario.sampleStrongAnswer), source: 'mistral' };
+    return { ...normalizeCoach(parsed, scenario.sampleStrongAnswer), source: 'groq' };
   } catch (err) {
     console.error('[communication] coach failed:', err);
     return {

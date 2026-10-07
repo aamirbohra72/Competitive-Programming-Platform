@@ -9,9 +9,9 @@ import {
   planResumeInterview,
   gradeTurnAndGenerateNext,
   generateFinalReport,
-} from './mistralInterviewService';
+} from './groqAiService';
 
-export const INTERVIEW_TEMPLATE_JS_10M = 'JS_ENGINEER_10M';
+export const INTERVIEW_TEMPLATE_RESUME_10M = 'RESUME_SYSTEM_DESIGN_10M';
 
 /** Wall-clock duration for the interview slot (ms). */
 export const INTERVIEW_DURATION_MS = 10 * 60 * 1000;
@@ -19,12 +19,12 @@ export const INTERVIEW_DURATION_MS = 10 * 60 * 1000;
 /** A short cap keeps the adaptive spoken session inside its ten-minute slot. */
 export const INTERVIEW_MAX_QUESTIONS = 6;
 
-export const INITIAL_JS_PROBLEM =
-  'A web page fetches user data when it loads, but sometimes renders stale data after the user quickly switches accounts. How would you diagnose and fix this asynchronous JavaScript problem?';
+export const INITIAL_SYSTEM_DESIGN_QUESTION =
+  'Choose a project from your resume. How would you design its main components, data flow, and APIs, then scale it reliably as usage grows?';
 
 /** Used only to let sessions created before adaptive questions were deployed finish safely. */
 const LEGACY_JS_ENGINEER_QUESTIONS: readonly string[] = [
-  INITIAL_JS_PROBLEM,
+  'A web page fetches user data when it loads, but sometimes renders stale data after the user quickly switches accounts. How would you diagnose and fix this asynchronous JavaScript problem?',
   'What is the event loop, and how do the microtask queue and macrotasks like setTimeout interact?',
   'How is the value of this determined in JavaScript for regular and arrow functions?',
   'Compare async and await with Promise chains. When would you choose one over the other?',
@@ -32,9 +32,9 @@ const LEGACY_JS_ENGINEER_QUESTIONS: readonly string[] = [
   'How would you structure error handling in an asynchronous Express route handler?',
 ] as const;
 
-function assertMistralConfigured(): void {
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
-    throw new Error('MISTRAL_API_KEY_MISSING');
+function assertGroqConfigured(): void {
+  if (!process.env.GROQ_API_KEY?.trim()) {
+    throw new Error('GROQ_API_KEY_MISSING');
   }
 }
 
@@ -66,6 +66,7 @@ export function sessionPublicState(session: InterviewSession) {
     endsAt: session.endsAt.toISOString(),
     serverNow: now.toISOString(),
     timeExpired: expired,
+    awayWarnings: session.awayWarnings,
     currentQuestionIndex: session.currentQuestion,
     totalQuestions: INTERVIEW_MAX_QUESTIONS,
     currentQuestion,
@@ -78,11 +79,11 @@ export function sessionPublicState(session: InterviewSession) {
 
 export async function createInterviewSession(
   userId: string,
-  template: string = INTERVIEW_TEMPLATE_JS_10M,
+  template: string = INTERVIEW_TEMPLATE_RESUME_10M,
   mode: 'PRACTICE' | 'PROCTORED' = 'PRACTICE',
   resumeText?: string,
 ): Promise<ReturnType<typeof sessionPublicState>> {
-  if (template !== INTERVIEW_TEMPLATE_JS_10M) {
+  if (template !== INTERVIEW_TEMPLATE_RESUME_10M) {
     throw new Error('UNKNOWN_TEMPLATE');
   }
 
@@ -99,7 +100,7 @@ export async function createInterviewSession(
       startedAt,
       endsAt,
       currentQuestion: 0,
-      currentQuestionText: resumePlan?.question ?? INITIAL_JS_PROBLEM,
+      currentQuestionText: resumePlan?.question ?? INITIAL_SYSTEM_DESIGN_QUESTION,
       status: InterviewSessionStatus.IN_PROGRESS,
     },
   });
@@ -131,6 +132,38 @@ export async function disqualifyInterviewSession(
   const session = await loadSessionForUser(sessionId, userId);
   if (!session) throw new Error('SESSION_NOT_FOUND');
   return sessionPublicState(session);
+}
+
+export async function registerInterviewAwayWarning(sessionId: string, userId: string) {
+  const incremented = await prisma.interviewSession.updateMany({
+    where: { id: sessionId, userId, status: InterviewSessionStatus.IN_PROGRESS },
+    data: { awayWarnings: { increment: 1 } },
+  });
+  if (incremented.count === 0) throw new Error('SESSION_NOT_ACTIVE');
+
+  const session = await loadSessionForUser(sessionId, userId);
+  if (!session) throw new Error('SESSION_NOT_FOUND');
+
+  if (session.awayWarnings >= 4) {
+    await prisma.interviewSession.updateMany({
+      where: {
+        id: sessionId,
+        userId,
+        status: InterviewSessionStatus.IN_PROGRESS,
+        awayWarnings: { gte: 4 },
+      },
+      data: {
+        status: InterviewSessionStatus.ABANDONED,
+        currentQuestionText: null,
+        summaryJson: JSON.stringify({ disqualified: true, reason: 'repeated-away-events', awayWarnings: session.awayWarnings }),
+        reportDetail: 'Disqualified after four proctoring away warnings.',
+      },
+    });
+  }
+
+  const updated = await loadSessionForUser(sessionId, userId);
+  if (!updated) throw new Error('SESSION_NOT_FOUND');
+  return sessionPublicState(updated);
 }
 
 export async function finishInterviewSession(sessionId: string, userId: string) {
@@ -174,7 +207,7 @@ export async function submitInterviewAnswer(
   userId: string,
   input: { audioBuffer?: Buffer; audioFilename?: string; transcript?: string }
 ) {
-  assertMistralConfigured();
+  assertGroqConfigured();
 
   const session = await loadSessionForUser(sessionId, userId);
   if (!session) {
@@ -197,7 +230,7 @@ export async function submitInterviewAnswer(
   const questionText =
     session.currentQuestionText ??
     LEGACY_JS_ENGINEER_QUESTIONS[qIndex] ??
-    INITIAL_JS_PROBLEM;
+    INITIAL_SYSTEM_DESIGN_QUESTION;
 
   let transcript = input.transcript?.trim() ?? '';
   if (input.audioBuffer && input.audioBuffer.length > 0) {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mistralChat } from './mistralInterviewService';
+import { groqChat } from './groqAiService';
 import { cacheDel, cacheGet, cacheSet } from './redisService';
 
 const CACHE_KEY = 'blog-hub:live:v1';
@@ -58,13 +58,13 @@ const postSchema = z.object({
 
 const hubSchema = z.object({
   generatedAt: z.string(),
-  source: z.literal('mistral'),
+  source: z.literal('groq'),
   headline: z.string().default('Live engineering notes'),
   summary: z.string().default('Fresh articles generated for builders.'),
   posts: z.array(z.unknown()).min(1),
 });
 
-export type BlogLivePost = z.infer<typeof postSchema> & { source: 'mistral' };
+export type BlogLivePost = z.infer<typeof postSchema> & { source: 'groq' };
 export type BlogHub = Omit<z.infer<typeof hubSchema>, 'posts'> & {
   posts: BlogLivePost[];
 };
@@ -150,7 +150,7 @@ function parseLlmJson(raw: string): unknown {
   if (salvaged.length > 0) {
     return {
       generatedAt: new Date().toISOString(),
-      source: 'mistral',
+      source: 'groq',
       headline: 'Live engineering notes',
       summary: 'Fresh articles generated for builders.',
       posts: salvaged,
@@ -178,7 +178,7 @@ function buildFallbackHub(): BlogHub {
         'Keep a personal snippet pack for I/O, binary search, DSU, and modular arithmetic. Paste, then adapt — do not retype under time pressure.',
         'If stuck for 12–15 minutes, write a brute force or switch problems. Contest ranking rewards solved count more than sunk-cost perfection.',
       ],
-      source: 'mistral',
+      source: 'groq',
     },
     {
       id: 'ai-system-design-latency-budget',
@@ -195,7 +195,7 @@ function buildFallbackHub(): BlogHub {
         'Cache only after measuring hot keys. Prefer read-through with TTL + soft refresh over “cache everything” that hides consistency bugs.',
         'Document failure modes: cache stampede, thundering herd, and stale reads. Interviewers care that you name the tradeoffs.',
       ],
-      source: 'mistral',
+      source: 'groq',
     },
     {
       id: 'ai-rag-eval-playbook',
@@ -212,7 +212,7 @@ function buildFallbackHub(): BlogHub {
         'Grade answers for groundedness: does each claim cite retrieved context? Fail closed when retrieval is empty.',
         'Only then add tools/agents. Tool loops amplify bad retrieval — fix the index and chunking first.',
       ],
-      source: 'mistral',
+      source: 'groq',
     },
     {
       id: 'ai-solana-hackathon-scope',
@@ -229,7 +229,7 @@ function buildFallbackHub(): BlogHub {
         'Use local validator + a scripted seed for demos. Judges hate waiting on mainnet congestion mid-pitch.',
         'Write the README like a product brief: problem, why Solana, architecture diagram, and how to reproduce the demo in under three minutes.',
       ],
-      source: 'mistral',
+      source: 'groq',
     },
     {
       id: 'ai-interview-story-bank',
@@ -246,7 +246,7 @@ function buildFallbackHub(): BlogHub {
         'Quantify outcomes (latency, revenue, reliability, team velocity). If you cannot measure it, tighten the story until you can.',
         'Practice out loud at 90 seconds. Panels interrupt — your structure should survive a mid-story pivot.',
       ],
-      source: 'mistral',
+      source: 'groq',
     },
     {
       id: 'ai-dsa-pattern-drill',
@@ -263,13 +263,13 @@ function buildFallbackHub(): BlogHub {
         'After each AC, note the failure mode you almost hit (off-by-one, visited set, modulo). That note compounds more than another random Easy.',
         'Weekly: redo one problem from cold start without looking at your old code. Retention is the real rating gain.',
       ],
-      source: 'mistral',
+      source: 'groq',
     },
   ];
 
   return {
     generatedAt: new Date().toISOString(),
-    source: 'mistral',
+    source: 'groq',
     headline: 'Engineering notes for builders',
     summary: 'Curated articles while live generation is unavailable.',
     posts,
@@ -306,7 +306,7 @@ function normalizePosts(rawPosts: unknown[]): BlogLivePost[] {
       category: p.category as BlogLivePost['category'],
       featured: Boolean(p.featured),
       body,
-      source: 'mistral',
+      source: 'groq',
     });
   }
   return posts;
@@ -327,7 +327,7 @@ Themes to cover across the pack (mix them):
 Schema:
 {
   "generatedAt": ISO string,
-  "source": "mistral",
+  "source": "groq",
   "headline": string,
   "summary": string,
   "posts": [
@@ -357,12 +357,12 @@ Rules:
 - generatedAt must be current ISO time.`;
 
 async function generateHubWithLlm(): Promise<BlogHub> {
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
-    throw new Error('MISTRAL_API_KEY is not configured');
+  if (!process.env.GROQ_API_KEY?.trim()) {
+    throw new Error('GROQ_API_KEY is not configured');
   }
 
-  const raw = await mistralChat(SYSTEM, USER_PROMPT, {
-    model: process.env.MISTRAL_CHAT_MODEL?.trim() || 'mistral-small-latest',
+  const raw = await groqChat(SYSTEM, USER_PROMPT, {
+    model: process.env.GROQ_CHAT_MODEL?.trim() || 'llama-3.3-70b-versatile',
     jsonMode: true,
   });
 
@@ -370,13 +370,13 @@ async function generateHubWithLlm(): Promise<BlogHub> {
   const hub = hubSchema.parse({
     ...(parsed as object),
     generatedAt: new Date().toISOString(),
-    source: 'mistral',
+    source: 'groq',
   });
 
   const posts = normalizePosts(hub.posts);
 
   if (posts.length < 3) {
-    throw new Error(`Mistral returned too few valid blog posts (${posts.length})`);
+    throw new Error(`Groq returned too few valid blog posts (${posts.length})`);
   }
 
   // Ensure at least one featured highlight
@@ -404,7 +404,7 @@ export async function getBlogHub(options?: { refresh?: boolean }): Promise<BlogH
         if (posts.length < 3) throw new Error('stale cache');
         const pack: BlogHub = {
           generatedAt: raw.generatedAt || new Date().toISOString(),
-          source: 'mistral',
+          source: 'groq',
           headline: raw.headline || 'Live engineering notes',
           summary: raw.summary || 'Fresh articles generated for builders.',
           posts,

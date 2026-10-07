@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mistralChatJson } from './mistralInterviewService';
+import { groqChatJson } from './groqAiService';
 
 const hintSchema = z.object({
   hint: z.string().min(1).max(800),
@@ -28,7 +28,7 @@ export type PracticeHintInput = {
  * Conceptual hint only — must not reveal a full solution or hidden tests.
  */
 export async function generatePracticeHint(input: PracticeHintInput): Promise<string | null> {
-  if (!process.env.MISTRAL_API_KEY?.trim()) {
+  if (!process.env.GROQ_API_KEY?.trim()) {
     return null;
   }
 
@@ -59,7 +59,7 @@ Respond with JSON only: {"hint":"..."}.`;
   });
 
   try {
-    const raw = await mistralChatJson(system, user);
+    const raw = await groqChatJson(system, user);
     const text = raw.trim().replace(/^```(?:json)?\s*([\s\S]*?)```$/m, '$1').trim();
     const parsed = hintSchema.parse(JSON.parse(text));
     return parsed.hint.trim();

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { DashboardShell } from '@/components/DashboardShell';
+import { InterviewWhiteboard } from '@/components/InterviewWhiteboard';
 import { getToken } from '@/lib/auth';
 import { acquireInterviewMedia } from '@/lib/interviewMedia';
 
@@ -20,6 +21,7 @@ interface SessionState {
   endsAt: string;
   serverNow: string;
   timeExpired: boolean;
+  awayWarnings: number;
   currentQuestionIndex: number;
   totalQuestions: number;
   currentQuestion: string | null;
@@ -30,6 +32,8 @@ interface SessionState {
 }
 
 interface SubmitAnswerResponse extends SessionState {
+  error?: string;
+  message?: string;
   lastTurn?: {
     score: number;
     feedback: string;
@@ -40,7 +44,7 @@ interface SubmitAnswerResponse extends SessionState {
 
 type Phase = 'intro' | 'preflight' | 'connecting' | 'live' | 'uploading' | 'finishing' | 'done' | 'disqualified' | 'error';
 type InterviewMode = 'practice' | 'proctored';
-type AwayReason = 'tab-hidden' | 'window-blur' | 'fullscreen-exit' | 'camera-stopped' | 'microphone-stopped' | 'screen-share-stopped' | 'prohibited-actions';
+type AwayReason = 'tab-hidden' | 'window-blur' | 'fullscreen-exit' | 'camera-stopped' | 'microphone-stopped' | 'screen-share-stopped' | 'prohibited-actions' | 'repeated-away-events';
 
 const AWAY_LIMIT_MS = 5000;
 
@@ -65,6 +69,7 @@ export default function InterviewPage() {
   const meterTimerRef = useRef<number | null>(null);
   const awayStartedAtRef = useRef<number | null>(null);
   const awayReasonRef = useRef<AwayReason>('tab-hidden');
+  const awayWarningRecordedRef = useRef(false);
   const disqualifyingRef = useRef(false);
   const finishingRef = useRef(false);
   const violationCountRef = useRef(0);
@@ -83,6 +88,8 @@ export default function InterviewPage() {
   const [speakerHeard, setSpeakerHeard] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [awaySeconds, setAwaySeconds] = useState(0);
+  const [awayWarnings, setAwayWarnings] = useState(0);
+  const [awayWarningMessage, setAwayWarningMessage] = useState<string | null>(null);
   const [violations, setViolations] = useState(0);
   const [disqualifiedReason, setDisqualifiedReason] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +109,7 @@ export default function InterviewPage() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [speechSupported, setSpeechSupported] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [showQuestionText, setShowQuestionText] = useState(false);
+  const [showQuestionText, setShowQuestionText] = useState(true);
 
   const selectResume = (file: File | null) => {
     if (file && (file.size > 5 * 1024 * 1024 || !file.name.toLowerCase().endsWith('.pdf'))) {
@@ -126,6 +133,18 @@ export default function InterviewPage() {
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, [session, syncTimer]);
+
+  useEffect(() => {
+    if (!error || (phase !== 'live' && phase !== 'uploading')) return;
+    const timeout = window.setTimeout(() => setError(null), 6000);
+    return () => window.clearTimeout(timeout);
+  }, [error, phase]);
+
+  useEffect(() => {
+    if (!awayWarningMessage) return;
+    const timeout = window.setTimeout(() => setAwayWarningMessage(null), 6000);
+    return () => window.clearTimeout(timeout);
+  }, [awayWarningMessage]);
 
   useEffect(() => {
     setHasMounted(true);
@@ -295,7 +314,8 @@ export default function InterviewPage() {
     }
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'monitor' }, audio: false });
-      const surface = stream.getVideoTracks()[0]?.getSettings().displaySurface;
+      const screenTrack = stream.getVideoTracks()[0];
+      const surface = screenTrack?.getSettings().displaySurface;
       if (surface !== 'monitor') {
         stream.getTracks().forEach((track) => track.stop());
         setError('Share your entire screen in a browser that reports the selected screen, not a tab or window.');
@@ -303,6 +323,7 @@ export default function InterviewPage() {
       }
       screenStreamRef.current?.getTracks().forEach((track) => track.stop());
       screenStreamRef.current = stream;
+      screenTrack?.addEventListener('ended', () => setScreenReady(false), { once: true });
       setScreenReady(true);
       setError(null);
     } catch {
@@ -346,10 +367,13 @@ export default function InterviewPage() {
     const checkAway = () => {
       if (awayStartedAtRef.current === null) return;
       const elapsed = Date.now() - awayStartedAtRef.current;
-      if (elapsed >= AWAY_LIMIT_MS) {
-        disqualify(awayReasonRef.current);
+      if (elapsed >= AWAY_LIMIT_MS && !awayWarningRecordedRef.current) {
+        const reason = awayReasonRef.current;
+        awayWarningRecordedRef.current = true;
+        void recordAwayWarning(reason);
       } else if (!document.hidden && document.hasFocus() && document.fullscreenElement) {
         awayStartedAtRef.current = null;
+        awayWarningRecordedRef.current = false;
         setAwaySeconds(0);
       } else {
         setAwaySeconds(Math.ceil(elapsed / 1000));
@@ -360,8 +384,39 @@ export default function InterviewPage() {
       if (awayStartedAtRef.current === null) {
         awayStartedAtRef.current = Date.now();
         awayReasonRef.current = reason;
+        awayWarningRecordedRef.current = false;
       }
       checkAway();
+    };
+
+    const recordAwayWarning = async (reason: AwayReason) => {
+      const token = getToken();
+      if (!token) {
+        setError('Your login expired; the proctoring warning could not be recorded.');
+        return;
+      }
+      try {
+        const response = await fetch(`${API_URL}/interview/sessions/${session.id}/away-warning`, {
+          method: 'POST',
+          keepalive: true,
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason }),
+        });
+        const state = (await response.json().catch(() => ({}))) as SessionState & { error?: string };
+        if (!response.ok) throw new Error(state.error || 'Could not record the proctoring warning.');
+        setSession((current) => current?.id === session.id ? state : current);
+        setAwayWarnings(state.awayWarnings);
+        if (state.status === 'ABANDONED') {
+          disqualifyingRef.current = true;
+          setDisqualifiedReason('repeated-away-events');
+          setPhase('disqualified');
+          stopMedia();
+          return;
+        }
+        setAwayWarningMessage(`Warning ${state.awayWarnings} of 3. Return to this tab and fullscreen; the fourth warning disqualifies the interview.`);
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : 'Could not record the proctoring warning.');
+      }
     };
 
     const onVisibility = () => document.hidden ? markAway('tab-hidden') : checkAway();
@@ -446,8 +501,14 @@ export default function InterviewPage() {
       return;
     }
 
+    if (!resume) {
+      setError('Upload a PDF resume to create a resume-based interview.');
+      return;
+    }
+
     if (mode === 'proctored') {
           if (!resume || !mediaStreamRef.current?.active || !hasVideoTrack || !videoReady || !micDetected || !speakerHeard || !screenReady ||
+            screenStreamRef.current?.getVideoTracks()[0]?.getSettings().displaySurface !== 'monitor' ||
             screenStreamRef.current?.getVideoTracks()[0]?.readyState !== 'live' ||
           mediaStreamRef.current.getVideoTracks()[0]?.readyState !== 'live' ||
           mediaStreamRef.current.getAudioTracks()[0]?.readyState !== 'live') {
@@ -506,6 +567,8 @@ export default function InterviewPage() {
       audioContextRef.current = null;
 
       setSession(data);
+      setAwayWarnings(data.awayWarnings ?? 0);
+      setAwayWarningMessage(null);
       finishingRef.current = false;
       violationCountRef.current = 0;
       lastViolationAtRef.current = 0;
@@ -608,7 +671,7 @@ export default function InterviewPage() {
         body: formData,
       });
 
-      const data = (await res.json().catch(() => ({}))) as SubmitAnswerResponse & { error?: string };
+      const data = (await res.json().catch(() => ({}))) as SubmitAnswerResponse;
       if (disqualifyingRef.current) return;
       if (res.status === 401) {
         setNeedRelogin(true);
@@ -619,7 +682,7 @@ export default function InterviewPage() {
         return;
       }
       if (!res.ok) {
-        throw new Error(data.error || res.statusText);
+        throw new Error(data.message || data.error || res.statusText);
       }
 
       setSession(data);
@@ -688,6 +751,9 @@ export default function InterviewPage() {
   const verdictLabel = session?.verdict === 'SELECT'
     ? (session.overallScore != null && session.overallScore >= 85 ? 'Strong Hire' : 'Hire')
     : session?.verdict === 'BORDERLINE' ? 'Needs another round' : session?.verdict === 'REJECT' ? 'Not recommended yet' : '—';
+
+  const isLiveWorkspace = phase === 'live' || phase === 'uploading' || phase === 'finishing';
+  const isImmersiveInterview = isLiveWorkspace || (mode === 'proctored' && ['preflight', 'connecting'].includes(phase));
 
   const copyReportToClipboard = async () => {
     if (!session?.reportDetail && !session?.summaryJson) return;
@@ -800,23 +866,34 @@ export default function InterviewPage() {
   }
 
   return (
-    <DashboardShell mainClassName={`p-6 md:p-10 mx-auto ${phase === 'preflight' ? 'max-w-5xl' : 'max-w-3xl'}`}>
-      <Link href="/learn" className="text-sm text-green-700 hover:underline mb-6 inline-block">
-        Back to dashboard
-      </Link>
+    <DashboardShell
+      immersive={isImmersiveInterview}
+      mainClassName={isLiveWorkspace
+        ? 'mx-auto flex h-full w-full max-w-none flex-col overflow-hidden px-3 py-2 sm:px-5 sm:py-3'
+        : isImmersiveInterview
+          ? 'mx-auto h-full w-full max-w-none overflow-auto p-4 md:p-6'
+          : `p-6 md:p-10 mx-auto ${phase === 'preflight' ? 'max-w-5xl' : 'max-w-3xl'}`}
+    >
+      {!isImmersiveInterview && (
+        <Link href="/learn" className="text-sm text-green-700 hover:underline mb-6 inline-block">
+          Back to dashboard
+        </Link>
+      )}
 
-      <h1 className="font-nav-brand text-2xl font-semibold text-[var(--text-theme)] mb-2">
-        {phase === 'intro' ? (resume ? 'Resume discussion mock interview' : 'Mock interview') : `${mode === 'proctored' ? 'Proctored' : 'Practice'} interview`} (10 min)
+      <h1 className={`font-nav-brand font-semibold text-[var(--text-theme)] ${isLiveWorkspace ? 'mb-1 text-lg' : 'mb-2 text-2xl'}`}>
+        {phase === 'intro' ? 'Resume-based system design interview' : `${mode === 'proctored' ? 'Proctored' : 'Practice'} system design interview`} (10 min)
       </h1>
-      <p className="text-[var(--text-muted)] text-sm mb-6">
-        Each problem is spoken aloud and adapts to your answer. Camera video stays in this browser and is not uploaded.
-        {mode === 'proctored' ? ' Stay in this tab and fullscreen; leaving for more than 5 seconds disqualifies the session.' : ' Camera access is optional in practice.'}
-      </p>
+      {!isLiveWorkspace && (
+        <p className="mb-6 text-sm text-[var(--text-muted)]">
+          Questions are grounded in your resume and adapt to your answers, focusing on architecture, component design, and scaling. Camera video stays in this browser and is not uploaded.
+          {mode === 'proctored' ? ' Share your entire display and stay in fullscreen. Each 5-second away event is a warning; the fourth disqualifies the session.' : ' Camera access is optional in practice.'}
+        </p>
+      )}
 
       {phase === 'intro' && (
         <div className="mb-6 max-w-xl space-y-6">
           <section>
-            <h2 className="mb-3 text-base font-semibold text-[var(--text-theme)]">Add your resume {mode === 'practice' && <span className="text-sm font-normal text-[var(--text-muted)]">(optional)</span>}</h2>
+            <h2 className="mb-3 text-base font-semibold text-[var(--text-theme)]">Upload your resume</h2>
             <input
               id="interview-resume"
               type="file"
@@ -830,7 +907,7 @@ export default function InterviewPage() {
               </label>
               <p className="mt-1 text-xs text-[var(--text-muted)]">PDF · up to 5 MB</p>
             </div>
-            <p className="mt-2 text-xs text-[var(--text-muted)]">Resume text is used to tailor questions. Only a skills and projects summary is kept with the interview.</p>
+            <p className="mt-2 text-xs text-[var(--text-muted)]">Questions focus on your projects and skills. The original resume is not stored with the interview.</p>
           </section>
           <section>
             <h2 className="mb-3 text-base font-semibold text-[var(--text-theme)]">Select interview mode</h2>
@@ -853,7 +930,8 @@ export default function InterviewPage() {
               <h2 className="font-semibold">Proctored interview requirements</h2>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-[var(--text-muted)]">
                 <li>Allow camera and microphone access, confirm audio playback, and share your entire screen.</li>
-                <li>Stay in this tab and fullscreen. A switch lasting more than five seconds disqualifies the session.</li>
+                <li>Stay in this tab and fullscreen. Each uninterrupted 5-second absence adds a warning; the fourth disqualifies the session.</li>
+                <li>Browser monitoring cannot reliably detect attention or activity on another unshared physical display.</li>
                 <li>Closing the tab or disconnecting a required device ends the proctored session.</li>
                 <li>Copy/paste, right-click, and selecting page text are blocked; five attempts disqualify the session.</li>
               </ul>
@@ -863,26 +941,6 @@ export default function InterviewPage() {
         </div>
       )}
 
-      {(phase === 'live' || phase === 'uploading') && (
-        <>
-          {hasVideoTrack ? (
-            <video
-              ref={videoRef}
-              onLoadedData={() => setVideoReady(true)}
-              className="mb-4 w-full max-w-md rounded-lg border border-[var(--border-theme)] bg-black aspect-video object-cover"
-              muted
-              playsInline
-            />
-          ) : (
-            <div
-              className="mb-4 flex w-full max-w-md aspect-video items-center justify-center rounded-lg border border-dashed border-[var(--border-theme)] bg-[var(--surface-panel)] px-4 text-center text-sm text-[var(--text-muted)]"
-              role="status"
-            >
-              Audio-only mode: microphone is active. Camera was skipped or unavailable.
-            </div>
-          )}
-        </>
-      )}
       {hasMounted && phase === 'intro' && !getToken() && (
         <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
           You must be logged in.{' '}
@@ -897,10 +955,10 @@ export default function InterviewPage() {
           <button
             type="button"
             onClick={() => void (mode === 'proctored' ? prepareProctored() : startInterview())}
-            disabled={mode === 'proctored' && !resume}
+            disabled={!resume}
             className="rounded-lg bg-green-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {mode === 'proctored' ? 'Check devices' : 'Start practice'}
+            {mode === 'proctored' ? 'Check devices' : 'Start practice interview'}
           </button>
         </div>
       )}
@@ -965,21 +1023,27 @@ export default function InterviewPage() {
         <p className="text-[var(--text-muted)]">{phase === 'connecting' ? 'Connecting…' : phase === 'finishing' ? 'Preparing skill gap report…' : 'Submitting answer…'}</p>
       )}
 
-      {phase === 'live' && session && (
-        <div className="space-y-4">
+      {(phase === 'live' || phase === 'uploading' || phase === 'finishing') && session && (
+        <div className="flex h-full min-h-0 flex-col gap-2">
           {mode === 'proctored' && (
-            <p role="status" className={`rounded-lg border px-3 py-2 text-sm ${awayStartedAtRef.current !== null ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-green-200 bg-green-50 text-green-800'}`}>
-              {awayStartedAtRef.current !== null ? `Return to this tab and fullscreen now. ${Math.max(0, 5 - awaySeconds)}s left.` : 'Proctored session active · fullscreen and tab monitored'}
+            <p role="status" className={`flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-3 py-1.5 text-xs ${awayStartedAtRef.current !== null ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-green-200 bg-green-50 text-green-800'}`}>
+              {awayStartedAtRef.current !== null ? awayWarningRecordedRef.current ? 'This away event has been recorded as a warning. Return to this tab and fullscreen.' : `Return to this tab and fullscreen now. ${Math.max(0, 5 - awaySeconds)}s until warning.` : 'Proctored session active · full display, fullscreen, and tab monitored'}
+              <span className="ml-2 font-semibold">Away warnings: {awayWarnings}/4</span>
               {violations > 0 && <span className="ml-2 font-semibold">Prohibited actions: {violations}/5</span>}
               {awayStartedAtRef.current !== null && !document.fullscreenElement && (
                 <button type="button" onClick={() => void document.documentElement.requestFullscreen().catch(() => setError('Allow fullscreen to continue.'))} className="ml-3 font-semibold underline">Return to fullscreen</button>
               )}
             </p>
           )}
-          {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+          {(awayWarningMessage || error) && (
+            <div className="fixed right-3 top-3 z-[120] flex w-[min(28rem,calc(100vw-1.5rem))] flex-col gap-2" aria-live="assertive">
+              {awayWarningMessage && <p role="alert" className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-900 shadow-lg">{awayWarningMessage}</p>}
+              {error && <p role="alert" className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-900 shadow-lg">{error}</p>}
+            </div>
+          )}
           {mediaNotices.length > 0 && (
             <div
-              className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+              className="shrink-0 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900"
               role="status"
             >
               {mediaNotices.map((n) => (
@@ -989,7 +1053,7 @@ export default function InterviewPage() {
               ))}
             </div>
           )}
-          <div className="flex flex-wrap items-center gap-4 text-sm">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 text-sm">
             <span
               className={
                 remainingSec <= 60 ? 'text-red-700 font-semibold' : 'text-[var(--text-theme)]'
@@ -1003,21 +1067,23 @@ export default function InterviewPage() {
           </div>
 
           {(session.timeExpired || remainingSec === 0) && (
-            <div className="space-y-2">
-              <p className="text-amber-800 text-sm">Time is up — you cannot submit more answers.</p>
+            <div className="flex shrink-0 items-center gap-2">
+              <p className="text-xs text-amber-800">Time is up — no more answers can be submitted.</p>
               {error && <button type="button" onClick={() => { finishingRef.current = false; setError(null); setFinishRetry((value) => value + 1); }} className="rounded-md border border-[var(--border-theme)] bg-white px-3 py-2 text-sm font-semibold text-green-700">Retry report</button>}
             </div>
           )}
 
-          <div className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-4">
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 overflow-y-auto lg:grid-cols-[minmax(300px,0.78fr)_minmax(0,1.4fr)] lg:overflow-hidden">
+            <div className="min-h-0 lg:overflow-y-auto">
+          <div className="rounded-lg border border-[var(--border-theme)] bg-[var(--surface-panel)] p-3">
             <div className="flex flex-wrap items-center gap-2">
               <div
-                className="flex min-h-10 flex-1 items-center gap-3 text-sm text-[var(--text-theme)]"
+                className="flex min-h-8 flex-1 items-center gap-2 text-xs text-[var(--text-theme)]"
                 role="status"
                 aria-label={isSpeaking ? 'Problem is being spoken' : 'Audio problem ready'}
               >
                 <span
-                  className={`inline-block h-3 w-3 rounded-full ${
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${
                     isSpeaking ? 'animate-pulse bg-green-700' : 'bg-green-200'
                   }`}
                 />
@@ -1027,7 +1093,7 @@ export default function InterviewPage() {
                 type="button"
                 onClick={() => session.currentQuestion && speakQuestion(session.currentQuestion, true)}
                 disabled={!session.currentQuestion || !speechSupported}
-                className="rounded-md border border-[var(--border-theme)] bg-white px-3 py-1.5 text-xs text-[var(--text-theme)] hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-[var(--border-theme)] bg-white px-2.5 py-1 text-xs text-[var(--text-theme)] hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Replay
               </button>
@@ -1043,20 +1109,20 @@ export default function InterviewPage() {
                     speakQuestion(session.currentQuestion, true);
                   }
                 }}
-                className="rounded-md border border-[var(--border-theme)] bg-white px-3 py-1.5 text-xs text-[var(--text-theme)] hover:bg-green-50"
+                className="rounded-md border border-[var(--border-theme)] bg-white px-2.5 py-1 text-xs text-[var(--text-theme)] hover:bg-green-50"
               >
                 Voice {voiceEnabled ? 'on' : 'off'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowQuestionText((shown) => !shown)}
-                className="rounded-md border border-[var(--border-theme)] bg-white px-3 py-1.5 text-xs text-[var(--text-theme)] hover:bg-green-50"
+                className="rounded-md border border-[var(--border-theme)] bg-white px-2.5 py-1 text-xs text-[var(--text-theme)] hover:bg-green-50"
               >
                 {showQuestionText ? 'Hide' : 'Show'} transcript
               </button>
             </div>
             {(!speechSupported || showQuestionText) && (
-              <p className="mt-3 border-t border-[var(--border-theme)] pt-3 text-sm leading-relaxed text-[var(--text-theme)]">
+              <p className="mt-2 border-t border-[var(--border-theme)] pt-2 text-sm leading-relaxed text-[var(--text-theme)]">
                 {session.currentQuestion}
               </p>
             )}
@@ -1068,53 +1134,39 @@ export default function InterviewPage() {
           </div>
 
           {lastFeedback && (
-            <p className="text-xs text-[var(--text-muted)] border-l-2 border-green-700 pl-2">Previous: {lastFeedback}</p>
+            <p className="mt-2 border-l-2 border-green-700 pl-2 text-xs text-[var(--text-muted)]">Previous: {lastFeedback}</p>
           )}
-
-          <div className="flex flex-wrap gap-2">
-            {!session.timeExpired && remainingSec > 0 && (
-              <>
-                {!isRecording ? (
-                  <button
-                    type="button"
-                    onClick={startRecording}
-                    className="rounded-lg border border-[var(--border-theme)] bg-white px-4 py-2 text-sm text-[var(--text-theme)] hover:bg-green-50"
-                  >
-                    Record answer
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => void submitAnswer()}
-                    className="rounded-lg bg-[#22c55e] px-4 py-2 text-sm font-medium text-black hover:bg-[#1ea34a]"
-                  >
-                    Stop & submit
-                  </button>
-                )}
-              </>
-            )}
+            </div>
+            <div className="min-h-0 overflow-hidden">
+              <InterviewWhiteboard />
+            </div>
           </div>
 
-          <div>
-            <label htmlFor="interview-transcript" className="block text-xs text-[var(--text-muted)] mb-1">
-              Optional: type transcript instead (or to supplement audio)
-            </label>
+          <div className="grid shrink-0 items-end gap-2 border-t border-[var(--border-theme)] pt-2 sm:grid-cols-[auto_minmax(0,1fr)_auto]">
+            {!session.timeExpired && remainingSec > 0 && phase === 'live' && (
+              !isRecording ? (
+                <button type="button" onClick={startRecording} className="rounded-md border border-[var(--border-theme)] bg-white px-3 py-2 text-sm font-semibold text-[var(--text-theme)] hover:bg-green-50">Record answer</button>
+              ) : (
+                <button type="button" onClick={() => void submitAnswer()} className="rounded-md bg-green-700 px-3 py-2 text-sm font-semibold text-white hover:bg-green-800">Stop & submit</button>
+              )
+            )}
             <textarea
               id="interview-transcript"
               value={textAnswer}
               onChange={(e) => setTextAnswer(e.target.value)}
-              disabled={session.timeExpired || remainingSec === 0}
-              rows={4}
-              className="w-full rounded border border-[var(--border-theme)] bg-white px-3 py-2 text-sm text-[var(--text-theme)] placeholder:text-[var(--text-muted)]"
-              placeholder="If you prefer not to use the mic, paste your answer here and submit."
+              disabled={phase !== 'live' || session.timeExpired || remainingSec === 0}
+              rows={2}
+              aria-label="Type or supplement your answer"
+              className="w-full resize-none rounded border border-[var(--border-theme)] bg-white px-3 py-2 text-sm text-[var(--text-theme)] placeholder:text-[var(--text-muted)]"
+              placeholder="Type or supplement your answer…"
             />
-            {!session.timeExpired && remainingSec > 0 && !isRecording && textAnswer.trim() && (
+            {!session.timeExpired && remainingSec > 0 && phase === 'live' && !isRecording && textAnswer.trim() && (
               <button
                 type="button"
                 onClick={() => void submitAnswer()}
-                className="mt-2 rounded-lg bg-[#22c55e] px-4 py-2 text-sm font-medium text-black hover:bg-[#1ea34a]"
+                className="rounded-md bg-green-700 px-3 py-2 text-sm font-semibold text-white hover:bg-green-800"
               >
-                Submit typed answer
+                Submit
               </button>
             )}
           </div>
@@ -1159,7 +1211,8 @@ export default function InterviewPage() {
         <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-5 text-red-900">
           <h2 className="font-semibold">Interview disqualified</h2>
           <p className="mt-1 text-sm">
-            {disqualifiedReason === 'prohibited-actions' ? 'Five prohibited actions were detected.' :
+            {disqualifiedReason === 'repeated-away-events' ? 'Four proctoring warnings were recorded.' :
+              disqualifiedReason === 'prohibited-actions' ? 'Five prohibited actions were detected.' :
               disqualifiedReason === 'screen-share-stopped' ? 'Screen sharing was stopped.' :
               disqualifiedReason === 'camera-stopped' ? 'The camera was disconnected.' :
               disqualifiedReason === 'microphone-stopped' ? 'The microphone was disconnected.' :

@@ -271,6 +271,7 @@ model InterviewSession {
   template            String
   mode                String                 @default("PRACTICE")
   resumeContext       String?                @db.Text
+  awayWarnings       Int                    @default(0)
   status              InterviewSessionStatus @default(IN_PROGRESS)
   startedAt           DateTime               @default(now())
   endsAt              DateTime
