@@ -67,6 +67,7 @@ export const CATALOG_TOTALS: Record<string, number> = {
   '4': 4, // JS fundamentals
   '5': 3, // System Design tutorials
   '6': 4, // Python beginners
+  'fde-bootcamp': 88,
 };
 
 export function syncStreakToLocal(streak: LearningStreak) {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { DashboardShell } from '@/components/DashboardShell';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
@@ -20,6 +21,7 @@ interface Course {
   isPremium: boolean;
   category: string;
   image?: string;
+  imageAlt: string;
 }
 
 interface GeneratedCourseSummary {
@@ -56,6 +58,18 @@ function formatInr(paise: number) {
 
 const mockCourses: Course[] = [
   {
+    id: 'fde-bootcamp',
+    title: 'FDE Bootcamp',
+    description: '14 modules · 44 lessons · Python, cloud, RAG, agents, enterprise security, and two capstones. Learning notes and practical assignments throughout.',
+    rating: 0,
+    reviews: 0,
+    language: 'English',
+    isPremium: false,
+    category: 'Enterprise AI',
+    image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'Engineers collaborating at a laptop workstation',
+  },
+  {
     id: '1',
     title: 'Salaam DSA',
     description:
@@ -65,6 +79,8 @@ const mockCourses: Course[] = [
     language: 'English',
     isPremium: true,
     category: 'DSA',
+    image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'Mathematical equations illustrating algorithmic problem solving',
   },
   {
     id: '2',
@@ -76,6 +92,8 @@ const mockCourses: Course[] = [
     language: 'English',
     isPremium: true,
     category: 'Backend',
+    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'Server racks powering backend applications',
   },
   {
     id: '3',
@@ -87,6 +105,8 @@ const mockCourses: Course[] = [
     language: 'English',
     isPremium: true,
     category: 'Frontend',
+    image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'A developer workstation with application code on screen',
   },
   {
     id: '4',
@@ -97,6 +117,8 @@ const mockCourses: Course[] = [
     language: 'English',
     isPremium: false,
     category: 'Frontend',
+    image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'Source code displayed in a programming editor',
   },
   {
     id: '5',
@@ -107,6 +129,8 @@ const mockCourses: Course[] = [
     language: 'English',
     isPremium: true,
     category: 'System Design',
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'Connected electronic components illustrating system architecture',
   },
   {
     id: '6',
@@ -117,6 +141,8 @@ const mockCourses: Course[] = [
     language: 'English',
     isPremium: false,
     category: 'Programming',
+    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'A laptop workspace for hands-on programming',
   },
 ];
 
@@ -697,7 +723,7 @@ export default function LearnPage() {
                     style={{
                       height: '200px',
                       flexShrink: 0,
-                      background: `linear-gradient(135deg, ${
+                      background: course.image ? '#e6f3ff' : `linear-gradient(135deg, ${
                         course.category === 'DSA'
                           ? '#f59e0b, #ef4444'
                           : course.category === 'Backend'
@@ -711,7 +737,8 @@ export default function LearnPage() {
                       overflow: 'hidden',
                     }}
                   >
-                    <div
+                    {course.image && <Image src={course.image} alt={course.imageAlt} fill unoptimized sizes="(max-width: 768px) 100vw, 450px" style={{ objectFit: 'cover' }} />}
+                    {!course.image && <div
                       style={{
                         position: 'absolute',
                         width: '100%',
@@ -719,8 +746,8 @@ export default function LearnPage() {
                         background:
                           'radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
                       }}
-                    />
-                    <div
+                    />}
+                    {!course.image && <div
                       style={{
                         fontSize: '4rem',
                         fontWeight: 'bold',
@@ -730,7 +757,7 @@ export default function LearnPage() {
                       }}
                     >
                       {course.title.split(' ')[0].charAt(0)}
-                    </div>
+                    </div>}
                     {course.isPremium && (
                       <div
                         style={{
@@ -798,7 +825,7 @@ export default function LearnPage() {
                           color: '#fbbf24',
                         }}
                       >
-                        <span style={{ fontSize: '0.9rem' }}>⭐</span>
+                        {course.reviews > 0 ? <><span style={{ fontSize: '0.9rem' }}>⭐</span>
                         <span style={{ fontSize: '0.875rem', fontWeight: '600' }}>{course.rating}</span>
                         <span style={{ fontSize: '0.75rem', color: '#b0b0b0', marginLeft: '0.25rem' }}>
                           (
@@ -806,7 +833,7 @@ export default function LearnPage() {
                             ? `${(course.reviews / 1000).toFixed(1)}K`
                             : course.reviews}{' '}
                           Reviews)
-                        </span>
+                        </span></> : <span style={{ color: '#008cff', fontSize: '0.8rem', fontWeight: 600 }}>New course</span>}
                       </div>
                     </div>
 
