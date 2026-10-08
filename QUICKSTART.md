@@ -74,6 +74,63 @@ This starts:
 
 ## Common Commands
 
+### Mobile Interview Monitoring
+
+Resume-based **Proctored+** interviews require a QR-paired phone camera. **Practice**
+and ordinary **Proctored** interviews do not use mobile monitoring. Ordinary
+Proctored retains the laptop camera, microphone, screen-share, and fullscreen
+checks. Apply migrations and regenerate Prisma:
+
+```bash
+npm run db:migrate
+npm run db:generate
+```
+
+Configure `GROQ_API_KEY` on the API. `GROQ_VISION_MODEL` defaults to
+`meta-llama/llama-4-scout-17b-16e-instruct`; choose a Groq vision-capable model if
+your account does not support that model. For phones, both the web origin and
+`NEXT_PUBLIC_API_URL` must be reachable HTTPS URLs. Optionally set
+`NEXT_PUBLIC_MOBILE_ORIGIN` to the HTTPS web origin used in QR links, allow that
+origin in API `CORS_ORIGIN`, and restart Next.js after environment changes.
+Laptop `localhost` URLs are not reachable from a phone. A LAN HTTP address is
+not a secure camera context; use HTTPS hosting or a trusted HTTPS tunnel.
+
+Complete the laptop device checks, generate a QR code, scan it on the phone,
+accept the photo consent, and connect the camera. Position the phone to show one
+person and the laptop. Start the interview on the laptop once connected. The
+ten-minute timer starts then. Keep the phone camera page visible and prevent
+the phone from locking.
+
+The API requests three randomly timed photos. Only high-confidence observations
+of missing people/laptops or additional people produce photo warnings.
+Uncertain assessments and provider errors are recorded without warnings. Missing
+photos and camera disconnections also produce warnings. Mobile warnings and
+desktop away warnings share a four-warning disqualification threshold. All three
+checks must be accounted for before submitting the final answer or report.
+Existing laptop-device and prohibited-action rules remain in effect.
+
+Photos are processed in memory and sent to Groq; this application does not store
+them. Observation outcomes are stored with the interview. Provider retention is
+governed by Groq's terms. Pairing links are single-use, expire after five minutes,
+and use URL fragments; server-side token hashes are stored instead of raw tokens.
+After starting, an expired pairing link cannot be used to replace the camera.
+
+This is visibility monitoring, not proof of cheating, identity verification, or
+tamper-proof camera attestation. A modified client can spoof camera/heartbeat
+requests, and three snapshots cannot cover the entire interview. Assessments can
+be wrong. For consequential decisions, review warnings and provide an appeal
+process instead of treating AI observations as definitive evidence.
+
+Focused regression check (from `apps/api`):
+
+```bash
+npx tsx scripts/test-interview-resume.ts
+```
+
+Set `TEST_MOBILE_DB=true` and load the API environment to include the optional
+PostgreSQL concurrency/persistence checks. They create disposable test records,
+mock vision responses, and delete their records afterward.
+
 ```bash
 # Development
 npm run dev              # Start all apps

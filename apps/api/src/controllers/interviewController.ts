@@ -14,7 +14,7 @@ import {
 
 const createSessionBodySchema = z.object({
   template: z.string().optional(),
-  mode: z.enum(['PRACTICE', 'PROCTORED']).default('PRACTICE'),
+  mode: z.enum(['PRACTICE', 'PROCTORED', 'PROCTORED_PLUS']).default('PRACTICE'),
 });
 
 const transcriptBodySchema = z.object({
@@ -49,6 +49,10 @@ function mapInterviewError(err: unknown): { status: number; message: string } | 
       return { status: 404, message: 'Interview session not found.' };
     case 'SESSION_NOT_ACTIVE':
       return { status: 400, message: 'This interview is no longer active.' };
+    case 'MOBILE_MONITOR_REQUIRED':
+      return { status: 409, message: 'Connect the mobile camera before continuing this Proctored+ interview.' };
+    case 'MOBILE_CHECKS_PENDING':
+      return { status: 409, message: 'Keep the mobile camera connected. All three scheduled mobile checks must finish before the final answer or report.' };
     case 'TIME_EXPIRED':
       return { status: 400, message: 'Interview time has expired.' };
     case 'NO_MORE_QUESTIONS':

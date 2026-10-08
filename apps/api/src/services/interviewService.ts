@@ -10,6 +10,7 @@ import {
   gradeTurnAndGenerateNext,
   generateFinalReport,
 } from './groqAiService';
+import { assertMobileChecksComplete, reconcileMobileMonitor } from './interviewMobileService';
 
 export const INTERVIEW_TEMPLATE_RESUME_10M = 'RESUME_SYSTEM_DESIGN_10M';
 
@@ -52,6 +53,7 @@ export function sessionPublicState(session: InterviewSession) {
   const expired = now > session.endsAt;
   const currentQuestion =
     session.status === InterviewSessionStatus.IN_PROGRESS &&
+    (!session.mobileMonitoringRequired || session.proctorStartedAt !== null) &&
     session.currentQuestion < INTERVIEW_MAX_QUESTIONS
       ? session.currentQuestionText ??
         LEGACY_JS_ENGINEER_QUESTIONS[session.currentQuestion] ??
@@ -67,6 +69,8 @@ export function sessionPublicState(session: InterviewSession) {
     serverNow: now.toISOString(),
     timeExpired: expired,
     awayWarnings: session.awayWarnings,
+    mobileMonitoringRequired: session.mobileMonitoringRequired,
+    proctorStartedAt: session.proctorStartedAt?.toISOString() ?? null,
     currentQuestionIndex: session.currentQuestion,
     totalQuestions: INTERVIEW_MAX_QUESTIONS,
     currentQuestion,
@@ -80,7 +84,7 @@ export function sessionPublicState(session: InterviewSession) {
 export async function createInterviewSession(
   userId: string,
   template: string = INTERVIEW_TEMPLATE_RESUME_10M,
-  mode: 'PRACTICE' | 'PROCTORED' = 'PRACTICE',
+  mode: 'PRACTICE' | 'PROCTORED' | 'PROCTORED_PLUS' = 'PRACTICE',
   resumeText?: string,
 ): Promise<ReturnType<typeof sessionPublicState>> {
   if (template !== INTERVIEW_TEMPLATE_RESUME_10M) {
@@ -95,7 +99,8 @@ export async function createInterviewSession(
     data: {
       userId,
       template,
-      mode,
+      mode: mode === 'PRACTICE' ? 'PRACTICE' : 'PROCTORED',
+      mobileMonitoringRequired: mode === 'PROCTORED_PLUS' && Boolean(resumeText),
       resumeContext: resumePlan ? JSON.stringify({ skills: resumePlan.skills, projects: resumePlan.projects }) : null,
       startedAt,
       endsAt,
@@ -111,7 +116,7 @@ export async function createInterviewSession(
 export async function getInterviewSession(sessionId: string, userId: string) {
   const session = await loadSessionForUser(sessionId, userId);
   if (!session) return null;
-  return sessionPublicState(session);
+  return sessionPublicState(await reconcileMobileMonitor(session));
 }
 
 export async function disqualifyInterviewSession(
@@ -136,7 +141,7 @@ export async function disqualifyInterviewSession(
 
 export async function registerInterviewAwayWarning(sessionId: string, userId: string) {
   const incremented = await prisma.interviewSession.updateMany({
-    where: { id: sessionId, userId, status: InterviewSessionStatus.IN_PROGRESS },
+    where: { id: sessionId, userId, mode: 'PROCTORED', status: InterviewSessionStatus.IN_PROGRESS },
     data: { awayWarnings: { increment: 1 } },
   });
   if (incremented.count === 0) throw new Error('SESSION_NOT_ACTIVE');
@@ -167,9 +172,12 @@ export async function registerInterviewAwayWarning(sessionId: string, userId: st
 }
 
 export async function finishInterviewSession(sessionId: string, userId: string) {
-  const session = await loadSessionForUser(sessionId, userId);
-  if (!session) throw new Error('SESSION_NOT_FOUND');
+  const found = await loadSessionForUser(sessionId, userId);
+  if (!found) throw new Error('SESSION_NOT_FOUND');
+  const session = await reconcileMobileMonitor(found);
   if (session.status !== InterviewSessionStatus.IN_PROGRESS) throw new Error('SESSION_NOT_ACTIVE');
+  if (session.mobileMonitoringRequired && !session.proctorStartedAt) throw new Error('MOBILE_MONITOR_REQUIRED');
+  await assertMobileChecksComplete(session);
 
   const turns = await prisma.interviewTurn.findMany({
     where: { sessionId },
@@ -177,6 +185,9 @@ export async function finishInterviewSession(sessionId: string, userId: string) 
     select: { questionText: true, transcript: true, score: true },
   });
   const report = turns.length > 0 ? await generateFinalReport(turns, session.resumeContext) : null;
+  const latest = await reconcileMobileMonitor(await prisma.interviewSession.findUniqueOrThrow({ where: { id: sessionId } }));
+  if (latest.status !== InterviewSessionStatus.IN_PROGRESS) throw new Error('SESSION_NOT_ACTIVE');
+  await assertMobileChecksComplete(latest);
   const updated = await prisma.interviewSession.updateMany({
     where: { id: sessionId, userId, status: InterviewSessionStatus.IN_PROGRESS },
     data: {
@@ -209,12 +220,16 @@ export async function submitInterviewAnswer(
 ) {
   assertGroqConfigured();
 
-  const session = await loadSessionForUser(sessionId, userId);
-  if (!session) {
+  const found = await loadSessionForUser(sessionId, userId);
+  if (!found) {
     throw new Error('SESSION_NOT_FOUND');
   }
+  const session = await reconcileMobileMonitor(found);
   if (session.status !== InterviewSessionStatus.IN_PROGRESS) {
     throw new Error('SESSION_NOT_ACTIVE');
+  }
+  if (session.mobileMonitoringRequired && !session.proctorStartedAt) {
+    throw new Error('MOBILE_MONITOR_REQUIRED');
   }
 
   const now = new Date();
@@ -226,6 +241,7 @@ export async function submitInterviewAnswer(
   if (qIndex >= INTERVIEW_MAX_QUESTIONS) {
     throw new Error('NO_MORE_QUESTIONS');
   }
+  if (qIndex === INTERVIEW_MAX_QUESTIONS - 1) await assertMobileChecksComplete(session);
 
   const questionText =
     session.currentQuestionText ??
@@ -256,10 +272,12 @@ export async function submitInterviewAnswer(
     session.resumeContext,
   );
 
-  const activeSession = await loadSessionForUser(sessionId, userId);
+  const currentSession = await loadSessionForUser(sessionId, userId);
+  const activeSession = currentSession ? await reconcileMobileMonitor(currentSession) : null;
   if (activeSession?.status !== InterviewSessionStatus.IN_PROGRESS) {
     throw new Error('SESSION_NOT_ACTIVE');
   }
+  if (isLast) await assertMobileChecksComplete(activeSession);
 
   await prisma.interviewTurn.create({
     data: {

@@ -272,6 +272,8 @@ model InterviewSession {
   mode                String                 @default("PRACTICE")
   resumeContext       String?                @db.Text
   awayWarnings       Int                    @default(0)
+  mobileMonitoringRequired Boolean           @default(false)
+  proctorStartedAt    DateTime?
   status              InterviewSessionStatus @default(IN_PROGRESS)
   startedAt           DateTime               @default(now())
   endsAt              DateTime
@@ -286,9 +288,25 @@ model InterviewSession {
 
   user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   turns InterviewTurn[]
+  mobileMonitor InterviewMobileMonitor?
 
   @@index([userId])
   @@index([status])
+}
+
+model InterviewMobileMonitor {
+  id              String   @id @default(cuid())
+  sessionId       String   @unique
+  pairingHash     String   @unique
+  deviceHash      String?  @unique
+  expiresAt       DateTime
+  connectedAt     DateTime?
+  lastSeenAt      DateTime?
+  nextWarningAt   DateTime?
+  schedule        Json     @default("[]")
+  results         Json     @default("[]")
+  version         Int      @default(0)
+  session InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 model InterviewTurn {
